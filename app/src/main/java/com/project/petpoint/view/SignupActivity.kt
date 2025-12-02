@@ -122,7 +122,7 @@ fun SignupBody(){
             Spacer(modifier = Modifier.height(15.dp)
             )
             Image(
-                painter = painterResource(R.drawable.petpoint1),
+                painter = painterResource(R.drawable.petpoint),
                 contentDescription = null,
                 modifier = Modifier
                     .size(130.dp)
