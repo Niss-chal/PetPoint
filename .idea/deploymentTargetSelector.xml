@@ -9,7 +9,7 @@
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="SignupActivity">
-        <option name="selectionMode" value="DROPDOWN" />
+      <SelectionState runConfigName="FrontpageActivity">
       </SelectionState>
     </selectionStates>
   </component>

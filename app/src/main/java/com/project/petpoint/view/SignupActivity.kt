@@ -95,7 +95,7 @@ fun SignupBody(){
                 Icon(
                     painter = painterResource(R.drawable.paw),
                     contentDescription = null,
-                    tint = Teal,
+                    tint = VividAzure,
                     modifier = Modifier.size(80.dp),
                 )
             }
@@ -166,7 +166,7 @@ fun SignupBody(){
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    placeholder = { Text("Hello World") },
+                    placeholder = { Text("Enter your name") },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text
                     ),
@@ -185,7 +185,7 @@ fun SignupBody(){
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    placeholder = { Text("hello@gmail.com") },
+                    placeholder = { Text("Enter your email") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = GreyOrange,
@@ -202,7 +202,7 @@ fun SignupBody(){
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    placeholder = { Text("*********") },
+                    placeholder = { Text("Enter your password") },
                     visualTransformation =
                         if (visibility) VisualTransformation.None else PasswordVisualTransformation(),
 
@@ -274,7 +274,5 @@ fun SignupBody(){
 @Preview(showBackground = true)
 @Composable
 fun SignupPrev() {
-    PetPointTheme {
         SignupBody()
     }
-}
