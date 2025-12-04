@@ -55,8 +55,12 @@ import com.project.petpoint.R
 import com.project.petpoint.ui.theme.BlueWhite
 import com.project.petpoint.ui.theme.Peach
 import com.project.petpoint.ui.theme.Teal
+import com.project.petpoint.view.ui.theme.Azure
+import com.project.petpoint.view.ui.theme.GreyOrange
 import com.project.petpoint.view.ui.theme.PetPointTheme
 import com.project.petpoint.view.ui.theme.Purple80
+import com.project.petpoint.view.ui.theme.VividAzure
+import com.project.petpoint.view.ui.theme.VividOrange
 
 class SignupActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,20 +83,15 @@ fun SignupBody(){
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(BlueWhite)
+                .background(Azure)
         ){
             Row(
                 modifier = Modifier
                     .padding(top = 10.dp, start = 15.dp, end = 15.dp)
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.End
             ){
-                Icon(
-                    painter = painterResource(R.drawable.baseline_more_horiz_24),
-                    contentDescription = null,
-                    modifier = Modifier.size(80.dp),
-                )
                 Icon(
                     painter = painterResource(R.drawable.paw),
                     contentDescription = null,
@@ -137,7 +136,7 @@ fun SignupBody(){
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
                     .background(
-                        color = Teal,
+                        color = VividAzure,
                         shape = RoundedCornerShape(25.dp)
                     )
                     .padding(20.dp)
@@ -172,8 +171,8 @@ fun SignupBody(){
                         keyboardType = KeyboardType.Text
                     ),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Purple80,
-                        unfocusedContainerColor = Purple80,
+                        focusedContainerColor = GreyOrange,
+                        unfocusedContainerColor = GreyOrange,
                         focusedIndicatorColor = Blue,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
@@ -189,8 +188,8 @@ fun SignupBody(){
                     placeholder = { Text("hello@gmail.com") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Purple80,
-                        unfocusedContainerColor = Purple80,
+                        focusedContainerColor = GreyOrange,
+                        unfocusedContainerColor = GreyOrange,
                         focusedIndicatorColor = Blue,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
@@ -227,8 +226,8 @@ fun SignupBody(){
                         keyboardType = KeyboardType.Password
                     ),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Purple80,
-                        unfocusedContainerColor = Purple80,
+                        focusedContainerColor = GreyOrange,
+                        unfocusedContainerColor = GreyOrange,
                         focusedIndicatorColor = Blue,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
@@ -247,7 +246,7 @@ fun SignupBody(){
                         .height(48.dp),
                     shape = RoundedCornerShape(30.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Peach
+                        containerColor = VividOrange
                     )
                 ) {
                     Text("Sign Up", fontSize = 18.sp, color = White)
