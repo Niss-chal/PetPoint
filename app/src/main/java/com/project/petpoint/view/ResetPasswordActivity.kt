@@ -1,4 +1,4 @@
-package com.project.petpoint
+package com.project.petpoint.view
 
 import android.app.Activity
 import android.content.Intent
@@ -33,11 +33,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
-import com.project.petpoint.view.LoginActivity
-import com.project.petpoint.view.SignupActivity
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.GreyOrange
-import com.project.petpoint.view.ui.theme.Orange
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
 
@@ -63,10 +60,6 @@ fun PetPointResetPasswordUI() {
     val context = LocalContext.current
     val activity = context as? Activity
 
-    // Custom Colors (Matching the previous design analysis)
-    val TealBackground = Color(0xFF008080)
-    val InputFieldBackground = Color(0xFFFCE4C3)
-    val InputHintText = Color(0xFFA0522D)
 
     Scaffold { padding ->
 
@@ -106,7 +99,7 @@ fun PetPointResetPasswordUI() {
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Azure)
-                    .padding(5.dp)
+                    .padding(8.dp)
             ) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -123,11 +116,10 @@ fun PetPointResetPasswordUI() {
                         contentScale = ContentScale.Crop
                     )
 
-                    // RESET FORM CARD (Teal Background)
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(TealBackground, RoundedCornerShape(20.dp))
+                            .background(VividAzure, RoundedCornerShape(20.dp))
                             .padding(24.dp)
                     ) {
 
@@ -171,8 +163,6 @@ fun PetPointResetPasswordUI() {
                                 focusedContainerColor = GreyOrange,
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
-                                unfocusedPlaceholderColor = InputHintText,
-                                focusedPlaceholderColor = InputHintText,
                                 focusedTextColor = Color.Black
                             ),
                             modifier = Modifier.fillMaxWidth()
@@ -201,7 +191,6 @@ fun PetPointResetPasswordUI() {
                                             if (passwordVisibility) R.drawable.baseline_visibility_off_24 else R.drawable.baseline_visibility_24
                                         ),
                                         contentDescription = "Toggle password visibility",
-                                        tint = InputHintText
                                     )
                                 }
                             },
@@ -210,8 +199,6 @@ fun PetPointResetPasswordUI() {
                                 focusedContainerColor = GreyOrange,
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
-                                unfocusedPlaceholderColor = InputHintText,
-                                focusedPlaceholderColor = InputHintText,
                                 focusedTextColor = Color.Black
                             ),
                             modifier = Modifier.fillMaxWidth()
@@ -242,8 +229,8 @@ fun PetPointResetPasswordUI() {
                                             if (confirmPasswordVisibility) R.drawable.baseline_visibility_off_24 else R.drawable.baseline_visibility_24
                                         ),
                                         contentDescription = "Toggle confirm password visibility",
-                                        tint = InputHintText
-                                    )
+
+                                        )
                                 }
                             },
                             colors = TextFieldDefaults.colors(
@@ -251,8 +238,7 @@ fun PetPointResetPasswordUI() {
                                 focusedContainerColor = GreyOrange,
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
-                                unfocusedPlaceholderColor = InputHintText,
-                                focusedPlaceholderColor = InputHintText,
+
                                 focusedTextColor = Color.Black
                             ),
                             modifier = Modifier.fillMaxWidth()
@@ -300,16 +286,16 @@ fun PetPointResetPasswordUI() {
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(buildAnnotatedString {
-                            withStyle(
-                                style = SpanStyle(
-                                    color = VividOrange,     // FIXED: Solid dark orange
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold // FIXED: Bold
-                                )
-                            ) {
-                                append("Back to login")
-                            }
-                        },
+                        withStyle(
+                            style = SpanStyle(
+                                color = VividOrange,     // FIXED: Solid dark orange
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold // FIXED: Bold
+                            )
+                        ) {
+                            append("Back to login")
+                        }
+                    },
                         modifier = Modifier
                             .clickable {
                                 val intent = Intent(context,
