@@ -36,6 +36,7 @@ import com.project.petpoint.R
 import com.project.petpoint.view.LoginActivity
 import com.project.petpoint.view.SignupActivity
 import com.project.petpoint.view.ui.theme.Azure
+import com.project.petpoint.view.ui.theme.GreyOrange
 import com.project.petpoint.view.ui.theme.Orange
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
@@ -166,8 +167,8 @@ fun PetPointResetPasswordUI() {
                             placeholder = { Text("") }, // Updated placeholder
                             shape = RoundedCornerShape(10.dp),
                             colors = TextFieldDefaults.colors(
-                                unfocusedContainerColor = InputFieldBackground,
-                                focusedContainerColor = InputFieldBackground,
+                                unfocusedContainerColor = GreyOrange,
+                                focusedContainerColor = GreyOrange,
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedPlaceholderColor = InputHintText,
@@ -205,8 +206,8 @@ fun PetPointResetPasswordUI() {
                                 }
                             },
                             colors = TextFieldDefaults.colors(
-                                unfocusedContainerColor = InputFieldBackground,
-                                focusedContainerColor = InputFieldBackground,
+                                unfocusedContainerColor = GreyOrange,
+                                focusedContainerColor = GreyOrange,
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedPlaceholderColor = InputHintText,
@@ -246,8 +247,8 @@ fun PetPointResetPasswordUI() {
                                 }
                             },
                             colors = TextFieldDefaults.colors(
-                                unfocusedContainerColor = InputFieldBackground,
-                                focusedContainerColor = InputFieldBackground,
+                                unfocusedContainerColor = GreyOrange,
+                                focusedContainerColor = GreyOrange,
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedPlaceholderColor = InputHintText,
@@ -263,7 +264,7 @@ fun PetPointResetPasswordUI() {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Orange, RoundedCornerShape(25.dp))
+                                .background(VividOrange, RoundedCornerShape(25.dp))
                                 .height(45.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -291,7 +292,7 @@ fun PetPointResetPasswordUI() {
                                 Text(
                                     "Reset",
                                     color = Color.White,
-                                    fontSize = 18.sp,
+                                    fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }

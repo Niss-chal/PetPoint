@@ -246,7 +246,7 @@ fun PetPointLoginUI() {
                     Text(buildAnnotatedString {
                         withStyle(style = SpanStyle(
                             color = VividOrange.copy(alpha = 0.7f),
-                            fontSize = 14.sp
+                            fontSize = 15.sp
                                     )
                                 ) {
                                     append("Don't have an account? ")
