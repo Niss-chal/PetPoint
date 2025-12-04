@@ -1,0 +1,330 @@
+package com.project.petpoint
+
+import android.app.Activity
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.project.petpoint.R
+import com.project.petpoint.view.LoginActivity
+import com.project.petpoint.view.SignupActivity
+import com.project.petpoint.view.ui.theme.Azure
+import com.project.petpoint.view.ui.theme.Orange
+import com.project.petpoint.view.ui.theme.VividAzure
+import com.project.petpoint.view.ui.theme.VividOrange
+
+class ResetPasswordActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            PetPointResetPasswordUI()
+        }
+    }
+}
+
+@Composable
+fun PetPointResetPasswordUI() {
+
+    // Initial state is now empty strings
+    var email by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var passwordVisibility by remember { mutableStateOf(false) }
+    var confirmPasswordVisibility by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    // Custom Colors (Matching the previous design analysis)
+    val TealBackground = Color(0xFF008080)
+    val InputFieldBackground = Color(0xFFFCE4C3)
+    val InputHintText = Color(0xFFA0522D)
+
+    Scaffold { padding ->
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .background(Azure)
+        ) {
+
+            // PAW ICON TOP & Title Area
+            Row(
+                modifier = Modifier
+                    .padding(top = 10.dp, start = 15.dp, end = 15.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.paw),
+                    contentDescription = null,
+                    tint = VividAzure,
+                    modifier = Modifier.size(80.dp)
+                )
+            }
+            Text(
+                text = "Pet Point",
+                modifier = Modifier.fillMaxWidth(),
+                style = TextStyle(
+                    textAlign = TextAlign.Center,
+                    fontSize = 35.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            )
+            // MAIN CONTENT
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Azure)
+                    .padding(5.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    // LOGO
+                    Image(
+                        painter = painterResource(R.drawable.petpoint),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(180.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    // RESET FORM CARD (Teal Background)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(TealBackground, RoundedCornerShape(20.dp))
+                            .padding(24.dp)
+                    ) {
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Reset Password",
+                                color = Color.White,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Icon(
+                                painter = painterResource(R.drawable.paw),
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(30.dp))
+
+                        // EMAIL FIELD
+                        Text(
+                            "Email",
+                            color = Color.White.copy(alpha = 0.8f),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        TextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            placeholder = { Text("") }, // Updated placeholder
+                            shape = RoundedCornerShape(10.dp),
+                            colors = TextFieldDefaults.colors(
+                                unfocusedContainerColor = InputFieldBackground,
+                                focusedContainerColor = InputFieldBackground,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedPlaceholderColor = InputHintText,
+                                focusedPlaceholderColor = InputHintText,
+                                focusedTextColor = Color.Black
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(15.dp))
+
+                        // NEW PASSWORD FIELD
+                        Text(
+                            "Password",
+                            color = Color.White.copy(alpha = 0.8f),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        TextField(
+                            value = newPassword,
+                            onValueChange = { newPassword = it },
+                            placeholder = { Text("") }, // Updated placeholder
+                            shape = RoundedCornerShape(10.dp),
+                            visualTransformation = if (!passwordVisibility) PasswordVisualTransformation() else VisualTransformation.None,
+                            trailingIcon = {
+                                IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
+                                    Icon(
+                                        painter = painterResource(
+                                            if (passwordVisibility) R.drawable.baseline_visibility_off_24 else R.drawable.baseline_visibility_24
+                                        ),
+                                        contentDescription = "Toggle password visibility",
+                                        tint = InputHintText
+                                    )
+                                }
+                            },
+                            colors = TextFieldDefaults.colors(
+                                unfocusedContainerColor = InputFieldBackground,
+                                focusedContainerColor = InputFieldBackground,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedPlaceholderColor = InputHintText,
+                                focusedPlaceholderColor = InputHintText,
+                                focusedTextColor = Color.Black
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(15.dp))
+
+                        // CONFIRM PASSWORD FIELD
+                        Text(
+                            "Confirm Password",
+                            color = Color.White.copy(alpha = 0.8f),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        TextField(
+                            value = confirmPassword,
+                            onValueChange = { confirmPassword = it },
+                            placeholder = { Text("") }, // Updated placeholder
+                            shape = RoundedCornerShape(10.dp),
+                            visualTransformation = if (!confirmPasswordVisibility) PasswordVisualTransformation() else VisualTransformation.None,
+                            trailingIcon = {
+                                IconButton(onClick = {
+                                    confirmPasswordVisibility = !confirmPasswordVisibility
+                                }) {
+                                    Icon(
+                                        painter = painterResource(
+                                            if (confirmPasswordVisibility) R.drawable.baseline_visibility_off_24 else R.drawable.baseline_visibility_24
+                                        ),
+                                        contentDescription = "Toggle confirm password visibility",
+                                        tint = InputHintText
+                                    )
+                                }
+                            },
+                            colors = TextFieldDefaults.colors(
+                                unfocusedContainerColor = InputFieldBackground,
+                                focusedContainerColor = InputFieldBackground,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedPlaceholderColor = InputHintText,
+                                focusedPlaceholderColor = InputHintText,
+                                focusedTextColor = Color.Black
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(30.dp))
+
+                        // RESET BUTTON
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Orange, RoundedCornerShape(25.dp))
+                                .height(45.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Button(
+                                onClick = {
+                                    if (newPassword == confirmPassword && newPassword.isNotEmpty()) {
+                                        Toast.makeText(
+                                            context,
+                                            "Password Reset Successfully!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Passwords do not match or are empty.",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                shape = RoundedCornerShape(20.dp),
+                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Text(
+                                    "Reset",
+                                    color = Color.White,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(buildAnnotatedString {
+                            withStyle(
+                                style = SpanStyle(
+                                    color = VividOrange,     // FIXED: Solid dark orange
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold // FIXED: Bold
+                                )
+                            ) {
+                                append("Back to login")
+                            }
+                        },
+                        modifier = Modifier
+                            .clickable {
+                                val intent = Intent(context,
+                                    LoginActivity::class.java)
+                                context.startActivity(intent)
+                            }
+                        ,style = TextStyle(fontSize = 16.sp))
+
+
+                }
+            }
+        }
+    }
+}
+@Preview
+@Composable
+fun ResetPasswordPreview() {
+    PetPointResetPasswordUI()
+}
