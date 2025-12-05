@@ -2,11 +2,13 @@ package com.project.petpoint.view
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,18 +20,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.GreyOrange
+import com.project.petpoint.view.ui.theme.Orange
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
 
@@ -236,17 +243,38 @@ fun PetPointLoginUI() {
 
                     Spacer(modifier = Modifier.height(15.dp))
 
-                    Text(
-                        text = "Don't have an account? Sign up",
-                        color = VividOrange,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center
-                    )
+                    Text(buildAnnotatedString {
+                        withStyle(style = SpanStyle(
+                            color = VividOrange.copy(alpha = 0.7f),
+                            fontSize = 15.sp
+                                    )
+                                ) {
+                                    append("Don't have an account? ")
+                                }
+                        withStyle(
+                            style = SpanStyle(
+                                color = Orange,
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
+                            append("Sign up")
+                        }
+                    },
+
+                        modifier = Modifier
+                        .clickable{
+                            val intent = Intent(
+                                context,
+                                SignupActivity::class.java
+                            )
+                            context.startActivity(intent)
+                        }
+                        ,style = TextStyle(fontSize = 16.sp))
+                }
                 }
             }
         }
     }
-}
 
 @Preview
 @Composable
