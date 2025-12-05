@@ -253,13 +253,14 @@ fun PetPointLoginUI() {
                                 }
                         withStyle(
                             style = SpanStyle(
-                                color = Orange,   // dark orange
+                                color = Orange,
                                 fontWeight = FontWeight.Bold
                             )
                         ) {
                             append("Sign up")
                         }
                     },
+
                         modifier = Modifier
                         .clickable{
                             val intent = Intent(
@@ -267,7 +268,6 @@ fun PetPointLoginUI() {
                                 SignupActivity::class.java
                             )
                             context.startActivity(intent)
-                            //  activity.finish()
                         }
                         ,style = TextStyle(fontSize = 16.sp))
                 }

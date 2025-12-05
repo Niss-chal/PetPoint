@@ -157,7 +157,7 @@ fun PetPointResetPasswordUI() {
                             value = email,
                             onValueChange = { email = it },
                             placeholder = { Text("") }, // Updated placeholder
-                            shape = RoundedCornerShape(10.dp),
+                            shape = RoundedCornerShape(12.dp),
                             colors = TextFieldDefaults.colors(
                                 unfocusedContainerColor = GreyOrange,
                                 focusedContainerColor = GreyOrange,
@@ -182,7 +182,7 @@ fun PetPointResetPasswordUI() {
                             value = newPassword,
                             onValueChange = { newPassword = it },
                             placeholder = { Text("") }, // Updated placeholder
-                            shape = RoundedCornerShape(10.dp),
+                            shape = RoundedCornerShape(12.dp),
                             visualTransformation = if (!passwordVisibility) PasswordVisualTransformation() else VisualTransformation.None,
                             trailingIcon = {
                                 IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
