@@ -1,11 +1,14 @@
 package com.project.petpoint.view
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -78,6 +82,9 @@ fun SignupBody(){
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var visibility by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val activity = context as? Activity
     Scaffold { padding ->
         Column (
             modifier = Modifier
@@ -261,7 +268,15 @@ fun SignupBody(){
                         append("Login")
                     }
                 },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .clickable{
+                            val intent = Intent(
+                                context,
+                                LoginActivity::class.java
+                            )
+                            context.startActivity(intent)
+                        }
+                        .fillMaxWidth(),
                     color = White,
                     fontSize = 14.sp,
                     textAlign = TextAlign.Center
