@@ -26,6 +26,9 @@
             android:name=".SplashActivity"
             android:exported="true"
             android:label="@string/title_activity_splash"
+            android:name=".view.DashboardActivity"
+            android:exported="true"
+            android:label="@string/title_activity_dashboard"
             android:theme="@style/Theme.PetPoint">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
