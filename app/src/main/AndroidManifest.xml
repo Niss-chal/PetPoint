@@ -12,9 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PetPoint">
         <activity
-            android:name=".MainActivity"
+            android:name=".view.ResetPasswordActivity"
             android:exported="true"
-            android:label="@string/app_name"
+            android:label="@string/title_activity_reset_password"
             android:theme="@style/Theme.PetPoint">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,6 +22,40 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".view.LoginActivity"
+            android:exported="true"
+            android:label="@string/title_activity_login"
+            android:theme="@style/Theme.PetPoint">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".view.FrontpageActivity"
+            android:exported="true"
+            android:label="@string/title_activity_frontpage"
+            android:theme="@style/Theme.PetPoint">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".view.SignupActivity"
+            android:exported="true"
+            android:label="@string/title_activity_signup"
+            android:theme="@style/Theme.PetPoint">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>
