@@ -275,4 +275,4 @@ fun SignupBody(){
 @Composable
 fun SignupPrev() {
         SignupBody()
-    }
+}
