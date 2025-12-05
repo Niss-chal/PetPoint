@@ -6,12 +6,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,20 +59,20 @@ fun DashboardBody() {
     val context = LocalContext.current
     val activity = context as Activity
 
-    data class NavItem(val icon: Int, val label: String)
+    data class NavItem(val image: Int, val label: String)
 
     val listItems  = listOf(
-        NavItem(icon =R.drawable.baseline_shopping_bag_24, label="Shopp"),
-        NavItem(icon =R.drawable.baseline_local_hospital_24, label="Vets"),
-        NavItem(icon =R.drawable.baseline_local_phone_24, label="Lost and Found"),
-        NavItem(icon =R.drawable.baseline_person_24, label="Profile"),
+        NavItem(image = R.drawable.shoppingbag, label="Shop"),
+        NavItem(image = R.drawable.veterinary, label="Vets"),
+        NavItem(image = R.drawable.lostandfound, label="Lost and Found"),
+        NavItem(image = R.drawable.userprofile, label="Profile"),
     )
 
     var selectedIndex by remember{ mutableStateOf(0)}
 
     Scaffold(
         topBar  = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 colors  = TopAppBarDefaults.topAppBarColors(
                     titleContentColor = BlueWhite,
                     actionIconContentColor = BlueWhite,
@@ -78,23 +81,40 @@ fun DashboardBody() {
                 ),
                 navigationIcon = {
                     IconButton(onClick= {}){
-                        Icon(
-                            painter = painterResource(R.drawable.petpoint),
-                            contentDescription = null
-                        )
+                        Image(
+                            painter = painterResource(R.drawable.dashboardlogo),
+                            contentDescription = null,
+                                                    )
                     }
                 },
-                title ={ IconButton(onClick = {}) {
-                    Icon(
-                        painter  =  painterResource(R.drawable.baseline_search_24),
-                        contentDescription = null
-                    )
+                title ={ IconButton(onClick = {
+
+                }) {
+
+
                 }},
                 actions = {
                     IconButton(onClick = {}) {
 
                         Icon(
                             painter  =  painterResource(R.drawable.baseline_notifications_24),
+                            contentDescription = null
+                        )
+
+
+                    }
+
+                    IconButton(onClick = {}) {
+                        Icon(
+                            painter  =  painterResource(R.drawable.baseline_search_24),
+                            contentDescription = null
+                        )
+                    }
+
+
+                    IconButton(onClick = {}) {
+                        Icon(
+                            painter  =  painterResource(R.drawable.baseline_shopping_cart_24),
                             contentDescription = null
                         )
                     }
@@ -107,7 +127,7 @@ fun DashboardBody() {
                     NavigationBarItem(
                         icon = {
                             Icon(
-                                painter = painterResource(item.icon),
+                                painter = painterResource(item.image),
                                 contentDescription = null
                             )
                         },
@@ -133,8 +153,9 @@ fun DashboardBody() {
             when(selectedIndex){
                 0-> ShopScreen()
 //                1-> ShopScreen()
-//                2-> ShopScreen()
-//                3-> ShopScreen()
+//                2-> VetScreen()
+//                3-> LostandFoundScreen()
+//                4-> ProfileScreen()
                 else -> ShopScreen()
             }
         }
