@@ -152,10 +152,9 @@ fun DashboardBody() {
         ) {
             when(selectedIndex){
                 0-> ShopScreen()
-//                1-> ShopScreen()
-//                2-> VetScreen()
-//                3-> LostandFoundScreen()
-//                4-> ProfileScreen()
+                1-> VetScreen()
+                2-> LostandFoundScreen()
+                3-> ProfileScreen()
                 else -> ShopScreen()
             }
         }

@@ -9,11 +9,11 @@ import androidx.compose.ui.Modifier
 import com.project.petpoint.view.ui.theme.Azure
 
 @Composable
-fun ShopScreen(){
+fun VetScreen(){
     Column(
         modifier = Modifier.fillMaxSize()
             .background(Azure)
     ) {
-        Text("Shopping Screen")
+        Text("Vet Screen")
     }
 }
