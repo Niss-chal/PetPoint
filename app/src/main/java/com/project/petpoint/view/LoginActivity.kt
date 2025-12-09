@@ -72,7 +72,6 @@ fun PetPointLoginUI() {
                 .background(Azure)
         ) {
 
-            // PAW ICON TOP
             Row(
                 modifier = Modifier
                     .padding(top = 10.dp, start = 15.dp, end = 15.dp)
@@ -166,9 +165,8 @@ fun PetPointLoginUI() {
 
                         // EMAIL FIELD
                         Text("Email", color = Color.White, fontWeight = FontWeight.SemiBold)
-                        Spacer(modifier = Modifier.height(5.dp))
 
-                        TextField(
+                        OutlinedTextField(
                             value = email,
                             onValueChange = { email = it },
                             placeholder = { Text("Enter your email") },
@@ -179,16 +177,17 @@ fun PetPointLoginUI() {
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent
                             ),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+
+
                         )
 
                         Spacer(modifier = Modifier.height(15.dp))
 
                         // PASSWORD FIELD
                         Text("Password", color = Color.White, fontWeight = FontWeight.SemiBold)
-                        Spacer(modifier = Modifier.height(5.dp))
 
-                        TextField(
+                        OutlinedTextField(
                             value = password,
                             onValueChange = { password = it },
                             placeholder = { Text("Enter your password") },
@@ -211,19 +210,22 @@ fun PetPointLoginUI() {
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent
                             ),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                         )
-
-                        Spacer(modifier = Modifier.height(10.dp))
 
                         Text(
                             text = "Forgot Password?",
                             color = Color.White,
                             fontSize = 13.sp,
                             modifier = Modifier.align(Alignment.End)
+                                .clickable{
+                                    val intent = Intent(context, ResetPasswordActivity::class.java)
+                                    context.startActivity(intent)
+
+                                }
                         )
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         Button(
                             onClick = {
@@ -234,6 +236,7 @@ fun PetPointLoginUI() {
                             colors = ButtonDefaults.buttonColors(containerColor = VividOrange),
                             shape = RoundedCornerShape(20.dp),
                             modifier = Modifier
+                                .padding(vertical = 8.dp)
                                 .fillMaxWidth()
                                 .height(45.dp)
                         ) {
@@ -263,11 +266,9 @@ fun PetPointLoginUI() {
 
                         modifier = Modifier
                         .clickable{
-                            val intent = Intent(
-                                context,
-                                SignupActivity::class.java
-                            )
-                            context.startActivity(intent)
+                            val intent = Intent(context, SignupActivity::class.java)
+                                context.startActivity(intent)
+
                         }
                         ,style = TextStyle(fontSize = 16.sp))
                 }

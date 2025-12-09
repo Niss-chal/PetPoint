@@ -99,7 +99,7 @@ fun PetPointResetPasswordUI() {
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Azure)
-                    .padding(8.dp)
+                    .padding(5.dp)
             ) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -120,7 +120,7 @@ fun PetPointResetPasswordUI() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(VividAzure, RoundedCornerShape(20.dp))
-                            .padding(24.dp)
+                            .padding(20.dp)
                     ) {
 
                         Row(
@@ -151,9 +151,8 @@ fun PetPointResetPasswordUI() {
                             color = Color.White.copy(alpha = 0.8f),
                             fontWeight = FontWeight.SemiBold
                         )
-                        Spacer(modifier = Modifier.height(5.dp))
 
-                        TextField(
+                        OutlinedTextField(
                             value = email,
                             onValueChange = { email = it },
                             placeholder = { Text("") }, // Updated placeholder
@@ -165,7 +164,7 @@ fun PetPointResetPasswordUI() {
                                 focusedIndicatorColor = Color.Transparent,
                                 focusedTextColor = Color.Black
                             ),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                         )
 
                         Spacer(modifier = Modifier.height(15.dp))
@@ -176,9 +175,8 @@ fun PetPointResetPasswordUI() {
                             color = Color.White.copy(alpha = 0.8f),
                             fontWeight = FontWeight.SemiBold
                         )
-                        Spacer(modifier = Modifier.height(5.dp))
 
-                        TextField(
+                        OutlinedTextField(
                             value = newPassword,
                             onValueChange = { newPassword = it },
                             placeholder = { Text("") }, // Updated placeholder
@@ -201,7 +199,7 @@ fun PetPointResetPasswordUI() {
                                 focusedIndicatorColor = Color.Transparent,
                                 focusedTextColor = Color.Black
                             ),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                         )
 
                         Spacer(modifier = Modifier.height(15.dp))
@@ -212,9 +210,8 @@ fun PetPointResetPasswordUI() {
                             color = Color.White.copy(alpha = 0.8f),
                             fontWeight = FontWeight.SemiBold
                         )
-                        Spacer(modifier = Modifier.height(5.dp))
 
-                        TextField(
+                        OutlinedTextField(
                             value = confirmPassword,
                             onValueChange = { confirmPassword = it },
                             placeholder = { Text("") }, // Updated placeholder
@@ -241,14 +238,15 @@ fun PetPointResetPasswordUI() {
 
                                 focusedTextColor = Color.Black
                             ),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                         )
 
-                        Spacer(modifier = Modifier.height(30.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
                         // RESET BUTTON
                         Box(
                             modifier = Modifier
+                                .padding(vertical = 8.dp)
                                 .fillMaxWidth()
                                 .background(VividOrange, RoundedCornerShape(25.dp))
                                 .height(45.dp),
@@ -278,7 +276,7 @@ fun PetPointResetPasswordUI() {
                                 Text(
                                     "Reset",
                                     color = Color.White,
-                                    fontSize = 20.sp,
+                                    fontSize = 25.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
