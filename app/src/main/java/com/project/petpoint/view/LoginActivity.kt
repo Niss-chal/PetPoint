@@ -230,7 +230,14 @@ fun PetPointLoginUI() {
                         Button(
                             onClick = {
                                 if (email == localEmail && password == localPassword) {
-                                    // TODO: navigate to dashboard
+
+                                    val intent = Intent(
+                                        context,
+                                        DashboardActivity :: class.java
+                                    )
+                                    context.startActivity(intent)
+                                    activity?.finish()
+
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = VividOrange),
