@@ -1,8 +1,10 @@
 package com.project.petpoint.view
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -85,6 +87,9 @@ fun SignupBody(){
 
     val context = LocalContext.current
     val activity = context as? Activity
+
+    val sharedPreference = context.getSharedPreferences("User", Context.MODE_PRIVATE)
+    val editor = sharedPreference.edit()
     Scaffold { padding ->
         Column (
             modifier = Modifier
@@ -247,7 +252,31 @@ fun SignupBody(){
                 Spacer(modifier = Modifier.height(20.dp)
                 )
                 Button(
-                    onClick = { },
+                    onClick = {
+                        if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                            Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT)
+                                .show()
+                            return@Button
+                        }
+                        val emailPattern = android.util.Patterns.EMAIL_ADDRESS
+                        if (!emailPattern.matcher(email).matches()) {
+                            Toast.makeText(context, "Enter a valid email", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (password.length < 8) {
+                            Toast.makeText(context, "Password must be at least 8 characters", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        editor.putString("name",name)
+                        editor.putString("email",email)
+                        editor.putString("password",password)
+                        editor.apply()
+
+
+                        Toast.makeText(context,"Registered Successfully", Toast.LENGTH_SHORT).show()
+                        (context as? Activity)?.finish()
+
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
