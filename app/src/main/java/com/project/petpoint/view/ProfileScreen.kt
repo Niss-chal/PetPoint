@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -65,6 +67,16 @@ fun ProfileScreen() {
             }
 
             Spacer(modifier = Modifier.height(40.dp))
+
+
+            Divider(
+                color = Color.Gray.copy(alpha = 0.3f),
+                thickness = 1.dp,
+                modifier = Modifier.padding(horizontal = 40.dp)
+            )
+
+            Spacer(modifier = Modifier.height(25.dp))
+
 
             ProfileMenuItem(icon = R.drawable.baseline_settings_24, text = "Settings")
             ProfileMenuItem(icon = R.drawable.baseline_history_24, text = "Order History")
