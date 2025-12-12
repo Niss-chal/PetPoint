@@ -125,6 +125,8 @@ fun ProfileMenuItem(icon: Int, text: String) {
         Text(text = text, fontSize = 18.sp, color = Color.Black)
     }
 }
+
+
 @Preview(showBackground = true)
 @Composable
 fun ProfileScreenPreview() {
