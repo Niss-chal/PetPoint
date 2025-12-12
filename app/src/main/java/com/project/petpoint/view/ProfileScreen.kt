@@ -4,8 +4,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -32,7 +34,9 @@ fun ProfileScreen() {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Azure)
-                .padding(top = 50.dp), // leave space for top bar
+                .padding(top = 50.dp)
+                .verticalScroll(rememberScrollState()),
+
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(20.dp))
@@ -65,6 +69,7 @@ fun ProfileScreen() {
             ProfileMenuItem(icon = R.drawable.baseline_settings_24, text = "Settings")
             ProfileMenuItem(icon = R.drawable.baseline_history_24, text = "Order History")
             ProfileMenuItem(icon = R.drawable.baseline_logout_24, text = "Log Out")
+
         }
 
 
