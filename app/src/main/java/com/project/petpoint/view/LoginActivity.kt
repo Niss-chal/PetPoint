@@ -64,7 +64,6 @@ fun PetPointLoginUI() {
     val localEmail = sharedPreferences.getString("email", "")
     val localPassword = sharedPreferences.getString("password", "")
 
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
