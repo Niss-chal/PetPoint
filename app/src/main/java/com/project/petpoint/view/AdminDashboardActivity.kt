@@ -55,10 +55,10 @@ fun AdminDashBody(){
     data class NavItem(val image: Int, val label: String)
 
     val listItems  = listOf(
-        NavItem(image = R.drawable.shoppingbag, label="Home"),
-        NavItem(image = R.drawable.veterinary, label="Vets Management"),
-        NavItem(image = R.drawable.lostandfound, label="Product Management"),
-        NavItem(image = R.drawable.userprofile, label="Lost and Found"),
+        NavItem(image = R.drawable.home, label="Home"),
+        NavItem(image = R.drawable.productsmanage, label="Products"),
+        NavItem(image = R.drawable.vetmanagement, label="Vets"),
+        NavItem(image = R.drawable.lostandfound, label="Lost and Found"),
     )
 
     var selectedIndex by remember{ mutableStateOf(0)}
