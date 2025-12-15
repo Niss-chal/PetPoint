@@ -1,18 +1,34 @@
 package com.project.petpoint.view
 
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,14 +36,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
+import com.project.petpoint.ui.theme.Teal
+import com.project.petpoint.view.ui.theme.Azure
+import com.project.petpoint.view.ui.theme.PetPointTheme
+
+class EditProfileActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            Editprofilebody()
+
+        }
+    }
+}
 
 @Composable
-fun EditProfileScreen() {
+fun Editprofilebody(){
+
 
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -38,17 +68,17 @@ fun EditProfileScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF0F6F8)),
+            .background(Azure),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(90.dp)
                 .background(
-                    color = Color(0xFF2E7A8C),
+                    Teal,
                     shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
                 ),
             contentAlignment = Alignment.Center
@@ -57,6 +87,7 @@ fun EditProfileScreen() {
         }
 
         Spacer(modifier = Modifier.height(20.dp))
+
 
 
         Image(
@@ -131,6 +162,7 @@ fun EditProfileScreen() {
 
 
             Spacer(modifier = Modifier.height(12.dp))
+
             Text(text = "Address", fontSize = 18.sp)
             OutlinedTextField(
                 value = address,
@@ -143,11 +175,28 @@ fun EditProfileScreen() {
                     unfocusedContainerColor = Color.White,
                     focusedContainerColor = Color.White)
             )
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Button(
+                onClick = {
+                    // TODO: Handle save action here
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                shape = RoundedCornerShape(25.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Teal, // teal color like top bar
+                    contentColor = Color.White
+                )
+            ) {
+                Text(
+                    text = "Save",
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(vertical = 6.dp)
+                )
+            }
         }
     }
-}
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    EditProfileScreen()
+
 }
