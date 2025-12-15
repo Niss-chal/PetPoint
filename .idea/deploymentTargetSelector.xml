@@ -2,12 +2,19 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="app">
+      <SelectionState runConfigName="DashboardActivity">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="SignupActivity (2)">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="AdminDashboardActivity">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="DashboardActivity (1)">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
+<<<<<<< HEAD
       <SelectionState runConfigName="DashboardActivity (5)">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
@@ -18,6 +25,9 @@
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="DashboardActivity (3)">
+=======
+      <SelectionState runConfigName="AdminDashboardActivity (1)">
+>>>>>>> 62dd5b08d09929a4db7a0a04e1f096f1f30544ca
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
