@@ -1,19 +1,167 @@
 package com.project.petpoint.view
 
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.project.petpoint.R
 import com.project.petpoint.view.ui.theme.Azure
+import com.project.petpoint.view.ui.theme.Green
+import com.project.petpoint.view.ui.theme.VividAzure
+import com.project.petpoint.view.ui.theme.VividOrange
+import com.project.petpoint.view.ui.theme.White
+import com.project.petpoint.view.ui.theme.Yellow
+
+class ProductManagementActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            ProductManagementScreen()
+        }
+    }
+}
 
 @Composable
-fun ProductManagement(){
+fun ProductManagementScreen() {
+
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .background(Azure)
+            .padding(16.dp)
     ) {
-        Text("Product management Screen")
+
+        // Title
+        Text(
+            text = "Product Management",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Add Product Button
+        Button(
+            onClick = { /* Navigate to Add Product */ },
+            colors = ButtonDefaults.buttonColors(containerColor = VividAzure),
+            shape = RoundedCornerShape(25.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(45.dp)
+        ) {
+            Text("+ Add Product", color = Color.White, fontSize = 16.sp)
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        LazyColumn {
+            item {
+                ProductCard(
+                    name = "Dog Collar",
+                    price = "Rs. 500",
+                    stock = 12,
+                    status = "In Stock",
+                    statusColor = Green
+                )
+            }
+
+            item {
+                ProductCard(
+                    name = "Cat Food Bowl",
+                    price = "Rs. 725",
+                    stock = 6,
+                    status = "Low Stock",
+                    statusColor = Yellow
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
     }
+}
+
+@Composable
+fun ProductCard(
+    name: String,
+    price: String,
+    stock: Int,
+    status: String,
+    statusColor: Color
+) {
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = White)
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(name, fontWeight = FontWeight.Bold)
+                Text(status, color = statusColor, fontSize = 12.sp)
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(price)
+                Text("Stock: $stock")
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    tint = Color.Gray,
+                    modifier = Modifier.clickable { }
+                )
+
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = Color.Red,
+                    modifier = Modifier.clickable { }
+                )
+            }
+        }
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun ProductPreview() {
+    ProductManagementScreen()
 }

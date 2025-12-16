@@ -64,7 +64,7 @@ fun PetPointLoginUI() {
     val localEmail = sharedPreferences.getString("email", "")
     val localPassword = sharedPreferences.getString("password", "")
 
-        LazyColumn(
+    LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Azure)
