@@ -77,7 +77,7 @@ fun CardItem(title: String, count: String, image: Painter) {
         modifier = Modifier
             .fillMaxWidth()
             .height(120.dp)
-            .background(Azure, shape = RoundedCornerShape(12.dp))
+            .background(PurpleGrey808, shape = RoundedCornerShape(12.dp))
             .padding(16.dp)
     ) {
         Row(
@@ -109,7 +109,7 @@ fun SimpleCard(title: String) {
         modifier = Modifier
             .fillMaxWidth()
             .height(120.dp)
-            .background(Azure, shape = RoundedCornerShape(12.dp))
+            .background(PurpleGrey808, shape = RoundedCornerShape(12.dp))
             .padding(16.dp),
         contentAlignment = Alignment.CenterStart
     ) {
