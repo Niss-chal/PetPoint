@@ -55,17 +55,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
-import com.project.petpoint.ui.theme.BlueWhite
-import com.project.petpoint.ui.theme.Peach
-import com.project.petpoint.ui.theme.Teal
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.GreyOrange
-import com.project.petpoint.view.ui.theme.PetPointTheme
-import com.project.petpoint.view.ui.theme.Purple80
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
 
@@ -80,8 +74,10 @@ class SignupActivity : ComponentActivity() {
 }
 
 @Composable
-fun SignupBody(){
+fun SignupBody() {
     var name by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var visibility by remember { mutableStateOf(false) }
@@ -92,82 +88,73 @@ fun SignupBody(){
     val sharedPreference = context.getSharedPreferences("User", Context.MODE_PRIVATE)
     val editor = sharedPreference.edit()
     Scaffold { padding ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(Azure),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(Azure)
         ) {
-
-            item {
-                Row(
-                    modifier = Modifier
-                        .padding(top = 10.dp, start = 15.dp, end = 15.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.paw),
-                        contentDescription = null,
-                        tint = VividAzure,
-                        modifier = Modifier.size(80.dp),
-                    )
-                }
-            }
-
-            item { Spacer(modifier = Modifier.height(10.dp)) }
-
-            item {
-                Text(
-                    "Welcome to",
-                    modifier = Modifier.fillMaxWidth(),
-                    style = TextStyle(
-                        textAlign = TextAlign.Center,
-                        fontSize = 24.sp
-                    )
-                )
-            }
-
-            item {
-                Text(
-                    "Pet Point",
-                    modifier = Modifier.fillMaxWidth(),
-                    style = TextStyle(
-                        textAlign = TextAlign.Center,
-                        fontSize = 34.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }
-
-            item { Spacer(modifier = Modifier.height(15.dp)) }
-
-            item {
-                Image(
-                    painter = painterResource(R.drawable.petpoint),
+            Row(
+                modifier = Modifier
+                    .padding(top = 10.dp, start = 15.dp, end = 15.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.paw),
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(130.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
+                    tint = VividAzure,
+                    modifier = Modifier.size(80.dp),
                 )
             }
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                "Welcome to",
+                modifier = Modifier.fillMaxWidth(),
+                style = TextStyle(
+                    textAlign = TextAlign.Center,
+                    fontSize = 24.sp
+                )
+            )
+            Text(
+                "Pet Point",
+                modifier = Modifier.fillMaxWidth(),
+                style = TextStyle(
+                    textAlign = TextAlign.Center,
+                    fontSize = 34.sp,
+                    fontWeight = FontWeight.Bold,
 
-            item { Spacer(modifier = Modifier.height(20.dp)) }
+                    )
+            )
+            Spacer(
+                modifier = Modifier.height(15.dp)
+            )
+            Image(
+                painter = painterResource(R.drawable.petpoint),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(130.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 20.dp)
+                    .background(
+                        color = VividAzure,
+                        shape = RoundedCornerShape(25.dp)
+                    )
+                    .padding(20.dp)
+            ) {
 
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .background(
-                            color = VividAzure,
-                            shape = RoundedCornerShape(25.dp)
-                        )
-                        .padding(20.dp)
-                ) {
+                item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -187,28 +174,10 @@ fun SignupBody(){
                             modifier = Modifier.size(30.dp)
                         )
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(15.dp))
-
-                    Text("Name", color = White, fontSize = 14.sp)
-                    OutlinedTextField(
-                        value = name,
-                        onValueChange = { name = it },
-                        placeholder = { Text("Enter your name") },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text
-                        ),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GreyOrange,
-                            unfocusedContainerColor = GreyOrange,
-                            focusedIndicatorColor = Blue,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        shape = RoundedCornerShape(25.dp)
-                    )
+                item { Spacer(modifier = Modifier.height(15.dp)) }
+                item {
                     Text("Email", color = White, fontSize = 14.sp)
                     OutlinedTextField(
                         value = email,
@@ -226,29 +195,14 @@ fun SignupBody(){
                             .padding(vertical = 8.dp),
                         shape = RoundedCornerShape(25.dp)
                     )
-                    Text("Password", color = White, fontSize = 14.sp)
+                }
+                item {
+                    Text("Name", color = White, fontSize = 14.sp)
                     OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        placeholder = { Text("Enter your password") },
-                        visualTransformation =
-                            if (visibility) VisualTransformation.None else PasswordVisualTransformation(),
-                        trailingIcon = {
-                            IconButton(onClick = {
-                                visibility = !visibility
-                            }) {
-                                Icon(
-                                    painter = if (visibility)
-                                        painterResource(R.drawable.baseline_visibility_off_24)
-                                    else
-                                        painterResource(R.drawable.baseline_visibility_24),
-                                    contentDescription = null
-                                )
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password
-                        ),
+                        value = name,
+                        onValueChange = { name = it },
+                        placeholder = { Text("Enter your name") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = GreyOrange,
                             unfocusedContainerColor = GreyOrange,
@@ -260,22 +214,107 @@ fun SignupBody(){
                             .padding(vertical = 8.dp),
                         shape = RoundedCornerShape(25.dp)
                     )
+                }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                item {
+                    Text("Address", color = White, fontSize = 14.sp)
+                    OutlinedTextField(
+                        value = address,
+                        onValueChange = { address = it },
+                        placeholder = { Text("Enter your Address") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = GreyOrange,
+                            unfocusedContainerColor = GreyOrange,
+                            focusedIndicatorColor = Blue,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        shape = RoundedCornerShape(25.dp)
+                    )
+                }
 
+                item {
+                    Text("Phone", color = White, fontSize = 14.sp)
+                    OutlinedTextField(
+                        value = phone,
+                        onValueChange = { phone = it },
+                        placeholder = { Text("Enter your Phone Number") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = GreyOrange,
+                            unfocusedContainerColor = GreyOrange,
+                            focusedIndicatorColor = Blue,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        shape = RoundedCornerShape(25.dp)
+                    )
+                }
+
+                item {
+                    Text("Password", color = White, fontSize = 14.sp)
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        placeholder = { Text("Enter your password") },
+                        visualTransformation =
+                            if (visibility) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { visibility = !visibility }) {
+                                Icon(
+                                    painter = if (visibility)
+                                        painterResource(R.drawable.baseline_visibility_off_24)
+                                    else
+                                        painterResource(R.drawable.baseline_visibility_24),
+                                    contentDescription = null
+                                )
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = GreyOrange,
+                            unfocusedContainerColor = GreyOrange,
+                            focusedIndicatorColor = Blue,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        shape = RoundedCornerShape(25.dp)
+                    )
+                }
+
+                item { Spacer(modifier = Modifier.height(20.dp)) }
+
+                item {
                     Button(
                         onClick = {
-                            if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                                Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                            if (name.isEmpty() || phone.isEmpty() || address.isEmpty()
+                                || email.isEmpty() || password.isEmpty()
+                            ) {
+                                Toast.makeText(
+                                    context,
+                                    "Please fill all fields",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                                 return@Button
                             }
-                            val emailPattern = android.util.Patterns.EMAIL_ADDRESS
-                            if (!emailPattern.matcher(email).matches()) {
-                                Toast.makeText(context, "Enter a valid email", Toast.LENGTH_SHORT).show()
+                            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                                Toast.makeText(context, "Enter a valid email", Toast.LENGTH_SHORT)
+                                    .show()
                                 return@Button
                             }
                             if (password.length < 8) {
-                                Toast.makeText(context, "Password must be at least 8 characters", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Password must be at least 8 characters",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                                 return@Button
                             }
 
@@ -284,40 +323,35 @@ fun SignupBody(){
                             editor.putString("password", password)
                             editor.apply()
 
-                            Toast.makeText(context, "Registered Successfully", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Registered Successfully", Toast.LENGTH_SHORT)
+                                .show()
                             activity?.finish()
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
                         shape = RoundedCornerShape(30.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = VividOrange
-                        )
+                        colors = ButtonDefaults.buttonColors(containerColor = VividOrange)
                     ) {
                         Text("Sign Up", fontSize = 18.sp, color = White)
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                item { Spacer(modifier = Modifier.height(10.dp)) }
 
+                item {
                     Text(
                         buildAnnotatedString {
                             append("Already have an account? ")
-                            withStyle(
-                                style = SpanStyle(
-                                    color = White,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            ) {
+                            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                                 append("Login")
                             }
                         },
                         modifier = Modifier
+                            .fillMaxWidth()
                             .clickable {
-                                val intent = Intent(context, LoginActivity::class.java)
-                                context.startActivity(intent)
-                            }
-                            .fillMaxWidth(),
+                                context.startActivity(Intent(context, LoginActivity::class.java))
+                            },
                         color = White,
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center
@@ -326,10 +360,4 @@ fun SignupBody(){
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SignupPrev() {
-        SignupBody()
 }

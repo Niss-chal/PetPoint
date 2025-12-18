@@ -16,25 +16,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.project.petpoint.R
-import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.PetPointTheme
 import com.project.petpoint.view.ui.theme.VividAzure
 
@@ -43,32 +38,30 @@ class OrderHistoryActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            OrderHistoryBody()
+                OrderHistoryBody(
+                    orders = emptyList(),
+                    onClearHistory = {
+                        // TODO: Clear orders from database
+                    }
+                )
+            }
         }
     }
-}
 
-data class OrderItem(
-    val image: Int,
-    val title: String,
-    val quantity: Int,
-    val date: String
-)
-
-val orderList = listOf(
-    OrderItem(R.drawable.dogbone, "Dog Bone pack", 3, "Yesterday"),
-    OrderItem(R.drawable.cathouse, "Cat House", 1, "Nov29,2025"),
-    OrderItem(R.drawable.fish, "Fish Aquarium", 1, "Nov02,2025"),
-    OrderItem(R.drawable.birdcage, "Bird cage", 1, "Oct29,2025"),
-    OrderItem(R.drawable.catfood, "Cat Food", 3, "Oct20,2025"),
-    OrderItem(R.drawable.belt, "Dog Belt", 1, "Oct10,2025"),
+data class OrderModel(
+    val imageUrl: String = "",
+    val title: String = "",
+    val quantity: Int = 0,
+    val date: String = "",
 )
 
 @Composable
-fun OrderHistoryBody() {
-    val showOrders = remember { mutableStateOf(orderList) }
-
+fun OrderHistoryBody(
+    orders: List<OrderModel>,
+    onClearHistory: () -> Unit
+) {
     Scaffold { padding ->
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -78,7 +71,6 @@ fun OrderHistoryBody() {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
-
             item {
                 Box(
                     modifier = Modifier
@@ -86,12 +78,15 @@ fun OrderHistoryBody() {
                         .height(90.dp)
                         .background(
                             VividAzure,
-                            RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
+                            RoundedCornerShape(
+                                bottomStart = 20.dp,
+                                bottomEnd = 20.dp
+                            )
                         ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "Order History",
+                        text = "Order History",
                         color = Color.White,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold
@@ -100,29 +95,24 @@ fun OrderHistoryBody() {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    TextButton(onClick = {
-                        showOrders.value = emptyList()
-                    }) {
+                    TextButton(onClick = onClearHistory) {
                         Text("Clear History", color = Color.Gray)
                     }
                 }
 
-                Divider(color = Color.Gray.copy(alpha = 0.4f), thickness = 1.dp)
-
+                Divider(color = Color.Gray.copy(alpha = 0.4f))
                 Spacer(modifier = Modifier.height(6.dp))
             }
 
-
-            if (showOrders.value.isNotEmpty()) {
+            if (orders.isNotEmpty()) {
 
                 item {
                     Text(
-                        "History",
+                        text = "History",
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
                         fontSize = 16.sp,
@@ -132,8 +122,8 @@ fun OrderHistoryBody() {
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                items(showOrders.value.size) { index ->
-                    OrderItemCard(showOrders.value[index])
+                items(orders) { order ->
+                    OrderItemCard(order)
                 }
 
             } else {
@@ -146,7 +136,7 @@ fun OrderHistoryBody() {
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            "No order history available",
+                            text = "No order history available",
                             fontSize = 16.sp,
                             color = Color.Gray
                         )
@@ -158,7 +148,7 @@ fun OrderHistoryBody() {
 }
 
 @Composable
-fun OrderItemCard(item: OrderItem) {
+fun OrderItemCard(item: OrderModel) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -167,18 +157,32 @@ fun OrderItemCard(item: OrderItem) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
 
-            androidx.compose.foundation.Image(
-                painter = painterResource(id = item.image),
+            // 🔹 Image from URL (enable later)
+            /*
+            AsyncImage(
+                model = item.imageUrl,
                 contentDescription = item.title,
                 modifier = Modifier.height(60.dp)
             )
+            */
 
             Spacer(modifier = Modifier.padding(10.dp))
 
             Column {
-                Text(item.title, fontWeight = FontWeight.Bold)
-                Text("Qty: ${item.quantity}", color = Color.DarkGray, fontSize = 13.sp)
-                Text(item.date, color = Color.Gray, fontSize = 12.sp)
+                Text(
+                    text = item.title,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Qty: ${item.quantity}",
+                    fontSize = 13.sp,
+                    color = Color.DarkGray
+                )
+                Text(
+                    text = item.date,
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
             }
         }
     }
