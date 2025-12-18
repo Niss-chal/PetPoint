@@ -18,6 +18,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,7 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.project.petpoint.R
-import com.project.petpoint.ui.theme.BlueWhite
+import com.project.petpoint.ui.theme.White
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.PetPointTheme
 import com.project.petpoint.view.ui.theme.VividAzure
@@ -65,11 +66,11 @@ fun AdminDashBody(){
 
     Scaffold(
         topBar  = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 colors  = TopAppBarDefaults.topAppBarColors(
-                    titleContentColor = BlueWhite,
-                    actionIconContentColor = BlueWhite,
-                    navigationIconContentColor = BlueWhite,
+                    titleContentColor = White,
+                    actionIconContentColor = White,
+                    navigationIconContentColor = White,
                     containerColor = VividAzure
                 ),
                 navigationIcon = {
