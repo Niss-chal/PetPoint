@@ -126,7 +126,7 @@ fun ProductCard(
                 Text(status, color = statusColor, fontSize = 12.sp)
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -138,14 +138,24 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            Row {
+                Divider(
+                    color = Color.Gray.copy(alpha = 0.7f),
+                    thickness = 1.dp,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             Row(
-                horizontalArrangement = Arrangement.spacedBy(20.dp)
+                horizontalArrangement = Arrangement.spacedBy(270.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Edit",
                     tint = Color.Gray,
-                    modifier = Modifier.clickable { }
+                    modifier = Modifier.clickable { },
+
                 )
 
                 Icon(
