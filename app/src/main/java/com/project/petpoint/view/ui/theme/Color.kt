@@ -25,3 +25,11 @@ val Green = Color(0xFF2E7D32)
 val Yellow = Color(0xFFF57C00)
 
 val White = Color(0xFFEFF3F6)
+
+val Blue = Color(0xFF2563EB)
+
+val DarkOrange = Color(0xFFB45309)
+
+val BlanchedAlmond = Color(0xFFFFF3CD)
+
+val LightPink = Color(0xFFFEE2E2)
