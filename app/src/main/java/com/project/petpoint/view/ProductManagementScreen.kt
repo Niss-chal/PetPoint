@@ -58,7 +58,14 @@ fun ProductManagementScreen() {
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(30.dp))
+        Row {
+            Divider(
+                color = Color.Gray.copy(alpha = 0.7f),
+                thickness = 1.dp,
+            )
+        }
+        Spacer(modifier = Modifier.height(30.dp))
 
         // Add Product Button
         Button(
@@ -72,7 +79,7 @@ fun ProductManagementScreen() {
             Text("+ Add Product", color = Color.White, fontSize = 16.sp)
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
         LazyColumn {
             item {
@@ -148,23 +155,48 @@ fun ProductCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(270.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit",
-                    tint = Color.Gray,
-                    modifier = Modifier.clickable { },
 
-                )
+                // Edit
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        tint = Color.Black
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Edit",
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+                }
 
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    tint = Color.Red,
-                    modifier = Modifier.clickable { }
-                )
+                // Delete
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = Color.Red
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Delete",
+                        fontSize = 14.sp,
+                        color = Color.Red
+                    )
+                }
             }
+
         }
     }
 }
