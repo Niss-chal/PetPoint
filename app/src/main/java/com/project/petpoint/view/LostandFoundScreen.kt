@@ -9,11 +9,11 @@ import androidx.compose.ui.Modifier
 import com.project.petpoint.view.ui.theme.Azure
 
 @Composable
-fun VetManagement(){
+fun LostandFoundScreen(){
     Column(
         modifier = Modifier.fillMaxSize()
             .background(Azure)
     ) {
-        Text("Vet management Screen")
+        Text("LostandFoundScreen")
     }
 }
