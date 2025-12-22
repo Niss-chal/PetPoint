@@ -12,9 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PetPoint">
         <activity
-            android:name=".view.AdminDashboardActivity"
+            android:name=".view.OrderHistoryActivity"
             android:exported="true"
-            android:label="@string/title_activity_admin_dashboard"
+            android:label="@string/title_activity_order_history"
             android:theme="@style/Theme.PetPoint">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
