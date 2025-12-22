@@ -1,6 +1,7 @@
 package com.project.petpoint.view.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.colorspace.WhitePoint
 
 
 val Purple80 = Color(0xFFD0BCFF)
@@ -33,3 +34,7 @@ val DarkOrange = Color(0xFFB45309)
 val BlanchedAlmond = Color(0xFFFFF3CD)
 
 val LightPink = Color(0xFFFEE2E2)
+val greyyy = Color(0xFFD9D6D6)
+
+val PurpleGrey808 = Color(0xFFD2CDE0)
+
