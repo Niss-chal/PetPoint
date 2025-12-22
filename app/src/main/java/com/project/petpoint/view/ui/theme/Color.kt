@@ -20,6 +20,9 @@ val VividOrange = Color(0xFFFE854F)
 
 val Black = Color(0xFF000000)
 val Orange = Color(0xFFBF592B)
+val Green = Color(0xFF2E7D32)
+val Yellow = Color(0xFFF57C00)
+val White = Color(0xFFEFF3F6)
 
 val Green = Color(0xFF2E7D32)
 
