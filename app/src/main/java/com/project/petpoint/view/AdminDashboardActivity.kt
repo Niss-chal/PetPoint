@@ -1,6 +1,5 @@
 package com.project.petpoint.view
 
-import android.R.attr.onClick
 import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,18 +8,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -34,20 +29,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.project.petpoint.R
 import com.project.petpoint.ui.theme.White
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.PetPointTheme
 import com.project.petpoint.view.ui.theme.VividAzure
-import com.project.petpoint.view.ui.theme.VividOrange
 
-class DashboardActivity : ComponentActivity() {
+class AdminDashboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            DashboardBody()
+            AdminDashBody()
 
         }
     }
@@ -55,24 +48,25 @@ class DashboardActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardBody() {
+fun AdminDashBody(){
+
     val context = LocalContext.current
     val activity = context as Activity
 
     data class NavItem(val image: Int, val label: String)
 
     val listItems  = listOf(
-        NavItem(image = R.drawable.shoppingbag, label="Shop"),
-        NavItem(image = R.drawable.veterinary, label="Vets"),
+        NavItem(image = R.drawable.home, label="Home"),
+        NavItem(image = R.drawable.productsmanage, label="Products"),
+        NavItem(image = R.drawable.vetmanagement, label="Vets"),
         NavItem(image = R.drawable.lostandfound, label="Lost and Found"),
-        NavItem(image = R.drawable.userprofile, label="Profile"),
     )
 
     var selectedIndex by remember{ mutableStateOf(0)}
 
     Scaffold(
         topBar  = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 colors  = TopAppBarDefaults.topAppBarColors(
                     titleContentColor = White,
                     actionIconContentColor = White,
@@ -84,7 +78,7 @@ fun DashboardBody() {
                         Image(
                             painter = painterResource(R.drawable.dashboardlogo),
                             contentDescription = null,
-                                                    )
+                        )
                     }
                 },
                 title ={ IconButton(onClick = {
@@ -97,26 +91,11 @@ fun DashboardBody() {
                     IconButton(onClick = {}) {
 
                         Icon(
-                            painter  =  painterResource(R.drawable.baseline_notifications_24),
+                            painter  =  painterResource(R.drawable.userprofile),
                             contentDescription = null
                         )
 
 
-                    }
-
-                    IconButton(onClick = {}) {
-                        Icon(
-                            painter  =  painterResource(R.drawable.baseline_search_24),
-                            contentDescription = null
-                        )
-                    }
-
-
-                    IconButton(onClick = {}) {
-                        Icon(
-                            painter  =  painterResource(R.drawable.baseline_shopping_cart_24),
-                            contentDescription = null
-                        )
                     }
                 }
             )
@@ -143,7 +122,7 @@ fun DashboardBody() {
             }
         }
     ) {
-        padding ->
+            padding ->
         Column(
             modifier=Modifier
                 .fillMaxSize()
@@ -151,19 +130,15 @@ fun DashboardBody() {
                 .background(Azure)
         ) {
             when(selectedIndex){
-                0-> ShopScreen()
-                1-> VetScreen()
-                2-> LostandFoundScreen()
-                3-> ProfileScreen()
-                else -> ShopScreen()
+                0-> HomeScreen()
+                1-> ProductManagement()
+                2-> VetManagement()
+                3-> LostandFoundManagement()
+                else -> HomeScreen()
             }
         }
     }
-}
 
 
-@Preview
-@Composable
-fun DashboardPreview(){
-    DashboardBody()
+
 }
