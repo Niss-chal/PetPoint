@@ -153,7 +153,7 @@ fun DashboardBody() {
             when(selectedIndex){
                 0-> ShopScreen()
                 1-> VetScreen()
-                2-> LostandFoundScreen()
+                2-> LostAndFoundScreen()
                 3-> ProfileScreen()
                 else -> ShopScreen()
             }

@@ -40,7 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
-import com.project.petpoint.ui.theme.Teal
+import com.project.petpoint.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.PetPointTheme
 
@@ -78,7 +78,7 @@ fun Editprofilebody(){
                 .fillMaxWidth()
                 .height(90.dp)
                 .background(
-                    Teal,
+                    VividAzure,
                     shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
                 ),
             contentAlignment = Alignment.Center
@@ -186,7 +186,7 @@ fun Editprofilebody(){
                     .padding(horizontal = 20.dp),
                 shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Teal, // teal color like top bar
+                    containerColor = VividAzure ,
                     contentColor = Color.White
                 )
             ) {
