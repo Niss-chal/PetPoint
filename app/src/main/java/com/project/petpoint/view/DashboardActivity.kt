@@ -36,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.project.petpoint.R
+import com.project.petpoint.ui.theme.White
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.PetPointTheme
 import com.project.petpoint.view.ui.theme.VividAzure
@@ -73,9 +74,9 @@ fun DashboardBody() {
         topBar  = {
             CenterAlignedTopAppBar(
                 colors  = TopAppBarDefaults.topAppBarColors(
-                    titleContentColor = Azure,
-                    actionIconContentColor = Azure,
-                    navigationIconContentColor = Azure,
+                    titleContentColor = White,
+                    actionIconContentColor = White,
+                    navigationIconContentColor = White,
                     containerColor = VividAzure
                 ),
                 navigationIcon = {
@@ -152,7 +153,7 @@ fun DashboardBody() {
             when(selectedIndex){
                 0-> ShopScreen()
                 1-> VetScreen()
-                2-> LostAndFoundScreen()
+                2-> LostandFoundScreen()
                 3-> ProfileScreen()
                 else -> ShopScreen()
             }

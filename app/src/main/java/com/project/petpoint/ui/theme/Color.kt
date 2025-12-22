@@ -1,7 +1,7 @@
 package com.project.petpoint.ui.theme
 
-import android.bluetooth.BluetoothGatt
 import androidx.compose.ui.graphics.Color
+
 
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
@@ -13,19 +13,18 @@ val Pink40 = Color(0xFF7D5260)
 
 val Azure = Color(0xFFE7F0F1)
 
-val BlackGreen = Color(0xFF616D69)
-
 val VividAzure = Color(0xFF0F7E8F)
 
-val Peach = Color(0xFFEDBEA4)
+val GreyOrange = Color(0xFFEDBEA4)
+
+val VividOrange = Color(0xFFFE854F)
+
+val Black = Color(0xFF000000)
 
 val Orange = Color(0xFFBF592B)
 
-val Blue = Color(0xFF2563EB)
+val Green = Color(0xFF2E7D32)
 
-val DarkOrange = Color(0xFFB45309)
+val Yellow = Color(0xFFF57C00)
 
-val BlanchedAlmond = Color(0xFFFFF3CD)
-
-val LightPink = Color(0xFFFEE2E2)
-
+val White = Color(0xFFEFF3F6)
