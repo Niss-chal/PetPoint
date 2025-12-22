@@ -38,8 +38,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
-import com.project.petpoint.ui.theme.BlueWhite
-import com.project.petpoint.ui.theme.Teal
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange

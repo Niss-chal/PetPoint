@@ -36,7 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.project.petpoint.R
-import com.project.petpoint.ui.theme.BlueWhite
+import com.project.petpoint.ui.theme.White
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.PetPointTheme
 import com.project.petpoint.view.ui.theme.VividAzure
@@ -74,9 +74,9 @@ fun DashboardBody() {
         topBar  = {
             CenterAlignedTopAppBar(
                 colors  = TopAppBarDefaults.topAppBarColors(
-                    titleContentColor = BlueWhite,
-                    actionIconContentColor = BlueWhite,
-                    navigationIconContentColor = BlueWhite,
+                    titleContentColor = White,
+                    actionIconContentColor = White,
+                    navigationIconContentColor = White,
                     containerColor = VividAzure
                 ),
                 navigationIcon = {

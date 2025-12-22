@@ -108,21 +108,12 @@ fun ProfileScreen() {
 
 
 
+
+
             }
 
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .background(VividAzure)
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
 
-        ) {
-            Text(text = "Profile", fontSize = 22.sp, color = Color.White,)
-        }
     }
 }
 
