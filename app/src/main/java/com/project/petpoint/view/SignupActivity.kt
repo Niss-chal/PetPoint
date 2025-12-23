@@ -58,10 +58,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
+import com.project.petpoint.repository.UserRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.GreyOrange
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
+import com.project.petpoint.viewmodel.UserViewModel
 
 class SignupActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,6 +77,7 @@ class SignupActivity : ComponentActivity() {
 
 @Composable
 fun SignupBody() {
+    val userViewModel = remember { UserViewModel(UserRepoImpl()) }
     var name by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
