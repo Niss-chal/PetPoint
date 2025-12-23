@@ -11,21 +11,5 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
-val Azure = Color(0xFFE7F0F1)
 
-val BlackGreen = Color(0xFF616D69)
-
-val VividAzure = Color(0xFF0F7E8F)
-
-val Peach = Color(0xFFEDBEA4)
-
-val Orange = Color(0xFFBF592B)
-
-val Blue = Color(0xFF2563EB)
-
-val DarkOrange = Color(0xFFB45309)
-
-val BlanchedAlmond = Color(0xFFFFF3CD)
-
-val LightPink = Color(0xFFFEE2E2)
 
