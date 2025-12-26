@@ -1,8 +1,12 @@
 package com.project.petpoint.view
 
+import android.app.Activity
+import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,9 +17,14 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -23,24 +32,51 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
+import com.project.petpoint.model.ProductModel
+import com.project.petpoint.repository.ProductRepoImpl
+import com.project.petpoint.utils.ImageUtils
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.Green
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
 import com.project.petpoint.view.ui.theme.White
 import com.project.petpoint.view.ui.theme.Yellow
+import com.project.petpoint.viewmodel.ProductViewModel
 
-class ProductManagementActivity : ComponentActivity() {
+class AddProductActivity : ComponentActivity() {
+    lateinit var imageUtils: ImageUtils
+    var selectedImageUri by mutableStateOf<Uri?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        imageUtils = ImageUtils(this, this)
+        imageUtils.registerLaunchers { uri ->
+            selectedImageUri = uri
+        }
         setContent {
-            ProductManagementScreen()
+            ProductManagementScreen(
+                selectedImageUri = selectedImageUri,
+                onPickImage = { imageUtils.launchImagePicker() }
+            )
         }
     }
 }
 
 @Composable
-fun ProductManagementScreen() {
+fun ProductManagementScreen(
+    selectedImageUri: Uri?,
+    onPickImage: () -> Unit
+) {
+    val productRepo = remember { ProductRepoImpl() }
+    val productViewModel = remember { ProductViewModel(productRepo) }
+
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    var name by remember { mutableStateOf("") }
+    var price by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -69,7 +105,23 @@ fun ProductManagementScreen() {
 
         // Add Product Button
         Button(
-            onClick = { /* Navigate to Add Product */ },
+            onClick = {
+                val model = ProductModel(
+                    "",
+                    name,
+                    price.toDouble(),
+                    description
+                )
+                productViewModel.addProduct(model){
+                        success,message ->
+                    if(success){
+                        Toast.makeText(context,message,Toast.LENGTH_SHORT).show()
+                        activity?.finish()
+                    }else{
+                        Toast.makeText(context,message,Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
             colors = ButtonDefaults.buttonColors(containerColor = VividAzure),
             shape = RoundedCornerShape(25.dp),
             modifier = Modifier
@@ -85,7 +137,7 @@ fun ProductManagementScreen() {
             item {
                 ProductCard(
                     name = "Dog Collar",
-                    price = "Rs. 500",
+                    price = 500.0,
                     stock = 12,
                     status = "In Stock",
                     statusColor = Green
@@ -95,7 +147,7 @@ fun ProductManagementScreen() {
             item {
                 ProductCard(
                     name = "Cat Food Bowl",
-                    price = "Rs. 725",
+                    price = 725.0,
                     stock = 6,
                     status = "Low Stock",
                     statusColor = Yellow
@@ -111,7 +163,7 @@ fun ProductManagementScreen() {
 @Composable
 fun ProductCard(
     name: String,
-    price: String,
+    price: Double,
     stock: Int,
     status: String,
     statusColor: Color
@@ -139,7 +191,7 @@ fun ProductCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(price)
+                price
                 Text("Stock: $stock")
             }
 
@@ -199,11 +251,4 @@ fun ProductCard(
 
         }
     }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun ProductPreview() {
-    ProductManagementScreen()
 }

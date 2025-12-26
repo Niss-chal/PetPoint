@@ -131,7 +131,10 @@ fun AdminDashBody(){
         ) {
             when(selectedIndex){
                 0-> HomeScreen()
-                1-> ProductManagementScreen()
+                1-> ProductManagementScreen(
+                    null,
+                    {}
+                )
                 2-> VetManagement()
                 3-> LostandFoundManagement()
                 else -> HomeScreen()
