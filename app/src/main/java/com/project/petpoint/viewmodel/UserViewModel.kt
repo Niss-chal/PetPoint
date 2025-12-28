@@ -3,6 +3,10 @@ package com.project.petpoint.viewmodel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.project.petpoint.model.UserModel
 import com.project.petpoint.repository.UserRepo
 
@@ -13,6 +17,32 @@ class UserViewModel(val repo: UserRepo) : ViewModel() {
     ){
         repo.login(email,password,callback)
     }
+
+    fun checkUserRole(
+        userId: String,
+        callback: (String?) -> Unit
+    ) {
+        val db = FirebaseDatabase.getInstance()
+
+        db.getReference("users").child(userId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        val role =snapshot.child("role").getValue(String::class.java)
+                        callback(role?: "buyer")
+
+                    } else{
+                        callback(null)
+                    }
+                    }
+                override fun onCancelled(error: DatabaseError) {
+                    callback(null)
+                }
+            })
+
+    }
+
+
 
     fun updateProfile(
         userId: String, model: UserModel,
