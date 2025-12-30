@@ -1,6 +1,8 @@
 package com.project.petpoint.view
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -43,33 +45,10 @@ import com.project.petpoint.view.ui.theme.White
 import com.project.petpoint.view.ui.theme.Yellow
 import com.project.petpoint.viewmodel.ProductViewModel
 
-class AddProductActivity : ComponentActivity() {
-    lateinit var imageUtils: ImageUtils
-    var selectedImageUri by mutableStateOf<Uri?>(null)
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        imageUtils = ImageUtils(this, this)
-        imageUtils.registerLaunchers { uri ->
-            selectedImageUri = uri
-        }
-        setContent {
-            ProductManagementScreen(
-                selectedImageUri = selectedImageUri,
-                onPickImage = { imageUtils.launchImagePicker() }
-            )
-        }
-    }
-}
 
 @Composable
-fun ProductManagementScreen(
-    selectedImageUri: Uri?,
-    onPickImage: () -> Unit
-) {
-    val productRepo = remember { ProductRepoImpl() }
-    val productViewModel = remember { ProductViewModel(productRepo) }
+fun ProductManagementScreen() {
+    val productViewModel = remember { ProductViewModel(ProductRepoImpl()) }
 
     val context = LocalContext.current
     val activity = context as? Activity
@@ -77,6 +56,11 @@ fun ProductManagementScreen(
     var name by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
+
+//    val allProducts = productViewModel.allProducts.observeAsState(initial = emptyList())
+//
+//    val product = productViewModel.products.observeAsState(initial = null)
 
     Column(
         modifier = Modifier
@@ -106,21 +90,7 @@ fun ProductManagementScreen(
         // Add Product Button
         Button(
             onClick = {
-                val model = ProductModel(
-                    "",
-                    name,
-                    price.toDouble(),
-                    description
-                    )
-                productViewModel.addProduct(model){
-                    success,message ->
-                    if(success){
-                        Toast.makeText(context,message,Toast.LENGTH_SHORT).show()
-                        activity?.finish()
-                    }else{
-                        Toast.makeText(context,message,Toast.LENGTH_SHORT).show()
-                    }
-                }
+                context.startActivity(Intent(context, AddProductActivity::class.java))
             },
             colors = ButtonDefaults.buttonColors(containerColor = VividAzure),
             shape = RoundedCornerShape(25.dp),
@@ -133,27 +103,17 @@ fun ProductManagementScreen(
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        LazyColumn {
-            item {
-                ProductCard(
-                    name = "",
-                    price = 500.0,
-                    stock = 12,
-                    status = "",
-                    statusColor = Green
-                )
-            }
-
-            item {
-                ProductCard(
-                    name = "",
-                    price = 725.0,
-                    stock = 6,
-                    status = "",
-                    statusColor = Yellow
-                )
-            }
-        }
+//        LazyColumn {
+//            items(allProducts.value!!.size){
+//                ProductCard(
+//                    name = "",
+//                    price = 500.0,
+//                    stock = 12,
+//                    status = "",
+//                    statusColor = Green
+//                )
+//            }
+//        }
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -257,8 +217,5 @@ fun ProductCard(
 @Composable
 @Preview
 fun ProductPreview(){
-    ProductManagementScreen(
-        null,
-        {}
-    )
+    ProductManagementScreen()
 }

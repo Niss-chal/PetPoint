@@ -247,7 +247,7 @@ fun PetPointLoginUI() {
                                                             "admin" -> {
                                                                 Toast.makeText(
                                                                     context,
-                                                                    "Welcome Admin!",
+                                                                    "Welcome!",
                                                                     Toast.LENGTH_SHORT
                                                                 ).show()
                                                                 context.startActivity(
