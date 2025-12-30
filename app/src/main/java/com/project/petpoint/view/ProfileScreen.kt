@@ -1,5 +1,10 @@
 package com.project.petpoint.view
 
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,8 +35,21 @@ import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
 
+class ProfileActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            ProfileScreen()
+        }
+    }
+}
+
 @Composable
 fun ProfileScreen() {
+
+    val context = LocalContext.current
+
     Box(modifier = Modifier.fillMaxSize()) {
 
             LazyColumn (
@@ -68,7 +87,8 @@ fun ProfileScreen() {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Button(
-                    onClick = { /* Navigate to Edit Profile */ },
+                    onClick = { val intent = Intent(context, EditProfileActivity::class.java)
+                        context.startActivity(intent) },
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = VividAzure),
                     modifier = Modifier.width(160.dp)

@@ -1,4 +1,4 @@
-package com.project.petpoint.view
+ package com.project.petpoint.view
 
 import android.app.Activity
 import android.content.Context
@@ -311,6 +311,13 @@ fun SignupBody() {
                                     userViewModel.addUserToDatabase(userId,model){
                                         success, message ->
                                         if (success){
+                                            val editor = sharedPreference.edit()
+                                            editor.putString("userId", userId)
+                                            editor.putString("email", email)
+                                            editor.putString("name", name)
+                                            editor.putString("address", address)
+                                            editor.putString("phone", phone)
+                                            editor.apply()
                                             activity?.finish()
                                             Toast.makeText(context,message, Toast.LENGTH_SHORT).show()
                                         }else{
