@@ -6,7 +6,7 @@ data class UserModel(
     val address: String = "",
     val email: String = "",
     val phonenumber: String = "",
-
+    val role: String = "buyer"
 ){
     fun toMap() : Map<String,Any?>{
         return mapOf(

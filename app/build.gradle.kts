@@ -40,6 +40,11 @@ android {
     buildFeatures {
         compose = true
     }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
 }
 
 dependencies {
