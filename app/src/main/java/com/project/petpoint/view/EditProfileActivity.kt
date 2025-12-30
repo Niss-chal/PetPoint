@@ -1,5 +1,6 @@
 package com.project.petpoint.view
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,15 +35,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
+import com.project.petpoint.repository.UserRepoImpl
 import com.project.petpoint.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.PetPointTheme
+import com.project.petpoint.viewmodel.UserViewModel
+
 
 class EditProfileActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,11 +64,16 @@ class EditProfileActivity : ComponentActivity() {
 fun Editprofilebody(){
 
 
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
+    val userViewModel = remember { UserViewModel(UserRepoImpl()) }
+
+
+    var name by remember { mutableStateOf(sharedPref.getString("name", "") ?: "") }
+    var email by remember { mutableStateOf(sharedPref.getString("email", "") ?: "") }
+    var phone by remember { mutableStateOf(sharedPref.getString("phone", "") ?: "") }
+    var address by remember { mutableStateOf(sharedPref.getString("address", "") ?: "") }
+
 
     Column(
         modifier = Modifier
@@ -179,8 +189,14 @@ fun Editprofilebody(){
 
             Button(
                 onClick = {
-                    // TODO: Handle save action here
-                },
+                    val editor = sharedPref.edit()
+                    editor.putString("name", name)
+                    editor.putString("email", email)
+                    editor.putString("phone", phone)
+                    editor.putString("address", address)
+                    editor.apply()
+                }
+                ,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
