@@ -2,6 +2,7 @@ package com.project.petpoint.view
 
 import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -42,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
+import com.project.petpoint.model.UserModel
 import com.project.petpoint.repository.UserRepoImpl
 import com.project.petpoint.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.Azure
@@ -68,6 +70,7 @@ fun Editprofilebody(){
     val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
     val userViewModel = remember { UserViewModel(UserRepoImpl()) }
 
+    val userId = sharedPref.getString("userId", null)
 
     var name by remember { mutableStateOf(sharedPref.getString("name", "") ?: "") }
     var email by remember { mutableStateOf(sharedPref.getString("email", "") ?: "") }
@@ -189,13 +192,31 @@ fun Editprofilebody(){
 
             Button(
                 onClick = {
+
+                    // 1️ Update LOCAL data
                     val editor = sharedPref.edit()
                     editor.putString("name", name)
                     editor.putString("email", email)
                     editor.putString("phone", phone)
                     editor.putString("address", address)
                     editor.apply()
+
+                    // 2️ Update DATABASE data
+                    if (userId != null) {
+                        val updatedUser = UserModel(
+                            userId = userId,
+                            name = name,
+                            email = email,
+                            address = address,
+                            phonenumber = phone
+                        )
+
+                        userViewModel.addUserToDatabase(userId, updatedUser) { success, message ->
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
+
                 ,
                 modifier = Modifier
                     .fillMaxWidth()
