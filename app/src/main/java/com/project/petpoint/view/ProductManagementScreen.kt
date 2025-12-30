@@ -242,6 +242,7 @@ fun ProductCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
+                        
                         text = "Delete",
                         fontSize = 14.sp,
                         color = Color.Red
