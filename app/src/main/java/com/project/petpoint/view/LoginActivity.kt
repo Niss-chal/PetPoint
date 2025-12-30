@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -35,11 +36,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
+import com.project.petpoint.repository.UserRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.GreyOrange
 import com.project.petpoint.view.ui.theme.Orange
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
+import com.project.petpoint.viewmodel.UserViewModel
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +56,7 @@ class LoginActivity : ComponentActivity() {
 @Composable
 fun PetPointLoginUI() {
 
+    var userViewModel = remember { UserViewModel(UserRepoImpl()) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var visibility by remember { mutableStateOf(false) }
@@ -232,15 +236,62 @@ fun PetPointLoginUI() {
 
                             Button(
                                 onClick = {
-                                    if (email == localEmail && password == localPassword) {
+                                    if (email.isNotBlank() && password.isNotBlank()) {
 
-                                        val intent = Intent(
+                                        userViewModel.login(email, password) { success, message ->
+                                            if (success) {
+                                                val userId = userViewModel.getCurrentUser()?.uid
+                                                if (userId != null) {
+                                                    userViewModel.checkUserRole(userId) { role ->
+                                                        when (role) {
+                                                            "admin" -> {
+                                                                Toast.makeText(
+                                                                    context,
+                                                                    "Welcome Admin!",
+                                                                    Toast.LENGTH_SHORT
+                                                                ).show()
+                                                                context.startActivity(
+                                                                    Intent(context, AdminDashboardActivity::class.java)
+                                                                )
+                                                                activity?.finish()
+                                                            }
+                                                            "buyer" -> {
+                                                                Toast.makeText(
+                                                                    context,
+                                                                    "Welcome!",
+                                                                    Toast.LENGTH_SHORT
+                                                                ).show()
+                                                                context.startActivity(
+                                                                    Intent(context, DashboardActivity::class.java)
+                                                                )
+                                                                activity?.finish()
+                                                            }
+                                                            else -> {
+                                                                Toast.makeText(
+                                                                    context,
+                                                                    "User role not found",
+                                                                    Toast.LENGTH_SHORT
+                                                                ).show()
+                                                            }
+                                                        }
+                                                    }
+                                                } else {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "User ID not found",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            } else {
+                                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    } else {
+                                        Toast.makeText(
                                             context,
-                                            DashboardActivity :: class.java
-                                        )
-                                        context.startActivity(intent)
-                                        activity?.finish()
-
+                                            "Please enter email and password",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = VividOrange),

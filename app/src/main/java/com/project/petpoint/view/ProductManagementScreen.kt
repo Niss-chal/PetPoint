@@ -111,9 +111,9 @@ fun ProductManagementScreen(
                     name,
                     price.toDouble(),
                     description
-                )
+                    )
                 productViewModel.addProduct(model){
-                        success,message ->
+                    success,message ->
                     if(success){
                         Toast.makeText(context,message,Toast.LENGTH_SHORT).show()
                         activity?.finish()
@@ -136,20 +136,20 @@ fun ProductManagementScreen(
         LazyColumn {
             item {
                 ProductCard(
-                    name = "Dog Collar",
+                    name = "",
                     price = 500.0,
                     stock = 12,
-                    status = "In Stock",
+                    status = "",
                     statusColor = Green
                 )
             }
 
             item {
                 ProductCard(
-                    name = "Cat Food Bowl",
+                    name = "",
                     price = 725.0,
                     stock = 6,
-                    status = "Low Stock",
+                    status = "",
                     statusColor = Yellow
                 )
             }
@@ -191,7 +191,7 @@ fun ProductCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                price
+                Text(text = "$$price")
                 Text("Stock: $stock")
             }
 
@@ -242,7 +242,6 @@ fun ProductCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        
                         text = "Delete",
                         fontSize = 14.sp,
                         color = Color.Red
@@ -252,4 +251,14 @@ fun ProductCard(
 
         }
     }
+}
+
+
+@Composable
+@Preview
+fun ProductPreview(){
+    ProductManagementScreen(
+        null,
+        {}
+    )
 }

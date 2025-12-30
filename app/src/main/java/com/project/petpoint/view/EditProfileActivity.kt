@@ -1,6 +1,10 @@
 package com.project.petpoint.view
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -20,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,15 +39,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
+import com.project.petpoint.model.UserModel
+import com.project.petpoint.repository.UserRepoImpl
 import com.project.petpoint.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.PetPointTheme
+import com.project.petpoint.viewmodel.UserViewModel
+
 
 class EditProfileActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,11 +69,17 @@ class EditProfileActivity : ComponentActivity() {
 fun Editprofilebody(){
 
 
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
+    val userViewModel = remember { UserViewModel(UserRepoImpl()) }
+
+    val userId = sharedPref.getString("userId", null)
+
+    var name by remember { mutableStateOf(sharedPref.getString("name", "") ?: "") }
+    var email by remember { mutableStateOf(sharedPref.getString("email", "") ?: "") }
+    var phone by remember { mutableStateOf(sharedPref.getString("phone", "") ?: "") }
+    var address by remember { mutableStateOf(sharedPref.getString("address", "") ?: "") }
+
 
     Column(
         modifier = Modifier
@@ -179,8 +195,32 @@ fun Editprofilebody(){
 
             Button(
                 onClick = {
-                    // TODO: Handle save action here
-                },
+
+                    // 1️ Update LOCAL data
+                    val editor = sharedPref.edit()
+                    editor.putString("name", name)
+                    editor.putString("email", email)
+                    editor.putString("phone", phone)
+                    editor.putString("address", address)
+                    editor.apply()
+
+                    // 2️ Update DATABASE data
+                    if (userId != null) {
+                        val updatedUser = UserModel(
+                            userId = userId,
+                            name = name,
+                            email = email,
+                            address = address,
+                            phonenumber = phone
+                        )
+
+                        userViewModel.addUserToDatabase(userId, updatedUser) { success, message ->
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+
+                ,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
@@ -196,7 +236,31 @@ fun Editprofilebody(){
                     modifier = Modifier.padding(vertical = 6.dp)
                 )
             }
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Button(
+                onClick = {  val intent = Intent(context, ProfileActivity::class.java)
+                    context.startActivity(intent)
+                    (context as? Activity)?.finish() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                shape = RoundedCornerShape(25.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = VividAzure ,
+                    contentColor = Color.White
+                )
+            ) {
+                Text(
+                    text = "Back",
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(vertical = 6.dp)
+                )
+            }
+
+            }
+
         }
     }
 
-}
+
