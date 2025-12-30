@@ -90,7 +90,6 @@ fun ProductManagementScreen() {
         // Add Product Button
         Button(
             onClick = {
-                context.startActivity(Intent(context, AddProductActivity::class.java))
             },
             colors = ButtonDefaults.buttonColors(containerColor = VividAzure),
             shape = RoundedCornerShape(25.dp),

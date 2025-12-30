@@ -85,207 +85,211 @@ fun AddProduct(
     val activity = context as Activity
 
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Azure)
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Azure)
 
-        ) {
+    ) {
 
-            item {
+        item {
 
-                Spacer(modifier = Modifier.height(50.dp))
-                Column(
-                    modifier = Modifier.fillMaxSize()
-                        .padding(horizontal = 20.dp, vertical = 20.dp)
-                ) {
+            Spacer(modifier = Modifier.height(50.dp))
+            Column(
+                modifier = Modifier.fillMaxSize()
+                    .padding(horizontal = 20.dp, vertical = 20.dp)
+            ) {
 
-                    Text("Product Name", fontWeight = FontWeight.SemiBold)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    OutlinedTextField(
-                        value = productName,
-                        onValueChange = { productName = it },
-                        placeholder = { Text("Enter the product name") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
+                Text("Product Name", fontWeight = FontWeight.SemiBold)
+                Spacer(modifier = Modifier.height(6.dp))
+                OutlinedTextField(
+                    value = productName,
+                    onValueChange = { productName = it },
+                    placeholder = { Text("Enter the product name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                    Text("Price", fontWeight = FontWeight.SemiBold)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    OutlinedTextField(
-                        value = productPrice,
-                        onValueChange = { productPrice = it },
-                        placeholder = { Text("Enter the price") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
+                Text("Price", fontWeight = FontWeight.SemiBold)
+                Spacer(modifier = Modifier.height(6.dp))
+                OutlinedTextField(
+                    value = productPrice,
+                    onValueChange = { productPrice = it },
+                    placeholder = { Text("Enter the price") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-
-                    Text("Description", fontWeight = FontWeight.SemiBold)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    OutlinedTextField(
-                        value = productDescription,
-                        onValueChange = { productDescription = it },
-                        placeholder = { Text("Enter the description") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
 
-                    Text("Stock Quantity", fontWeight = FontWeight.SemiBold)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    OutlinedTextField(
-                        value = productStock,
-                        onValueChange = { productStock = it },
-                        placeholder = { Text("Enter the stock quantity") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
-
-            item {
-                Row(
+                Text("Description", fontWeight = FontWeight.SemiBold)
+                Spacer(modifier = Modifier.height(6.dp))
+                OutlinedTextField(
+                    value = productDescription,
+                    onValueChange = { productDescription = it },
+                    placeholder = { Text("Enter the description") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.Start
+                        .height(50.dp),
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+
+                Text("Stock Quantity", fontWeight = FontWeight.SemiBold)
+                Spacer(modifier = Modifier.height(6.dp))
+                OutlinedTextField(
+                    value = productStock,
+                    onValueChange = { productStock = it },
+                    placeholder = { Text("Enter the stock quantity") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(110.dp)
+                        .clickable { onPickImage() },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(110.dp)
-                            .clickable { onPickImage() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (selectedImageUri != null) {
-                            AsyncImage(
-                                model = selectedImageUri,
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            Text("Upload Image")
-                        }
+                    if (selectedImageUri != null) {
+                        AsyncImage(
+                            model = selectedImageUri,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Text("Upload Image")
                     }
                 }
             }
-
-            item {
-                Button(
-                    onClick = {
-
-                        when {
-                            productName.isBlank() -> {
-                                Toast.makeText(
-                                    context,
-                                    "Please enter product name",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-
-                            productPrice.isBlank() -> {
-                                Toast.makeText(context, "Please enter price", Toast.LENGTH_SHORT)
-                                    .show()
-                            }
-
-                            productPrice.toDoubleOrNull() == null -> {
-                                Toast.makeText(
-                                    context,
-                                    "Price must be a number",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-
-                            productDescription.isBlank() -> {
-                                Toast.makeText(
-                                    context,
-                                    "Please enter description",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-
-                            productStock.isBlank() -> {
-                                Toast.makeText(
-                                    context,
-                                    "Please enter stock quantity",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-
-                            productStock.toIntOrNull() == null -> {
-                                Toast.makeText(
-                                    context,
-                                    "Stock quantity must be a number",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-
-                            selectedImageUri == null -> {
-                                Toast.makeText(
-                                    context,
-                                    "Please select an image",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-
-                            else -> {
-                                productViewModel.uploadImage(
-                                    context,
-                                    selectedImageUri
-                                ) { imageUrl ->
-                                    if (imageUrl != null) {
-                                        val productModel = ProductModel(
-                                            productId = "",
-                                            name = productName,
-                                            price = productPrice.toDouble(),
-                                            description = productDescription,
-                                            imageUrl = imageUrl,
-                                            stock = productStock.toInt()
-
-                                        )
-                                        productViewModel.addProduct(productModel) { success, msg ->
-                                            if (success) {
-                                                Toast.makeText(context, msg, Toast.LENGTH_SHORT)
-                                                    .show()
-                                                activity.finish()
-                                            } else {
-                                                Toast.makeText(context, msg, Toast.LENGTH_SHORT)
-                                                    .show()
-                                            }
-
-                                        }
-                                    }
-                                }
-
-                            }
-                        }
-
-
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Orange)
-                ) {
-                    Text("Add", color = White)
-                }
-            }
-
-
-            }
-
-
         }
 
+        item {
+            Button(
+                onClick = {
+
+                    when {
+                        productName.isBlank() -> {
+                            Toast.makeText(
+                                context,
+                                "Please enter product name",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        productPrice.isBlank() -> {
+                            Toast.makeText(context, "Please enter price", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+
+                        productPrice.toDoubleOrNull() == null -> {
+                            Toast.makeText(
+                                context,
+                                "Price must be a number",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        productDescription.isBlank() -> {
+                            Toast.makeText(
+                                context,
+                                "Please enter description",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        productStock.isBlank() -> {
+                            Toast.makeText(
+                                context,
+                                "Please enter stock quantity",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        productStock.toIntOrNull() == null -> {
+                            Toast.makeText(
+                                context,
+                                "Stock quantity must be a number",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        selectedImageUri == null -> {
+                            Toast.makeText(
+                                context,
+                                "Please select an image",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        else -> {
+                            productViewModel.uploadImage(
+                                context,
+                                selectedImageUri
+                            ) { imageUrl ->
+                                if (imageUrl != null) {
+                                    val productModel = ProductModel(
+                                        productId = "",
+                                        name = productName,
+                                        price = productPrice.toDouble(),
+                                        description = productDescription,
+                                        imageUrl = imageUrl,
+                                        stock = productStock.toInt()
+
+                                    )
+                                    productViewModel.addProduct(productModel) { success, msg ->
+                                        if (success) {
+                                            Toast.makeText(context, msg, Toast.LENGTH_SHORT)
+                                                .show()
+                                            activity.finish()
+                                        } else {
+                                            Toast.makeText(context, msg, Toast.LENGTH_SHORT)
+                                                .show()
+                                        }
+
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Orange)
+            ) {
+                Text("Add", color = White)
+            }
+        }
+
+
+    }
+
+
+}
+@Preview
+@Composable
+fun AddProductPreview(){
+    AddProduct(null,{})
+}
