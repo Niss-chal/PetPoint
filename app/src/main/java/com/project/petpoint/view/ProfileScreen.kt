@@ -1,6 +1,10 @@
 package com.project.petpoint.view
 
 import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,6 +34,16 @@ import com.project.petpoint.R
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
+
+class ProfileActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            ProfileScreen()
+        }
+    }
+}
 
 @Composable
 fun ProfileScreen() {

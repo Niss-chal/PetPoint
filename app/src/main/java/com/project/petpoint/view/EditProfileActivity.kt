@@ -1,6 +1,8 @@
 package com.project.petpoint.view
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -22,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -233,7 +236,31 @@ fun Editprofilebody(){
                     modifier = Modifier.padding(vertical = 6.dp)
                 )
             }
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Button(
+                onClick = {  val intent = Intent(context, ProfileActivity::class.java)
+                    context.startActivity(intent)
+                    (context as? Activity)?.finish() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                shape = RoundedCornerShape(25.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = VividAzure ,
+                    contentColor = Color.White
+                )
+            ) {
+                Text(
+                    text = "Back",
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(vertical = 6.dp)
+                )
+            }
+
+            }
+
         }
     }
 
-}
+
