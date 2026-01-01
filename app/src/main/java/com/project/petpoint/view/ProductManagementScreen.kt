@@ -19,7 +19,9 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,66 +58,90 @@ fun ProductManagementScreen() {
     var name by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var stock by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
 
-//    val allProducts = productViewModel.allProducts.observeAsState(initial = emptyList())
-//
-//    val product = productViewModel.products.observeAsState(initial = null)
+    val allProducts = productViewModel.allProducts.observeAsState(initial = emptyList())
 
-    Column(
+    val product = productViewModel.products.observeAsState(initial = null)
+
+    LaunchedEffect(product.value) {
+        productViewModel.getAllProduct()
+
+        product.value?.let {
+            name = it.name
+            price = it.price.toString()
+            description = it.description
+            stock = it.stock.toString()
+        }
+    }
+
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(Azure)
             .padding(16.dp)
     ) {
 
-        // Title
-        Text(
-            text = "Product Management",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
+        item {
+            // Title
+            Text(
+                text = "Product Management",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
 
-        Spacer(modifier = Modifier.height(30.dp))
-        Row {
-            Divider(
-                color = Color.Gray.copy(alpha = 0.7f),
-                thickness = 1.dp,
+            Spacer(modifier = Modifier.height(30.dp))
+        }
+
+        item {
+            Row {
+                Divider(
+                    color = Color.Gray.copy(alpha = 0.7f),
+                    thickness = 1.dp,
+                )
+            }
+            Spacer(modifier = Modifier.height(30.dp))
+        }
+
+        item {
+            // Add Product Button
+            Button(
+                onClick = {
+                    val intent = Intent(context,
+                        AddProductActivity :: class.java)
+                    context.startActivity(intent)
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = VividAzure),
+                shape = RoundedCornerShape(25.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(45.dp)
+            ) {
+                Text("+ Add Product", color = Color.White, fontSize = 16.sp)
+            }
+
+            Spacer(modifier = Modifier.height(30.dp))
+        }
+
+        items(allProducts.value?.size ?: 0) { index ->
+            val data = allProducts.value!![index]
+            val (status, statusColor) = when {
+                data.stock <= 0 -> "Out of Stock" to Color.Red
+                data.stock < 10 -> "Low Stock" to VividOrange
+                else -> "Available" to Green
+            }
+            ProductCard(
+                name = data.name,
+                price = data.price,
+                description = data.description,
+                stock = data.stock,
+                status = status,
+                statusColor = statusColor
             )
         }
-        Spacer(modifier = Modifier.height(30.dp))
-
-        // Add Product Button
-        Button(
-            onClick = {
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = VividAzure),
-            shape = RoundedCornerShape(25.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(45.dp)
-        ) {
-            Text("+ Add Product", color = Color.White, fontSize = 16.sp)
-        }
-
-        Spacer(modifier = Modifier.height(30.dp))
-
-//        LazyColumn {
-//            items(allProducts.value!!.size){
-//                ProductCard(
-//                    name = "",
-//                    price = 500.0,
-//                    stock = 12,
-//                    status = "",
-//                    statusColor = Green
-//                )
-//            }
-//        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
     }
 }
 
@@ -123,6 +149,7 @@ fun ProductManagementScreen() {
 fun ProductCard(
     name: String,
     price: Double,
+    description: String,
     stock: Int,
     status: String,
     statusColor: Color
@@ -144,7 +171,15 @@ fun ProductCard(
                 Text(status, color = statusColor, fontSize = 12.sp)
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = description,
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -175,7 +210,8 @@ fun ProductCard(
 
                 // Edit
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable { /* TODO: Add edit functionality */ }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
@@ -192,7 +228,8 @@ fun ProductCard(
 
                 // Delete
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable { /* TODO: Add delete functionality */ }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
@@ -215,6 +252,6 @@ fun ProductCard(
 
 @Composable
 @Preview
-fun ProductPreview(){
+fun ProductPreview() {
     ProductManagementScreen()
 }
