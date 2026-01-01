@@ -3,17 +3,13 @@ package com.project.petpoint.view
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.net.Uri
-import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -28,23 +24,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.project.petpoint.R
 import com.project.petpoint.model.ProductModel
 import com.project.petpoint.repository.ProductRepoImpl
-import com.project.petpoint.utils.ImageUtils
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.Green
+import com.project.petpoint.view.ui.theme.GreyOrange
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
 import com.project.petpoint.view.ui.theme.White
-import com.project.petpoint.view.ui.theme.Yellow
 import com.project.petpoint.viewmodel.ProductViewModel
 
 
@@ -126,6 +121,146 @@ fun ProductManagementScreen() {
             Spacer(modifier = Modifier.height(30.dp))
         }
 
+        item {
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = {
+                        showDialog = false
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            var model = ProductModel(
+                                product .value!!.productId,
+                                name,price.toDouble(),description,"","",stock.toInt()
+                            )
+                            productViewModel.updateProduct(model){
+                                    success,message ->
+                                if(success){
+                                    showDialog = false
+                                }else{
+                                    Toast.makeText(context,message,Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }) { Text("Update") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            showDialog = false
+                        }) { Text("Cancel") }
+                    },
+                    title = {Text("Update Product")},
+                    text = {
+                        Column {
+                            Spacer(modifier = Modifier.height(50.dp))
+
+                            OutlinedTextField(
+                                value = name,
+                                onValueChange = { data ->
+                                    name = data
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Text
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp),
+                                placeholder = {
+                                    Text("Enter the product name")
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = GreyOrange,
+                                    unfocusedContainerColor = GreyOrange,
+                                    focusedIndicatorColor = Blue,
+                                    unfocusedIndicatorColor = Color.Transparent
+                                )
+                            )
+
+                            Spacer(modifier = Modifier.height(15.dp))
+
+
+                            OutlinedTextField(
+                                value = price,
+                                onValueChange = { data ->
+                                    price = data
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp),
+                                placeholder = {
+                                    Text("Enter the price")
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = GreyOrange,
+                                    unfocusedContainerColor = GreyOrange,
+                                    focusedIndicatorColor = Blue,
+                                    unfocusedIndicatorColor = Color.Transparent
+                                )
+                            )
+
+                            Spacer(modifier = Modifier.height(15.dp))
+
+
+                            OutlinedTextField(
+                                value = description,
+                                onValueChange = { data ->
+                                    description = data
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Text
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp),
+                                placeholder = {
+                                    Text("Enter the description")
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = GreyOrange,
+                                    unfocusedContainerColor = GreyOrange,
+                                    focusedIndicatorColor = Blue,
+                                    unfocusedIndicatorColor = Color.Transparent
+                                )
+                            )
+
+                            Spacer(modifier = Modifier.height(15.dp))
+
+
+                            OutlinedTextField(
+                                value = stock,
+                                onValueChange = { data ->
+                                    stock = data
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp),
+                                placeholder = {
+                                    Text("Enter the stock")
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = GreyOrange,
+                                    unfocusedContainerColor = GreyOrange,
+                                    focusedIndicatorColor = Blue,
+                                    unfocusedIndicatorColor = Color.Transparent
+                                )
+                            )
+
+
+                        }
+                    }
+                )
+            }
+        }
+
         items(allProducts.value?.size ?: 0) { index ->
             val data = allProducts.value!![index]
             val (status, statusColor) = when {
@@ -139,7 +274,28 @@ fun ProductManagementScreen() {
                 description = data.description,
                 stock = data.stock,
                 status = status,
-                statusColor = statusColor
+                statusColor = statusColor,
+                onEdit = {
+                    productViewModel.getProductById(data.productId)
+                    showDialog = true
+                },
+                onDelete={
+                    AlertDialog.Builder(context)
+                        .setTitle("Delete Product")
+                        .setMessage("Are you sure you want to delete ${data.name}?")
+                        .setPositiveButton("Delete"){_,_ ->
+                            productViewModel.deleteProduct(data.productId){
+                                success,message->
+                                if(success){
+                                    Toast.makeText(context,message,Toast.LENGTH_SHORT).show()
+                                }else{
+                                    Toast.makeText(context,message,Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                        .setNegativeButton("Cancel",null)
+                        .show()
+                }
             )
         }
     }
@@ -152,7 +308,9 @@ fun ProductCard(
     description: String,
     stock: Int,
     status: String,
-    statusColor: Color
+    statusColor: Color,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(12.dp),
@@ -185,7 +343,7 @@ fun ProductCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "$$price")
+                Text(text = "Rs. $price")
                 Text("Stock: $stock")
             }
 
@@ -211,7 +369,9 @@ fun ProductCard(
                 // Edit
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { /* TODO: Add edit functionality */ }
+                    modifier = Modifier.clickable {
+                       onEdit()
+                    }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
@@ -229,7 +389,7 @@ fun ProductCard(
                 // Delete
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { /* TODO: Add delete functionality */ }
+                    modifier = Modifier.clickable { onDelete()}
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,

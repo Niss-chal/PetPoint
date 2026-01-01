@@ -15,7 +15,8 @@ data class ProductModel(
         return mapOf(
             "name" to name,
             "price" to price,
-            "description" to description
+            "description" to description,
+            "stock" to stock
         )
     }
 
