@@ -33,10 +33,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
+import com.project.petpoint.repository.UserRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.GreyOrange
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
+import com.project.petpoint.viewmodel.UserViewModel
 
 class ResetPasswordActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,11 +54,7 @@ fun PetPointResetPasswordUI() {
 
     // Initial state is now empty strings
     var email by remember { mutableStateOf("") }
-    var newPassword by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var passwordVisibility by remember { mutableStateOf(false) }
-    var confirmPasswordVisibility by remember { mutableStateOf(false) }
-
+    val userViewModel = remember { UserViewModel(UserRepoImpl()) }
     val context = LocalContext.current
     val activity = context as? Activity
 
@@ -167,80 +165,6 @@ fun PetPointResetPasswordUI() {
                             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                         )
 
-                        Spacer(modifier = Modifier.height(15.dp))
-
-                        // NEW PASSWORD FIELD
-                        Text(
-                            "Password",
-                            color = Color.White.copy(alpha = 0.8f),
-                            fontWeight = FontWeight.SemiBold
-                        )
-
-                        OutlinedTextField(
-                            value = newPassword,
-                            onValueChange = { newPassword = it },
-                            placeholder = { Text("") }, // Updated placeholder
-                            shape = RoundedCornerShape(12.dp),
-                            visualTransformation = if (!passwordVisibility) PasswordVisualTransformation() else VisualTransformation.None,
-                            trailingIcon = {
-                                IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
-                                    Icon(
-                                        painter = painterResource(
-                                            if (passwordVisibility) R.drawable.baseline_visibility_off_24 else R.drawable.baseline_visibility_24
-                                        ),
-                                        contentDescription = "Toggle password visibility",
-                                    )
-                                }
-                            },
-                            colors = TextFieldDefaults.colors(
-                                unfocusedContainerColor = GreyOrange,
-                                focusedContainerColor = GreyOrange,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                focusedTextColor = Color.Black
-                            ),
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                        )
-
-                        Spacer(modifier = Modifier.height(15.dp))
-
-                        // CONFIRM PASSWORD FIELD
-                        Text(
-                            "Confirm Password",
-                            color = Color.White.copy(alpha = 0.8f),
-                            fontWeight = FontWeight.SemiBold
-                        )
-
-                        OutlinedTextField(
-                            value = confirmPassword,
-                            onValueChange = { confirmPassword = it },
-                            placeholder = { Text("") }, // Updated placeholder
-                            shape = RoundedCornerShape(10.dp),
-                            visualTransformation = if (!confirmPasswordVisibility) PasswordVisualTransformation() else VisualTransformation.None,
-                            trailingIcon = {
-                                IconButton(onClick = {
-                                    confirmPasswordVisibility = !confirmPasswordVisibility
-                                }) {
-                                    Icon(
-                                        painter = painterResource(
-                                            if (confirmPasswordVisibility) R.drawable.baseline_visibility_off_24 else R.drawable.baseline_visibility_24
-                                        ),
-                                        contentDescription = "Toggle confirm password visibility",
-
-                                        )
-                                }
-                            },
-                            colors = TextFieldDefaults.colors(
-                                unfocusedContainerColor = GreyOrange,
-                                focusedContainerColor = GreyOrange,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-
-                                focusedTextColor = Color.Black
-                            ),
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                        )
-
                         Spacer(modifier = Modifier.height(20.dp))
 
                         // RESET BUTTON
@@ -254,18 +178,23 @@ fun PetPointResetPasswordUI() {
                         ) {
                             Button(
                                 onClick = {
-                                    if (newPassword == confirmPassword && newPassword.isNotEmpty()) {
-                                        Toast.makeText(
-                                            context,
-                                            "Password Reset Successfully!",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    } else {
-                                        Toast.makeText(
-                                            context,
-                                            "Passwords do not match or are empty.",
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                                    if (email.isEmpty()) {
+                                        Toast.makeText(context, "Please enter your email", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
+
+                                    // Send reset email
+                                    userViewModel.forgotPassword(email) { success, message ->
+                                        if (success) {
+                                            Toast.makeText(
+                                                context,
+                                                "Reset email sent to $email. Check your inbox.",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                            activity?.finish() // optional: go back to login
+                                        } else {
+                                            Toast.makeText(context, "Error: $message", Toast.LENGTH_LONG).show()
+                                        }
                                     }
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
