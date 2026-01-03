@@ -1,4 +1,4 @@
-package com.project.petpoint.view
+ package com.project.petpoint.view
 
 import android.app.Activity
 import android.content.Context
@@ -58,6 +58,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
+import com.project.petpoint.model.UserModel
 import com.project.petpoint.repository.UserRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.GreyOrange
@@ -89,7 +90,7 @@ fun SignupBody() {
     val activity = context as? Activity
 
     val sharedPreference = context.getSharedPreferences("User", Context.MODE_PRIVATE)
-    val editor = sharedPreference.edit()
+
     Scaffold { padding ->
         Column(
             modifier = Modifier
@@ -297,38 +298,36 @@ fun SignupBody() {
                 item {
                     Button(
                         onClick = {
-                            if (name.isEmpty() || phone.isEmpty() || address.isEmpty()
-                                || email.isEmpty() || password.isEmpty()
-                            ) {
-                                Toast.makeText(
-                                    context,
-                                    "Please fill all fields",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                return@Button
+                            userViewModel.register(email,password){
+                                success,message,userId ->
+                                if(success){
+                                    var  model = UserModel(
+                                        userId = userId,
+                                        email=email,
+                                        name = name,
+                                        address = address,
+                                        phonenumber = phone
+                                    )
+                                    userViewModel.addUserToDatabase(userId,model){
+                                        success, message ->
+                                        if (success){
+                                            val editor = sharedPreference.edit()
+                                            editor.putString("userId", userId)
+                                            editor.putString("email", email)
+                                            editor.putString("name", name)
+                                            editor.putString("address", address)
+                                            editor.putString("phone", phone)
+                                            editor.apply()
+                                            activity?.finish()
+                                            Toast.makeText(context,message, Toast.LENGTH_SHORT).show()
+                                        }else{
+                                            Toast.makeText(context,message, Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }else{
+                                    Toast.makeText(context,message, Toast.LENGTH_SHORT).show()
+                                }
                             }
-                            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                                Toast.makeText(context, "Enter a valid email", Toast.LENGTH_SHORT)
-                                    .show()
-                                return@Button
-                            }
-                            if (password.length < 8) {
-                                Toast.makeText(
-                                    context,
-                                    "Password must be at least 8 characters",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                return@Button
-                            }
-
-                            editor.putString("name", name)
-                            editor.putString("email", email)
-                            editor.putString("password", password)
-                            editor.apply()
-
-                            Toast.makeText(context, "Registered Successfully", Toast.LENGTH_SHORT)
-                                .show()
-                            activity?.finish()
                         },
                         modifier = Modifier
                             .fillMaxWidth()

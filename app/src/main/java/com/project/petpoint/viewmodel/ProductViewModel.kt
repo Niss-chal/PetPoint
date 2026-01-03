@@ -1,5 +1,7 @@
 package com.project.petpoint.viewmodel
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.project.petpoint.model.ProductModel
@@ -45,6 +47,7 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
         }
     }
 
+
     private val _allProductsCategory = MutableLiveData<List<ProductModel>?>()
     val allProductsCategory : MutableLiveData<List<ProductModel>?> get() = _allProductsCategory
 
@@ -56,4 +59,11 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
             }
         }
     }
+
+
+    fun uploadImage(context: Context, imageUri: Uri, callback: (String?) -> Unit) {
+        repo.uploadImage(context, imageUri, callback)
+    }
+
 }
+

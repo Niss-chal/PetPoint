@@ -38,6 +38,7 @@ import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.GreyOrange
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
+import com.project.petpoint.view.ui.theme.White
 import com.project.petpoint.viewmodel.UserViewModel
 
 class ResetPasswordActivity : ComponentActivity() {
@@ -210,28 +211,25 @@ fun PetPointResetPasswordUI() {
                                 )
                             }
                         }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            buildAnnotatedString {
+                                append("Back To ")
+                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append("Login")
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val intent = Intent(context,
+                                        LoginActivity::class.java)
+                                    context.startActivity(intent)
+                                }
+                            ,color = Color.White,
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center)
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(buildAnnotatedString {
-                        withStyle(
-                            style = SpanStyle(
-                                color = VividOrange,     // FIXED: Solid dark orange
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold // FIXED: Bold
-                            )
-                        ) {
-                            append("Back to login")
-                        }
-                    },
-                        modifier = Modifier
-                            .clickable {
-                                val intent = Intent(context,
-                                    LoginActivity::class.java)
-                                context.startActivity(intent)
-                            }
-                        ,style = TextStyle(fontSize = 16.sp))
-
-
                 }
             }
         }
