@@ -42,6 +42,7 @@ import com.project.petpoint.view.ui.theme.GreyOrange
 import com.project.petpoint.view.ui.theme.Orange
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
+import com.project.petpoint.view.ui.theme.White
 import com.project.petpoint.viewmodel.UserViewModel
 
 class LoginActivity : ComponentActivity() {
@@ -303,35 +304,28 @@ fun PetPointLoginUI() {
                             ) {
                                 Text("Login", color = Color.White, fontWeight = FontWeight.Bold)
                             }
-                        }
+                            Spacer(modifier = Modifier.height(15.dp))
 
-                        Spacer(modifier = Modifier.height(15.dp))
+                            Text(
+                                buildAnnotatedString {
+                                    append("Don't have an account? ")
+                                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                        append("Sign Up")
+                                    }
+                                },
 
-                        Text(buildAnnotatedString {
-                            withStyle(style = SpanStyle(
-                                color = VividOrange.copy(alpha = 0.7f),
-                                fontSize = 15.sp
-                            )
-                            ) {
-                                append("Don't have an account? ")
-                            }
-                            withStyle(
-                                style = SpanStyle(
-                                    color = Orange,
-                                    fontWeight = FontWeight.Bold
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable{
+                                        val intent = Intent(context, SignupActivity::class.java)
+                                        context.startActivity(intent)
+
+                                    },
+                                    color = Color.White,
+                                    fontSize = 14.sp,
+                                    textAlign = TextAlign.Center
                                 )
-                            ) {
-                                append("Sign up")
-                            }
-                        },
-
-                            modifier = Modifier
-                                .clickable{
-                                    val intent = Intent(context, SignupActivity::class.java)
-                                    context.startActivity(intent)
-
-                                }
-                            ,style = TextStyle(fontSize = 16.sp))
+                        }
                     }
                 }
             }
