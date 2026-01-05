@@ -146,10 +146,11 @@ fun Editprofilebody(){
             Text(text = "Email", fontSize = 18.sp)
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 6.dp),
+                readOnly = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 shape = RoundedCornerShape(25.dp),
                 colors = TextFieldDefaults.colors(
@@ -157,6 +158,7 @@ fun Editprofilebody(){
                     focusedContainerColor = Color.White
                 )
             )
+
 
             Spacer(modifier = Modifier.height(12.dp))
             Text(text = "Phone", fontSize = 18.sp)
