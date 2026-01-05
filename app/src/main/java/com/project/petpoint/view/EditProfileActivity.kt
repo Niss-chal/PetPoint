@@ -196,7 +196,7 @@ fun Editprofilebody(){
             Button(
                 onClick = {
 
-                    // 1️ Update LOCAL data
+                    // Update LOCAL data
                     val editor = sharedPref.edit()
                     editor.putString("name", name)
                     editor.putString("email", email)
@@ -204,7 +204,7 @@ fun Editprofilebody(){
                     editor.putString("address", address)
                     editor.apply()
 
-                    // 2️ Update DATABASE data
+                    // Update DATABASE data
                     if (userId != null) {
                         val updatedUser = UserModel(
                             userId = userId,
