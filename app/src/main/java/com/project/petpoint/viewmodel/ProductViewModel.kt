@@ -28,21 +28,36 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
     private val _allProducts = MutableLiveData<List<ProductModel>?>()
     val allProducts : MutableLiveData<List<ProductModel>?> get() = _allProducts
 
+    private val _loading = MutableLiveData<Boolean>()
+    val loading : MutableLiveData<Boolean> get()=_loading
+
 
     fun getProductById(productID:String){
+        _loading.postValue(true)
         repo.getProductById(productID){
                 success,msg,data->
             if(success){
+                _loading.postValue(false)
                 _products.postValue(data)
+            }
+            else{
+                _loading.postValue(false)
+                _products.postValue(null)
             }
         }
     }
 
     fun getAllProduct(){
+        _loading.postValue(true)
         repo.getAllProduct{
                 success,msg,data->
             if(success){
+                _loading.postValue(false)
                 _allProducts.postValue(data)
+            }
+            else{
+                _loading.postValue(false)
+                _allProducts.postValue(null)
             }
         }
     }

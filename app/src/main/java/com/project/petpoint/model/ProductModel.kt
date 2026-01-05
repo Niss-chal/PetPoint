@@ -7,6 +7,7 @@ data class ProductModel(
     val description: String = "",
     var categoryId: String = "",
     val imageUrl: String = "",
+    var stock : Int = 0,
 
 
 ){
@@ -14,7 +15,8 @@ data class ProductModel(
         return mapOf(
             "name" to name,
             "price" to price,
-            "description" to description
+            "description" to description,
+            "stock" to stock
         )
     }
 
