@@ -10,20 +10,14 @@ data class ProductModel(
     var stock : Int = 0,
 
 
-    ){
+){
     fun toMap() : Map<String,Any?>{
         return mapOf(
-            "imageURL" to imageUrl,
-            "categoryId" to categoryId,
-            "productId" to productId,
             "name" to name,
             "price" to price,
             "description" to description,
-            "stock" to stock,
-
-
-
-            )
+            "stock" to stock
+        )
     }
 
 }

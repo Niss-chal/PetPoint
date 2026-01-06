@@ -2,19 +2,11 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="AddProductActivity (2)">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="AddProductActivity (3)">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="AddProductActivity (4)">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="AddProductActivity">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="AddProductActivity (1)">
+      <SelectionState runConfigName="AdminDashboardActivity">
+      <SelectionState runConfigName="LoginActivity">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
