@@ -171,10 +171,10 @@ fun AddProduct(
                         onDismissRequest = { expanded = false }
                     ) {
                         listOf(
-                            "Dogs",
-                            "Cats",
-                            "Birds",
-                            "Reptiles",
+                            "Food",
+                            "Toys",
+                            "Accessories",
+                            "Clothes",
                             "Other"
 
                         ).forEach { category ->
