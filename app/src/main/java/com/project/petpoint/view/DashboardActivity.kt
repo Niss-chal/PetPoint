@@ -84,7 +84,7 @@ fun DashboardBody() {
                         Image(
                             painter = painterResource(R.drawable.dashboardlogo),
                             contentDescription = null,
-                                                    )
+                        )
                     }
                 },
                 title ={ IconButton(onClick = {
@@ -143,7 +143,7 @@ fun DashboardBody() {
             }
         }
     ) {
-        padding ->
+            padding ->
         Column(
             modifier=Modifier
                 .fillMaxSize()
