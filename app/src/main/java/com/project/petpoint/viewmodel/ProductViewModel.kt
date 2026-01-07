@@ -22,14 +22,28 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
     }
 
 
-    private val _products = MutableLiveData<ProductModel?>()
-    val products : MutableLiveData<ProductModel?> get() = _products
-
     private val _allProducts = MutableLiveData<List<ProductModel>?>()
-    val allProducts : MutableLiveData<List<ProductModel>?> get() = _allProducts
+    val allProducts: MutableLiveData<List<ProductModel>?> get() = _allProducts
 
+    // Filtered products based on search
+    private val _filteredProducts = MutableLiveData<List<ProductModel>?>()
+    val filteredProducts: MutableLiveData<List<ProductModel>?> get() = _filteredProducts
+
+    // Search query
+    private val _searchQuery = MutableLiveData<String>()
+    val searchQuery: MutableLiveData<String> get() = _searchQuery
+
+    // Loading state
     private val _loading = MutableLiveData<Boolean>()
-    val loading : MutableLiveData<Boolean> get()=_loading
+    val loading: MutableLiveData<Boolean> get() = _loading
+
+    // Message for Toast
+    private val _message = MutableLiveData<String?>()
+    val message: MutableLiveData<String?> get() = _message
+
+    // Selected product
+    private val _selectedProduct = MutableLiveData<ProductModel?>()
+    val selectedProduct: MutableLiveData<ProductModel?> get() = _selectedProduct
 
 
     fun getProductById(productID:String){
@@ -38,11 +52,11 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
                 success,msg,data->
             if(success){
                 _loading.postValue(false)
-                _products.postValue(data)
+                _selectedProduct.postValue(data)
             }
             else{
                 _loading.postValue(false)
-                _products.postValue(null)
+                _selectedProduct.postValue(null)
             }
         }
     }
@@ -54,25 +68,34 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
             if(success){
                 _loading.postValue(false)
                 _allProducts.postValue(data)
+                _filteredProducts.postValue(data)
             }
             else{
                 _loading.postValue(false)
                 _allProducts.postValue(null)
+                _filteredProducts.postValue(null)
+                _message.postValue(msg)
             }
         }
     }
 
 
-    private val _allProductsCategory = MutableLiveData<List<ProductModel>?>()
-    val allProductsCategory : MutableLiveData<List<ProductModel>?> get() = _allProductsCategory
-
-    fun getProductByCategory(categoryId:String){
-        repo.getProductByCategory(categoryId){
-                success,msg,data->
-            if(success){
-                _allProductsCategory.postValue(data)
+    fun getProductByCategory(categoryId: String) {
+        _loading.postValue(true)
+        repo.getProductByCategory(categoryId) { success, msg, data ->
+            if (success) {
+                _loading.postValue(false)
+                _filteredProducts.postValue(data)
+            } else {
+                _loading.postValue(false)
+                _filteredProducts.postValue(null)
+                _message.postValue(msg)
             }
         }
+    }
+
+    fun refreshProducts() {
+        getAllProduct()
     }
 
 
@@ -80,5 +103,39 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
         repo.uploadImage(context, imageUri, callback)
     }
 
-}
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.postValue(query)
+        filterProducts(query)
+    }
 
+    private fun filterProducts(query: String) {
+        val products = _allProducts.value ?: emptyList()
+
+        if (query.isEmpty()) {
+            _filteredProducts.postValue(products)
+        } else {
+            val filtered = products.filter { product ->
+                product.name.contains(query, ignoreCase = true) ||
+                        product.description.contains(query, ignoreCase = true)
+            }
+            _filteredProducts.postValue(filtered)
+        }
+    }
+
+    fun onProductClick(product: ProductModel) {
+        _selectedProduct.postValue(product)
+        _message.postValue("Opening ${product.name}")
+        // TODO
+    }
+
+    fun addToCart(product: ProductModel) {
+        if (product.stock <= 0) {
+            _message.postValue("${product.name} is out of stock")
+            return
+        }
+    }
+
+    fun clearMessage() {
+        _message.postValue(null)
+    }
+}
