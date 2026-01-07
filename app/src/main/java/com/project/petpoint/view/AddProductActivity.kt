@@ -175,6 +175,7 @@ fun AddProduct(
                             "Toys",
                             "Accessories",
                             "Clothes",
+                            "Medicine",
                             "Other"
 
                         ).forEach { category ->
