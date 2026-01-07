@@ -18,9 +18,15 @@
         tools:replace="android:fullBackupContent">
         <activity
             android:name=".view.ProductDetailActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/title_activity_product_detail"
-            android:theme="@style/Theme.PetPoint" />
+            android:theme="@style/Theme.PetPoint">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".view.AddProductActivity"
             android:exported="true"

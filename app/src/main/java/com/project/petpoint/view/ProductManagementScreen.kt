@@ -58,7 +58,7 @@ fun ProductManagementScreen() {
     var showDialog by remember { mutableStateOf(false) }
 
     val allProducts = productViewModel.allProducts.observeAsState(initial = emptyList())
-    val product = productViewModel.products.observeAsState(initial = null)
+    val product = productViewModel.selectedProduct.observeAsState(initial = null)
     val loading = productViewModel.loading.observeAsState(initial = false)
 
     LaunchedEffect(product.value) {
