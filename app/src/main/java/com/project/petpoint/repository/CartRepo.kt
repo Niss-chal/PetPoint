@@ -4,6 +4,7 @@ import com.project.petpoint.model.CartModel
 import com.project.petpoint.model.ProductModel
 
 interface CartRepo {
+
     fun addToCart(
         product: ProductModel,
         userId: String,

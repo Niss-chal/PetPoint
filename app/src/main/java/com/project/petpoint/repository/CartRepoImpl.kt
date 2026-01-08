@@ -9,8 +9,9 @@ import com.project.petpoint.model.CartModel
 import com.project.petpoint.model.ProductModel
 
 class CartRepoImpl : CartRepo {
-    var database: FirebaseDatabase = FirebaseDatabase.getInstance()
-    var ref: DatabaseReference = database.getReference("cart")
+
+    private var database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    private var ref: DatabaseReference = database.getReference("cart")
 
     override fun addToCart(
         product: ProductModel,
@@ -72,6 +73,7 @@ class CartRepoImpl : CartRepo {
                         }
                 }
             }
+
             override fun onCancelled(error: DatabaseError) {
                 callback(false, "Failed to check cart: ${error.message}")
             }
@@ -213,5 +215,4 @@ class CartRepoImpl : CartRepo {
             }
         })
     }
-
 }

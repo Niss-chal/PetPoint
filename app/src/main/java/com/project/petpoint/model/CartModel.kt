@@ -10,9 +10,7 @@ data class CartModel(
     var quantity: Int = 1,
     val maxStock: Int = 0,
     val addedAt: Long = System.currentTimeMillis()
-)
-
-{
+) {
     fun toMap(): Map<String, Any?> {
         return mapOf(
             "cartItemId" to cartItemId,
