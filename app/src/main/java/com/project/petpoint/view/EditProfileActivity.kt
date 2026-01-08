@@ -11,38 +11,22 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
@@ -50,8 +34,8 @@ import com.project.petpoint.model.UserModel
 import com.project.petpoint.repository.UserRepoImpl
 import com.project.petpoint.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.Azure
-import com.project.petpoint.view.ui.theme.PetPointTheme
 import com.project.petpoint.viewmodel.UserViewModel
+
 
 
 class EditProfileActivity : ComponentActivity() {
@@ -60,14 +44,12 @@ class EditProfileActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Editprofilebody()
-
         }
     }
 }
 
 @Composable
-fun Editprofilebody(){
-
+fun Editprofilebody() {
 
     val context = LocalContext.current
     val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
@@ -80,14 +62,12 @@ fun Editprofilebody(){
     var phone by remember { mutableStateOf(sharedPref.getString("phone", "") ?: "") }
     var address by remember { mutableStateOf(sharedPref.getString("address", "") ?: "") }
 
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Azure),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
 
         Box(
             modifier = Modifier
@@ -104,20 +84,49 @@ fun Editprofilebody(){
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        /* -------- PROFILE IMAGE WITH CHANGE UI (ADDED ONLY THIS) -------- */
 
+        Box(
+            modifier = Modifier.size(120.dp),
+            contentAlignment = Alignment.BottomEnd
+        ) {
 
-        Image(
-            painter = painterResource(id = R.drawable.userprofile),
-            contentDescription = "Profile Image",
-            modifier = Modifier
-                .size(110.dp)
-                .clip(CircleShape)
-                .border(3.dp, Color(0xFF9EC760), CircleShape),
-            contentScale = ContentScale.Crop
-        )
+            Image(
+                painter = painterResource(id = R.drawable.userprofile),
+                contentDescription = "Profile Image",
+                modifier = Modifier
+                    .size(110.dp)
+                    .clip(CircleShape)
+                    .border(3.dp, Color(0xFF9EC760), CircleShape)
+                    .align(Alignment.Center),
+                contentScale = ContentScale.Crop
+            )
+
+            IconButton(
+                onClick = {
+                    Toast.makeText(
+                        context,
+                        "Change profile picture clicked",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                },
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(Color.White, CircleShape)
+                    .border(1.dp, Color.Gray, CircleShape)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_camera_alt_24),
+                    contentDescription = "Change Profile Picture",
+                    tint = VividAzure
+                )
+
+            }
+        }
+
+        /* -------------------------------------------------------------- */
 
         Spacer(modifier = Modifier.height(20.dp))
-
 
         Column(
             modifier = Modifier
@@ -126,14 +135,11 @@ fun Editprofilebody(){
                 .padding(20.dp)
         ) {
 
-
-            Text(text = "Name", fontSize = 18.sp, color = Color.Black)
+            Text(text = "Name", fontSize = 18.sp)
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 6.dp),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(25.dp),
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
@@ -141,17 +147,15 @@ fun Editprofilebody(){
                 )
             )
 
-
             Spacer(modifier = Modifier.height(12.dp))
+
             Text(text = "Email", fontSize = 18.sp)
             OutlinedTextField(
                 value = email,
-                onValueChange = { },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 6.dp),
+                onValueChange = {},
                 readOnly = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(25.dp),
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
@@ -159,25 +163,20 @@ fun Editprofilebody(){
                 )
             )
 
-
             Spacer(modifier = Modifier.height(12.dp))
+
             Text(text = "Phone", fontSize = 18.sp)
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 6.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(25.dp),
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
                     focusedContainerColor = Color.White
                 )
             )
-
-
-
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -185,20 +184,18 @@ fun Editprofilebody(){
             OutlinedTextField(
                 value = address,
                 onValueChange = { address = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 6.dp),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(25.dp),
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
-                    focusedContainerColor = Color.White)
+                    focusedContainerColor = Color.White
+                )
             )
+
             Spacer(modifier = Modifier.height(40.dp))
 
             Button(
                 onClick = {
-
-                    // Update LOCAL data
                     val editor = sharedPref.edit()
                     editor.putString("name", name)
                     editor.putString("email", email)
@@ -206,7 +203,6 @@ fun Editprofilebody(){
                     editor.putString("address", address)
                     editor.apply()
 
-                    // Update DATABASE data
                     if (userId != null) {
                         val updatedUser = UserModel(
                             userId = userId,
@@ -216,53 +212,37 @@ fun Editprofilebody(){
                             phonenumber = phone
                         )
 
-                        userViewModel.addUserToDatabase(userId, updatedUser) { success, message ->
+                        userViewModel.addUserToDatabase(userId, updatedUser) { _, message ->
                             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                         }
                     }
-                }
-
-                ,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                },
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = VividAzure ,
+                    containerColor = VividAzure,
                     contentColor = Color.White
                 )
             ) {
-                Text(
-                    text = "Save",
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(vertical = 6.dp)
-                )
+                Text("Save", fontSize = 18.sp)
             }
+
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(
-                onClick = {  val intent = Intent(context, ProfileActivity::class.java)
-                    context.startActivity(intent)
-                    (context as? Activity)?.finish() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                onClick = {
+                    context.startActivity(Intent(context, ProfileActivity::class.java))
+                    (context as? Activity)?.finish()
+                },
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = VividAzure ,
+                    containerColor = VividAzure,
                     contentColor = Color.White
                 )
             ) {
-                Text(
-                    text = "Back",
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(vertical = 6.dp)
-                )
+                Text("Back", fontSize = 18.sp)
             }
-
-            }
-
         }
     }
-
-
+}
