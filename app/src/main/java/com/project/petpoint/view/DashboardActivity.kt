@@ -94,23 +94,6 @@ fun DashboardBody() {
 
                 }},
                 actions = {
-                    IconButton(onClick = {}) {
-
-                        Icon(
-                            painter  =  painterResource(R.drawable.baseline_notifications_24),
-                            contentDescription = null
-                        )
-
-
-                    }
-
-                    IconButton(onClick = {}) {
-                        Icon(
-                            painter  =  painterResource(R.drawable.baseline_search_24),
-                            contentDescription = null
-                        )
-                    }
-
 
                     IconButton(onClick = {}) {
                         Icon(
