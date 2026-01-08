@@ -2,6 +2,7 @@ package com.project.petpoint.view
 
 import android.R.attr.onClick
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -94,25 +95,12 @@ fun DashboardBody() {
 
                 }},
                 actions = {
-                    IconButton(onClick = {}) {
-
-                        Icon(
-                            painter  =  painterResource(R.drawable.baseline_notifications_24),
-                            contentDescription = null
+                    IconButton(onClick = {
+                        context.startActivity(
+                            Intent(context, CartActivity::class.java)
                         )
 
-
-                    }
-
-                    IconButton(onClick = {}) {
-                        Icon(
-                            painter  =  painterResource(R.drawable.baseline_search_24),
-                            contentDescription = null
-                        )
-                    }
-
-
-                    IconButton(onClick = {}) {
+                    }) {
                         Icon(
                             painter  =  painterResource(R.drawable.baseline_shopping_cart_24),
                             contentDescription = null

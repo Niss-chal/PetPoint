@@ -128,13 +128,6 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
         // TODO
     }
 
-    fun addToCart(product: ProductModel) {
-        if (product.stock <= 0) {
-            _message.postValue("${product.name} is out of stock")
-            return
-        }
-    }
-
     fun clearMessage() {
         _message.postValue(null)
     }

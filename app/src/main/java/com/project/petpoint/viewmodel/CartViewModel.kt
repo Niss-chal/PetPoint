@@ -138,9 +138,7 @@ class CartViewModel(private val repo: CartRepo) : ViewModel() {
         }
     }
 
-    /**
-     * Increase quantity helper
-     */
+
     fun increaseQuantity(cartItem: CartModel, callback: (Boolean, String) -> Unit = { _, _ -> }) {
         if (cartItem.canIncreaseQuantity()) {
             updateCartItemQuantity(cartItem.cartItemId, cartItem.quantity + 1, callback)
@@ -150,9 +148,7 @@ class CartViewModel(private val repo: CartRepo) : ViewModel() {
         }
     }
 
-    /**
-     * Decrease quantity helper
-     */
+
     fun decreaseQuantity(cartItem: CartModel, callback: (Boolean, String) -> Unit = { _, _ -> }) {
         if (cartItem.canDecreaseQuantity()) {
             updateCartItemQuantity(cartItem.cartItemId, cartItem.quantity - 1, callback)
@@ -161,9 +157,7 @@ class CartViewModel(private val repo: CartRepo) : ViewModel() {
         }
     }
 
-    /**
-     * Calculate totals
-     */
+
     private fun calculateTotals(items: List<CartModel>?) {
         val total = items?.sumOf { it.getTotalPrice() } ?: 0.0
         val count = items?.sumOf { it.quantity } ?: 0
@@ -172,9 +166,7 @@ class CartViewModel(private val repo: CartRepo) : ViewModel() {
         _totalItems.postValue(count)
     }
 
-    /**
-     * Clear message
-     */
+
     fun clearMessage() {
         _message.postValue(null)
     }
