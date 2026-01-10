@@ -3,32 +3,33 @@ package com.project.petpoint.view
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.project.petpoint.R
 import com.project.petpoint.model.UserModel
 import com.project.petpoint.repository.UserRepoImpl
@@ -36,20 +37,18 @@ import com.project.petpoint.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.viewmodel.UserViewModel
 
-
-
 class EditProfileActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Editprofilebody()
+            EditProfileBody()
         }
     }
 }
 
 @Composable
-fun Editprofilebody() {
+fun EditProfileBody() {
 
     val context = LocalContext.current
     val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
@@ -61,6 +60,26 @@ fun Editprofilebody() {
     var email by remember { mutableStateOf(sharedPref.getString("email", "") ?: "") }
     var phone by remember { mutableStateOf(sharedPref.getString("phone", "") ?: "") }
     var address by remember { mutableStateOf(sharedPref.getString("address", "") ?: "") }
+
+    // Image state
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var profileImageUrl by remember { mutableStateOf<String?>(sharedPref.getString("profileImage", null)) }
+
+    // Image picker
+    val imagePickerLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            selectedImageUri = uri
+        }
+
+    // Fetch current image from Firebase
+    LaunchedEffect(userId) {
+        if (userId != null) {
+            userViewModel.getUserById(userId)
+            userViewModel.users.observeForever { user ->
+                user?.profileImage?.let { profileImageUrl = it }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -84,32 +103,24 @@ fun Editprofilebody() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        /* -------- PROFILE IMAGE WITH CHANGE UI (ADDED ONLY THIS) -------- */
-
+        // Profile Image Box
         Box(
             modifier = Modifier.size(120.dp),
             contentAlignment = Alignment.BottomEnd
         ) {
 
-            Image(
-                painter = painterResource(id = R.drawable.userprofile),
+            AsyncImage(
+                model = selectedImageUri ?: profileImageUrl ?: R.drawable.userprofile,
                 contentDescription = "Profile Image",
                 modifier = Modifier
                     .size(110.dp)
                     .clip(CircleShape)
-                    .border(3.dp, Color(0xFF9EC760), CircleShape)
-                    .align(Alignment.Center),
+                    .border(3.dp, Color(0xFF9EC760), CircleShape),
                 contentScale = ContentScale.Crop
             )
 
             IconButton(
-                onClick = {
-                    Toast.makeText(
-                        context,
-                        "Change profile picture clicked",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                },
+                onClick = { imagePickerLauncher.launch("image/*") },
                 modifier = Modifier
                     .size(36.dp)
                     .background(Color.White, CircleShape)
@@ -120,14 +131,12 @@ fun Editprofilebody() {
                     contentDescription = "Change Profile Picture",
                     tint = VividAzure
                 )
-
             }
         }
 
-        /* -------------------------------------------------------------- */
-
         Spacer(modifier = Modifier.height(20.dp))
 
+        // User info fields
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
@@ -196,6 +205,7 @@ fun Editprofilebody() {
 
             Button(
                 onClick = {
+
                     val editor = sharedPref.edit()
                     editor.putString("name", name)
                     editor.putString("email", email)
@@ -204,6 +214,7 @@ fun Editprofilebody() {
                     editor.apply()
 
                     if (userId != null) {
+
                         val updatedUser = UserModel(
                             userId = userId,
                             name = name,
@@ -212,7 +223,17 @@ fun Editprofilebody() {
                             phonenumber = phone
                         )
 
-                        userViewModel.addUserToDatabase(userId, updatedUser) { _, message ->
+                        if (selectedImageUri != null) {
+                            userViewModel.uploadProfileImage(context, selectedImageUri!!) { imageUrl ->
+                                if (imageUrl != null) {
+                                    userViewModel.updateProfileImage(userId, imageUrl)
+                                    profileImageUrl = imageUrl
+                                    editor.putString("profileImage", imageUrl).apply()
+                                }
+                            }
+                        }
+
+                        userViewModel.updateProfile(userId, updatedUser) { _, message ->
                             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                         }
                     }
