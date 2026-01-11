@@ -146,10 +146,11 @@ fun Editprofilebody(){
             Text(text = "Email", fontSize = 18.sp)
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 6.dp),
+                readOnly = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 shape = RoundedCornerShape(25.dp),
                 colors = TextFieldDefaults.colors(
@@ -157,6 +158,7 @@ fun Editprofilebody(){
                     focusedContainerColor = Color.White
                 )
             )
+
 
             Spacer(modifier = Modifier.height(12.dp))
             Text(text = "Phone", fontSize = 18.sp)
@@ -196,7 +198,7 @@ fun Editprofilebody(){
             Button(
                 onClick = {
 
-                    // 1️ Update LOCAL data
+                    // Update LOCAL data
                     val editor = sharedPref.edit()
                     editor.putString("name", name)
                     editor.putString("email", email)
@@ -204,7 +206,7 @@ fun Editprofilebody(){
                     editor.putString("address", address)
                     editor.apply()
 
-                    // 2️ Update DATABASE data
+                    // Update DATABASE data
                     if (userId != null) {
                         val updatedUser = UserModel(
                             userId = userId,

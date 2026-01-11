@@ -1,5 +1,6 @@
 package com.project.petpoint.view
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -74,15 +75,23 @@ fun ProfileScreen() {
                     .clip(CircleShape)
             )}
 
-            item {
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Text(text = "Name", fontSize = 22.sp, color = Color.Black)
-            }
+                item {
+                    Spacer(modifier = Modifier.height(10.dp))
 
 
-            item {
+                    val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
+                    val userName = sharedPref.getString("name", "Guest")
+
+                    Text(
+                        text = userName ?: "Guest",
+                        fontSize = 22.sp,
+                        color = Color.Black
+                    )
+                }
+
+
+
+                item {
 
                 Spacer(modifier = Modifier.height(10.dp))
 
