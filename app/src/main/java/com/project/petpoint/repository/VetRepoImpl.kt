@@ -7,96 +7,89 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.project.petpoint.model.VetModel
 
-class VetRepoImpl : VetRepo{
+class VetRepoImpl : VetRepo {
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     private val ref: DatabaseReference = database.getReference("doctors")
 
-    override fun addDoctor(
-        model: VetModel,
-        callback: (Boolean, String) -> Unit
-    ) {
-        val vetId = ref.push().key ?: return
+    override fun addDoctor(model: VetModel, callback: (Boolean, String) -> Unit) {
+        val vetId = ref.push().key ?: run {
+            callback(false, "Failed to generate ID")
+            return
+        }
         val vet = model.copy(vetId = vetId)
 
         ref.child(vetId).setValue(vet)
-            .addOnCompleteListener {
-                if (it.isSuccessful) {
-                    callback(true, "Doctor added successfully")
-                } else {
-                    callback(false, it.exception?.message.toString())
-                }
+            .addOnSuccessListener {
+                callback(true, "Doctor added successfully")
+            }
+            .addOnFailureListener { e ->
+                callback(false, e.message ?: "Failed to add doctor")
             }
     }
 
-    override fun updateDoctor(
-        model: VetModel,
-        callback: (Boolean, String) -> Unit
-    ) {
+    override fun updateDoctor(model: VetModel, callback: (Boolean, String) -> Unit) {
+        if (model.vetId.isBlank()) {
+            callback(false, "Invalid doctor ID")
+            return
+        }
+
         ref.child(model.vetId)
             .updateChildren(model.toMap())
-            .addOnCompleteListener {
-                if (it.isSuccessful) {
-                    callback(true, "Doctor updated successfully")
-                } else {
-                    callback(false, it.exception?.message.toString())
-                }
+            .addOnSuccessListener {
+                callback(true, "Doctor updated successfully")
+            }
+            .addOnFailureListener { e ->
+                callback(false, e.message ?: "Failed to update")
             }
     }
 
-    override fun deleteDoctor(
-        vetId: String,
-        callback: (Boolean, String) -> Unit
-    ) {
+    override fun deleteDoctor(vetId: String, callback: (Boolean, String) -> Unit) {
+        if (vetId.isBlank()) {
+            callback(false, "Invalid doctor ID")
+            return
+        }
+
         ref.child(vetId)
             .removeValue()
-            .addOnCompleteListener {
-                if (it.isSuccessful) {
-                    callback(true, "Doctor deleted successfully")
-                } else {
-                    callback(false, it.exception?.message.toString())
-                }
+            .addOnSuccessListener {
+                callback(true, "Doctor deleted successfully")
+            }
+            .addOnFailureListener { e ->
+                callback(false, e.message ?: "Failed to delete")
             }
     }
 
-    override fun getDoctorById(
-        vetId: String,
-        callback: (Boolean, String, VetModel?) -> Unit
-    ) {
-        ref.child(vetId)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()) {
-                        val vet = snapshot.getValue(VetModel::class.java)
-                        callback(true, "Doctor fetched successfully", vet)
-                    }
-                }
+    override fun getDoctorById(vetId: String, callback: (Boolean, String, VetModel?) -> Unit) {
+        if (vetId.isBlank()) {
+            callback(false, "Invalid doctor ID", null)
+            return
+        }
 
-                override fun onCancelled(error: DatabaseError) {
-                    callback(false, error.message, null)
-                }
-            })
-    }
-
-    override fun getAllDoctors(
-        callback: (Boolean, String, List<VetModel>?) -> Unit
-    ) {
-        ref.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
+        ref.child(vetId).get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val snapshot = task.result
                 if (snapshot.exists()) {
-                    val doctors = mutableListOf<VetModel>()
-                    for (data in snapshot.children) {
-                        val vet = data.getValue(VetModel::class.java)
-                        if (vet != null) {
-                            doctors.add(vet)
-                        }
-                    }
-                    callback(true, "Doctors fetched successfully", doctors)
+                    val vet = snapshot.getValue(VetModel::class.java)
+                    callback(true, "Doctor fetched", vet)
+                } else {
+                    callback(false, "Doctor not found", null)
                 }
+            } else {
+                callback(false, task.exception?.message ?: "Failed to fetch doctor", null)
             }
+        }
+    }
 
-            override fun onCancelled(error: DatabaseError) {
-                callback(false, error.message, emptyList())
+    override fun getAllDoctors(callback: (Boolean, String, List<VetModel>?) -> Unit) {
+        ref.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val doctors = task.result.children.mapNotNull {
+                    it.getValue(VetModel::class.java)
+                }
+                callback(true, "Success", doctors)
+            } else {
+                callback(false, task.exception?.message ?: "Failed to load doctors", null)
             }
-        })
+        }
     }
 }
