@@ -23,8 +23,8 @@ class VetViewModel(val repo: VetRepo) : ViewModel() {
     private val _doctor = MutableLiveData<VetModel?>()
     val doctor: MutableLiveData<VetModel?> get() = _doctor
 
-    private val _allDoctors = MutableLiveData<List<VetModel>?>()
-    val allDoctors: MutableLiveData<List<VetModel>?> get() = _allDoctors
+    private val _allDoctors = MutableLiveData<List<VetModel>>(emptyList())
+    val allDoctors: MutableLiveData<List<VetModel>> get() = _allDoctors
 
     fun getDoctorById(vetId: String) {
         repo.getDoctorById(vetId) { success, msg, data ->
