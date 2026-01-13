@@ -11,8 +11,7 @@ data class VetModel(
     val schedule: String = "",
     val address: String = "",
 ){
-    fun toMap() : Map<String,Any?>{
-        return mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
             "vetId" to vetId,
             "name" to name,
             "specialization" to specialization,
@@ -22,4 +21,3 @@ data class VetModel(
             "address" to address,
         )
     }
-}
