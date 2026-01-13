@@ -13,10 +13,16 @@ data class ProductModel(
 ){
     fun toMap() : Map<String,Any?>{
         return mapOf(
+            "imageUrl" to imageUrl,
+            "categoryId" to categoryId,
+            "productId" to productId,
             "name" to name,
             "price" to price,
             "description" to description,
-            "stock" to stock
+            "stock" to stock,
+
+
+
         )
     }
 

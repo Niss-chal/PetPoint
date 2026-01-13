@@ -20,6 +20,9 @@
             android:name=".view.VetDetailActivity"
             android:exported="true"
             android:label="@string/title_activity_vet_detail"
+            android:name=".view.CartActivity"
+            android:exported="true"
+            android:label="@string/title_activity_cart"
             android:theme="@style/Theme.PetPoint">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
