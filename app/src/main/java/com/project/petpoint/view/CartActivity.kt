@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -127,8 +128,8 @@ fun CartBody() {
                 CartBottomBar(
                     totalPrice = totalPrice,
                     onCheckout = {
-                        // TODO: Navigate to checkout
-                        Toast.makeText(context, "Proceeding to checkout...", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(context, CheckoutActivity::class.java)
+                        context.startActivity(intent)
                     }
                 )
             }
