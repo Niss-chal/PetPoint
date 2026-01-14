@@ -28,6 +28,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".view.VetDetailActivity"
+            android:exported="true"
+            android:label="@string/title_activity_vet_detail"
             android:name=".view.CartActivity"
             android:exported="true"
             android:label="@string/title_activity_cart"
