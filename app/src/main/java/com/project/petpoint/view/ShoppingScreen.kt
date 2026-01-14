@@ -188,38 +188,33 @@ fun UserProductCard(
                     .background(Color.LightGray),
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = "https://res.cloudinary.com/dlnlxghqk/image/upload/v1768210540/Snapchat-1158614951.jpg",
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                )
-//                if (product.imageUrl.isNotEmpty() && product.imageUrl != "") {
-//                    AsyncImage(
-//                        model = product.imageUrl,
-//                        contentDescription = null,
-//                        modifier = Modifier.fillMaxWidth().height(110.dp).clip(RoundedCornerShape(8.dp)),
-//                        contentScale = ContentScale.Crop,
-//                        error = painterResource(R.drawable.image)
-//                    )
-//                } else {
-//                    // Placeholder when no image
-//                    Column(
-//                        horizontalAlignment = Alignment.CenterHorizontally
-//                    ) {
-//                        Icon(
-//                            painter = painterResource(id = android.R.drawable.ic_menu_gallery),
-//                            contentDescription = "No Image",
-//                            tint = Color.Gray,
-//                            modifier = Modifier.size(48.dp)
-//                        )
-//                        Spacer(modifier = Modifier.height(4.dp))
-//                        Text(
-//                            text = "No Image",
-//                            fontSize = 12.sp,
-//                            color = Color.Gray
-//                        )
-//                    }
-//                }
+                if (product.imageUrl.isNotEmpty() && product.imageUrl != "") {
+                    AsyncImage(
+                        model = product.imageUrl,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxWidth().height(110.dp).clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop,
+                        error = painterResource(R.drawable.image)
+                    )
+                } else {
+                    // Placeholder when no image
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            painter = painterResource(id = android.R.drawable.ic_menu_gallery),
+                            contentDescription = "No Image",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "No Image",
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
