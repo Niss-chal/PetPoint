@@ -40,10 +40,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+//import coil3.compose.AsyncImage
+//import coil3.compose.LocalPlatformContext
+//import coil3.request.ImageRequest
+//import coil3.request.crossfade
 import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.model.CartModel
 import com.project.petpoint.repository.CartRepoImpl
@@ -538,7 +540,7 @@ fun OrderItemCard(item: CartModel) {
         ) {
             if (item.imageUrl.isNotEmpty()) {
                 AsyncImage(
-                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                    model = ImageRequest.Builder(LocalContext.current)
                         .data(item.imageUrl)
                         .crossfade(true)
                         .build(),
