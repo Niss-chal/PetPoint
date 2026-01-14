@@ -13,17 +13,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,19 +26,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.model.VetModel
 import com.project.petpoint.repository.VetRepoImpl
-import com.project.petpoint.view.ui.theme.Azure
-import com.project.petpoint.view.ui.theme.Black
-import com.project.petpoint.view.ui.theme.GreyOrange
-import com.project.petpoint.view.ui.theme.VividAzure
-import com.project.petpoint.view.ui.theme.White
+import com.project.petpoint.view.ui.theme.*
 import com.project.petpoint.viewmodel.VetViewModel
 
 @Composable
 fun VetManagementScreen() {
-    val vetViewModel = remember { VetViewModel(VetRepoImpl()) }
-
+    val viewModel = remember { VetViewModel(VetRepoImpl()) }
     val context = LocalContext.current
 
+    val allDoctors by viewModel.allDoctors.observeAsState(initial = emptyList())
+    val isLoading by viewModel.loading.observeAsState(initial = false)
+    val errorMessage by viewModel.errorMessage.observeAsState(initial = null)
+
+    var showAddDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+
+    // Fields for add/edit
     var name by remember { mutableStateOf("") }
     var specialization by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -52,535 +49,336 @@ fun VetManagementScreen() {
     var schedule by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
 
-    var showAddDialog by remember { mutableStateOf(false) }
-    var showEditDialog by remember { mutableStateOf(false) }
-    var selectedVetId by remember { mutableStateOf("") }
+    // For editing - keep track of current vet being edited
+    var editingVetId by remember { mutableStateOf<String?>(null) }
 
-    val allDoctors = vetViewModel.allDoctors.observeAsState(initial = emptyList())
-    val doctor = vetViewModel.doctor.observeAsState(initial = null)
-
+    // Load doctors when screen appears
     LaunchedEffect(Unit) {
-        vetViewModel.getAllDoctors()
+        viewModel.getAllDoctors()
     }
 
-    LaunchedEffect(doctor.value) {
-        doctor.value?.let {
-            name = it.name
-            specialization = it.specialization
-            email = it.email
-            phonenumber = it.phonenumber
-            schedule = it.schedule
-            address = it.address
+    // When editing starts, fill the fields
+    LaunchedEffect(editingVetId) {
+        if (editingVetId != null) {
+            viewModel.getDoctorById(editingVetId!!)
         }
     }
 
-    // Add Dialog
-    if (showAddDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showAddDialog = false
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    val model = VetModel(
-                        name = name,
-                        specialization = specialization,
-                        email = email,
-                        phonenumber = phonenumber,
-                        schedule = schedule,
-                        address = address
-                    )
-                    vetViewModel.addDoctor(model) { success, message ->
-                        if (success) {
-                            showAddDialog = false
-                            Toast.makeText(context, "Doctor added successfully", Toast.LENGTH_SHORT).show()
-                            vetViewModel.getAllDoctors()
-                        } else {
-                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }) { Text("Add") }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showAddDialog = false
-                }) { Text("Cancel") }
-            },
-            title = { Text("Add Veterinarian") },
-            text = {
-                Column {
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedTextField(
-                        value = name,
-                        onValueChange = { data ->
-                            name = data
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text("Enter the name")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GreyOrange,
-                            unfocusedContainerColor = GreyOrange,
-                            focusedIndicatorColor = Blue,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedTextField(
-                        value = specialization,
-                        onValueChange = { data ->
-                            specialization = data
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text("Enter the specialization")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GreyOrange,
-                            unfocusedContainerColor = GreyOrange,
-                            focusedIndicatorColor = Blue,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { data ->
-                            email = data
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text("Enter the email")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GreyOrange,
-                            unfocusedContainerColor = GreyOrange,
-                            focusedIndicatorColor = Blue,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedTextField(
-                        value = phonenumber,
-                        onValueChange = { data ->
-                            phonenumber = data
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Phone
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text("Enter the phone number")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GreyOrange,
-                            unfocusedContainerColor = GreyOrange,
-                            focusedIndicatorColor = Blue,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedTextField(
-                        value = schedule,
-                        onValueChange = { data ->
-                            schedule = data
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text("Enter the schedule")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GreyOrange,
-                            unfocusedContainerColor = GreyOrange,
-                            focusedIndicatorColor = Blue,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedTextField(
-                        value = address,
-                        onValueChange = { data ->
-                            address = data
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text("Enter the address")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GreyOrange,
-                            unfocusedContainerColor = GreyOrange,
-                            focusedIndicatorColor = Blue,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-                }
-            }
-        )
+    // Observe selected doctor to fill edit fields
+    val selectedDoctor by viewModel.selectedDoctor.observeAsState(null)
+    LaunchedEffect(selectedDoctor) {
+        selectedDoctor?.let { vet ->
+            name = vet.name
+            specialization = vet.specialization
+            email = vet.email
+            phonenumber = vet.phonenumber
+            schedule = vet.schedule
+            address = vet.address
+        }
     }
 
-    // Edit Dialog
-    if (showEditDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showEditDialog = false
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    val model = VetModel(
-                        vetId = selectedVetId,
-                        name = name,
-                        specialization = specialization,
-                        email = email,
-                        phonenumber = phonenumber,
-                        schedule = schedule,
-                        address = address
-                    )
-                    vetViewModel.updateDoctor(model) { success, message ->
-                        if (success) {
-                            showEditDialog = false
-                            Toast.makeText(context, "Doctor updated successfully", Toast.LENGTH_SHORT).show()
-                            vetViewModel.getAllDoctors()
-                        } else {
-                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }) { Text("Update") }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showEditDialog = false
-                }) { Text("Cancel") }
-            },
-            title = { Text("Update Veterinarian") },
-            text = {
-                Column {
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedTextField(
-                        value = name,
-                        onValueChange = { data ->
-                            name = data
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text("Enter the name")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GreyOrange,
-                            unfocusedContainerColor = GreyOrange,
-                            focusedIndicatorColor = Blue,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedTextField(
-                        value = specialization,
-                        onValueChange = { data ->
-                            specialization = data
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text("Enter the specialization")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GreyOrange,
-                            unfocusedContainerColor = GreyOrange,
-                            focusedIndicatorColor = Blue,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { data ->
-                            email = data
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text("Enter the email")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GreyOrange,
-                            unfocusedContainerColor = GreyOrange,
-                            focusedIndicatorColor = Blue,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedTextField(
-                        value = phonenumber,
-                        onValueChange = { data ->
-                            phonenumber = data
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Phone
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text("Enter the phone number")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GreyOrange,
-                            unfocusedContainerColor = GreyOrange,
-                            focusedIndicatorColor = Blue,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedTextField(
-                        value = schedule,
-                        onValueChange = { data ->
-                            schedule = data
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text("Enter the schedule")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GreyOrange,
-                            unfocusedContainerColor = GreyOrange,
-                            focusedIndicatorColor = Blue,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedTextField(
-                        value = address,
-                        onValueChange = { data ->
-                            address = data
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text("Enter the address")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GreyOrange,
-                            unfocusedContainerColor = GreyOrange,
-                            focusedIndicatorColor = Blue,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-                }
-            }
-        )
-    }
-
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Azure)
             .padding(16.dp)
     ) {
-        item {
-            // Title
-            Text(
-                text = "Veterinarian Management",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
+        Text(
+            text = "Veterinarian Management",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
 
-            Spacer(modifier = Modifier.height(30.dp))
-        }
+        Spacer(modifier = Modifier.height(16.dp))
 
-        item {
-            HorizontalDivider(
-                color = Color.Gray.copy(alpha = 0.7f),
-                thickness = 1.dp
-            )
-            Spacer(modifier = Modifier.height(30.dp))
-        }
-
-        item {
-            // Add Veterinarian Button
-            Button(
-                onClick = {
-                    // Reset fields for add
-                    name = ""
-                    specialization = ""
-                    email = ""
-                    phonenumber = ""
-                    schedule = ""
-                    address = ""
-                    showAddDialog = true
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = VividAzure),
-                shape = RoundedCornerShape(25.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(45.dp)
-            ) {
-                Text("+ Add Veterinarian", color = Color.White, fontSize = 16.sp)
-            }
-
-            Spacer(modifier = Modifier.height(30.dp))
-        }
-
-        // Doctor list
-        items(allDoctors.value?.size ?: 0) { index ->
-            val data = allDoctors.value!![index]
-            VetCard(
-                name = data.name,
-                specialization = data.specialization,
-                email = data.email,
-                phone = data.phonenumber,
-                schedule = data.schedule,
-                address = data.address,
-                onEdit = {
-                    selectedVetId = data.vetId
-                    vetViewModel.getDoctorById(data.vetId)
-                    showEditDialog = true
-                },
-                onDelete = {
-                    AlertDialog.Builder(context)
-                        .setTitle("Delete Veterinarian")
-                        .setMessage("Are you sure you want to delete ${data.name}?")
-                        .setPositiveButton("Delete") { _, _ ->
-                            vetViewModel.deleteDoctor(data.vetId) { success, message ->
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                if (success) {
-                                    vetViewModel.getAllDoctors()
-                                }
-                            }
-                        }
-                        .setNegativeButton("Cancel", null)
-                        .show()
+        // Loading / Error state
+        when {
+            isLoading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
-            )
+            }
+            errorMessage != null -> {
+                Text(
+                    text = "Error: $errorMessage",
+                    color = Color.Red,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
+            else -> {
+                Button(
+                    onClick = {
+                        // Reset fields for new doctor
+                        name = ""
+                        specialization = ""
+                        email = ""
+                        phonenumber = ""
+                        schedule = ""
+                        address = ""
+                        showAddDialog = true
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = VividAzure),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    Text("+ Add New Veterinarian", color = White)
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                LazyColumn {
+                    items(allDoctors) { vet ->
+                        VetAdminCard(
+                            vet = vet,
+                            onEdit = {
+                                editingVetId = vet.vetId
+                                showEditDialog = true
+                            },
+                            onDelete = {
+                                AlertDialog.Builder(context)
+                                    .setTitle("Delete Veterinarian")
+                                    .setMessage("Are you sure you want to delete ${vet.name}?")
+                                    .setPositiveButton("Delete") { _, _ ->
+                                        viewModel.deleteDoctor(vet.vetId) { success, msg ->
+                                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                            if (success) {
+                                                viewModel.getAllDoctors()
+                                            }
+                                        }
+                                    }
+                                    .setNegativeButton("Cancel", null)
+                                    .show()
+                            }
+                        )
+                    }
+                }
+            }
         }
+    }
+
+    // ── Add Doctor Dialog ───────────────────────────────────────
+    if (showAddDialog) {
+        VetFormDialog(
+            title = "Add Veterinarian",
+            name = name,
+            specialization = specialization,
+            email = email,
+            phonenumber = phonenumber,
+            schedule = schedule,
+            address = address,
+            onNameChange = { name = it },
+            onSpecializationChange = { specialization = it },
+            onEmailChange = { email = it },
+            onPhoneChange = { phonenumber = it },
+            onScheduleChange = { schedule = it },
+            onAddressChange = { address = it },
+            onSave = {
+                val model = VetModel(
+                    name = name.trim(),
+                    specialization = specialization.trim(),
+                    email = email.trim(),
+                    phonenumber = phonenumber.trim(),
+                    schedule = schedule.trim(),
+                    address = address.trim()
+                )
+                viewModel.addDoctor(model) { success, message ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    if (success) {
+                        showAddDialog = false
+                        viewModel.getAllDoctors()
+                    }
+                }
+            },
+            onDismiss = { showAddDialog = false }
+        )
+    }
+
+    // ── Edit Doctor Dialog ───────────────────────────────────────
+    if (showEditDialog && selectedDoctor != null) {
+        VetFormDialog(
+            title = "Edit Veterinarian",
+            name = name,
+            specialization = specialization,
+            email = email,
+            phonenumber = phonenumber,
+            schedule = schedule,
+            address = address,
+            onNameChange = { name = it },
+            onSpecializationChange = { specialization = it },
+            onEmailChange = { email = it },
+            onPhoneChange = { phonenumber = it },
+            onScheduleChange = { schedule = it },
+            onAddressChange = { address = it },
+            onSave = {
+                val model = VetModel(
+                    vetId = selectedDoctor!!.vetId,
+                    name = name.trim(),
+                    specialization = specialization.trim(),
+                    email = email.trim(),
+                    phonenumber = phonenumber.trim(),
+                    schedule = schedule.trim(),
+                    address = address.trim()
+                )
+                viewModel.updateDoctor(model) { success, message ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    if (success) {
+                        showEditDialog = false
+                        editingVetId = null
+                        viewModel.clearSelectedDoctor()
+                        viewModel.getAllDoctors()
+                    }
+                }
+            },
+            onDismiss = {
+                showEditDialog = false
+                editingVetId = null
+                viewModel.clearSelectedDoctor()
+            }
+        )
     }
 }
 
 @Composable
-fun VetCard(
+private fun VetFormDialog(
+    title: String,
     name: String,
     specialization: String,
     email: String,
-    phone: String,
+    phonenumber: String,
     schedule: String,
     address: String,
+    onNameChange: (String) -> Unit,
+    onSpecializationChange: (String) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onPhoneChange: (String) -> Unit,
+    onScheduleChange: (String) -> Unit,
+    onAddressChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = onNameChange,
+                    label = { Text("Name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = specialization,
+                    onValueChange = onSpecializationChange,
+                    label = { Text("Specialization") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = onEmailChange,
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = phonenumber,
+                    onValueChange = onPhoneChange,
+                    label = { Text("Phone Number") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = schedule,
+                    onValueChange = onScheduleChange,
+                    label = { Text("Schedule") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = address,
+                    onValueChange = onAddressChange,
+                    label = { Text("Address") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onSave) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+private fun VetAdminCard(
+    vet: VetModel,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     Card(
-        shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = White)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-
-            Text(name, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(specialization, color = VividAzure, fontSize = 15.sp)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            DetailRow("Email", email)
-            DetailRow("Phone", phone)
-            DetailRow("Schedule", schedule)
-            DetailRow("Address", address)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            HorizontalDivider(color = Color.Gray.copy(alpha = 0.7f))
+            Text(vet.name, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(vet.specialization, color = VividAzure, fontSize = 15.sp)
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            DetailRow("Email", vet.email)
+            DetailRow("Phone", vet.phonenumber)
+            DetailRow("Schedule", vet.schedule)
+            DetailRow("Address", vet.address)
 
-                // Edit
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable { onEdit() }
                 ) {
                     Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Black)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Edit", fontSize = 14.sp, color = Color.Black)
+                    Text("Edit", color = Color.Black)
                 }
 
-                // Delete
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable { onDelete() }
                 ) {
                     Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Delete", fontSize = 14.sp, color = Color.Red)
+                    Text("Delete", color = Color.Red)
                 }
             }
         }
