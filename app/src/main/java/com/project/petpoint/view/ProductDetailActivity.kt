@@ -26,19 +26,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.google.firebase.auth.FirebaseAuth
+import com.project.petpoint.repository.CartRepoImpl
 import com.project.petpoint.repository.ProductRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.Green
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
+import com.project.petpoint.viewmodel.CartViewModel
 import com.project.petpoint.viewmodel.ProductViewModel
 
 class ProductDetailActivity : ComponentActivity() {
@@ -60,8 +59,11 @@ class ProductDetailActivity : ComponentActivity() {
 @Composable
 fun ProductDescriptionScreen(productId: String) {
     val viewModel = remember { ProductViewModel(ProductRepoImpl()) }
+    val cartViewModel = remember { CartViewModel(CartRepoImpl()) }
     val context = LocalContext.current
     val activity = context as? Activity
+
+    val userId = FirebaseAuth.getInstance().currentUser?.uid?: ""
 
     val product by viewModel.selectedProduct.observeAsState()
     val loading by viewModel.loading.observeAsState(initial = false)
@@ -132,7 +134,7 @@ fun ProductDescriptionScreen(productId: String) {
                     ) {
                         if (!product!!.imageUrl.isNullOrEmpty() && product!!.imageUrl != "") {
                             AsyncImage(
-                                model = ImageRequest.Builder(LocalPlatformContext.current)
+                                model = ImageRequest.Builder(LocalContext.current)
                                     .data(product!!.imageUrl)
                                     .crossfade(true)
                                     .build(),
@@ -233,11 +235,28 @@ fun ProductDescriptionScreen(productId: String) {
                     }
                 }
 
-                // Add to Cart Button (Fixed at bottom)
+                // Add to Cart Button
                 if (product != null) {
                     Button(
                         onClick = {
-                            viewModel.addToCart(product!!)
+
+                            val currentProduct = product!!
+
+
+                            if (userId.isEmpty()) {
+                                Toast.makeText(context, "Please login first", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+
+                            cartViewModel.addToCart(currentProduct, userId){
+                                success,message ->
+                                if(success){
+                                    Toast.makeText(context,message,Toast.LENGTH_SHORT).show()
+                                }
+                                else{
+                                    Toast.makeText(context,message,Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()

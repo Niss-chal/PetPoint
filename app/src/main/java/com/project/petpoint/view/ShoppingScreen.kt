@@ -28,15 +28,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
+import coil.compose.AsyncImage
+import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.R
 import com.project.petpoint.model.ProductModel
+import com.project.petpoint.repository.CartRepoImpl
 import com.project.petpoint.repository.ProductRepoImpl
 import com.project.petpoint.ui.theme.Black
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.Green
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
+import com.project.petpoint.viewmodel.CartViewModel
 import com.project.petpoint.viewmodel.ProductViewModel
 
 
@@ -44,12 +47,16 @@ import com.project.petpoint.viewmodel.ProductViewModel
 @Composable
 fun ShopScreen() {
     val viewModel = remember { ProductViewModel(ProductRepoImpl()) }
+    val cartViewModel = remember { CartViewModel(CartRepoImpl()) }
     val context = LocalContext.current
 
     val searchQuery by viewModel.searchQuery.observeAsState(initial = "")
     val filteredProducts by viewModel.filteredProducts.observeAsState(initial = emptyList())
     val loading by viewModel.loading.observeAsState(initial = false)
     val message by viewModel.message.observeAsState()
+
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
 
     LaunchedEffect(Unit) {
         viewModel.getAllProduct()
@@ -136,7 +143,13 @@ fun ShopScreen() {
                                 context.startActivity(intent)
                             },
                             onAddToCart = {
-                                viewModel.addToCart(product)
+                                cartViewModel.addToCart(product, userId) { success, message ->
+                                    if (success) {
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                             }
 
                         )
