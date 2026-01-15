@@ -1,5 +1,7 @@
 package com.project.petpoint.viewmodel
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseUser
@@ -11,11 +13,13 @@ import com.project.petpoint.model.UserModel
 import com.project.petpoint.repository.UserRepo
 
 class UserViewModel(val repo: UserRepo) : ViewModel() {
+
     fun login(
-        email: String, password: String,
-        callback: (Boolean, String)->Unit
-    ){
-        repo.login(email,password,callback)
+        email: String,
+        password: String,
+        callback: (Boolean, String) -> Unit
+    ) {
+        repo.login(email, password, callback)
     }
 
     fun checkUserRole(
@@ -28,73 +32,71 @@ class UserViewModel(val repo: UserRepo) : ViewModel() {
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.exists()) {
-                        val role =snapshot.child("role").getValue(String::class.java)
-                        callback(role?: "buyer")
-
-                    } else{
+                        val role = snapshot.child("role").getValue(String::class.java)
+                        callback(role ?: "buyer")
+                    } else {
                         callback(null)
                     }
-                    }
+                }
+
                 override fun onCancelled(error: DatabaseError) {
                     callback(null)
                 }
             })
-
     }
 
-
-
     fun updateProfile(
-        userId: String, model: UserModel,
-        callback: (Boolean,String) -> Unit
-    ){
-        repo.updateProfile(userId,model,callback)
+        userId: String,
+        model: UserModel,
+        callback: (Boolean, String) -> Unit
+    ) {
+        repo.updateProfile(userId, model, callback)
     }
 
     fun forgotPassword(
         email: String,
-        callback: (Boolean,String) -> Unit
-    ){
-        repo.forgotPassword(email,callback)
+        callback: (Boolean, String) -> Unit
+    ) {
+        repo.forgotPassword(email, callback)
     }
 
     fun logout(
         callback: (Boolean, String) -> Unit
-    ){
+    ) {
         repo.logout(callback)
     }
 
     fun deleteAccount(
-        userId: String, callback: (Boolean, String) -> Unit
-    ){
-        repo.deleteAccount(userId,callback)
+        userId: String,
+        callback: (Boolean, String) -> Unit
+    ) {
+        repo.deleteAccount(userId, callback)
     }
 
     fun register(
-        email: String, password: String,
+        email: String,
+        password: String,
         callback: (Boolean, String, String) -> Unit
-    ){
-        repo.register(email,password,callback)
+    ) {
+        repo.register(email, password, callback)
     }
 
-    fun getCurrentUser() : FirebaseUser?{
+    fun getCurrentUser(): FirebaseUser? {
         return repo.getCurrentUser()
     }
 
-    private val _loading  = MutableLiveData<Boolean>()
-    val loading : MutableLiveData<Boolean>
+    private val _loading = MutableLiveData<Boolean>()
+    val loading: MutableLiveData<Boolean>
         get() = _loading
 
     private val _allUsers = MutableLiveData<List<UserModel>?>()
-    val allUsers : MutableLiveData<List<UserModel>?>
-        get()=_allUsers
+    val allUsers: MutableLiveData<List<UserModel>?>
+        get() = _allUsers
 
-    fun getAllUser(
-    ){
+    fun getAllUser() {
         _loading.postValue(true)
-        repo.getAllUser {
-            success,message,data ->
-            if(success){
+        repo.getAllUser { success, _, data ->
+            if (success) {
                 _loading.postValue(false)
                 _allUsers.postValue(data)
             }
@@ -102,16 +104,15 @@ class UserViewModel(val repo: UserRepo) : ViewModel() {
     }
 
     private val _users = MutableLiveData<UserModel?>()
-    val users : MutableLiveData<UserModel?>
-        get()=_users
+    val users: MutableLiveData<UserModel?>
+        get() = _users
 
     fun getUserById(
         userId: String
-    ){
+    ) {
         _loading.postValue(true)
-        repo.getUserById(userId){
-            success,message,data ->
-            if (success){
+        repo.getUserById(userId) { success, _, data ->
+            if (success) {
                 _loading.postValue(false)
                 _users.postValue(data)
             }
@@ -122,7 +123,24 @@ class UserViewModel(val repo: UserRepo) : ViewModel() {
         userId: String,
         model: UserModel,
         callback: (Boolean, String) -> Unit
-    ){
-        repo.addUserToDatabase(userId,model,callback)
+    ) {
+        repo.addUserToDatabase(userId, model, callback)
+    }
+
+    // Upload image to Cloudinary
+    fun uploadProfileImage(
+        context: Context,
+        imageUri: Uri,
+        callback: (String?) -> Unit
+    ) {
+        repo.uploadProfileImage(context, imageUri, callback)
+    }
+
+    // Save image URL to Firebase
+    fun updateProfileImage(
+        userId: String,
+        imageUrl: String
+    ) {
+        repo.updateProfileImage(userId, imageUrl)
     }
 }
