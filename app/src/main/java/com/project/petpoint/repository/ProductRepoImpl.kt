@@ -133,7 +133,7 @@ class ProductRepoImpl : ProductRepo {
                             }
                         }
 
-                        callback(true, "product fetched", allProducts)
+                        callback(true, "Product fetched", allProducts)
                     }
                 }
 
