@@ -1,308 +1,247 @@
 package com.project.petpoint.view
 
+import android.app.AlertDialog
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.project.petpoint.R
+import coil.compose.AsyncImage
+import com.project.petpoint.model.LostFoundModel
+import com.project.petpoint.repository.LostFoundRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
-import com.project.petpoint.view.ui.theme.BlanchedAlmond
-import com.project.petpoint.view.ui.theme.Blue
-import com.project.petpoint.view.ui.theme.DarkOrange
-
-
-data class LostFoundItem(
-    val id: Int,
-    val type: String,
-    val status: String,
-    val title: String,
-    val category: String,
-    val description: String,
-    val location: String,
-    val date: String,
-    val reportedBy: String
-)
-
-
-
-val lostFoundList = listOf(
-    LostFoundItem(
-        1,
-        "Lost",
-        "Pending",
-        "Blue Backpack",
-        "Bags",
-        "Blue backpack with laptop inside",
-        "Building A, 2nd Floor",
-        "Dec 10, 2025",
-        "John Smith"
-    ),
-    LostFoundItem(
-        2,
-        "Found",
-        "Resolved",
-        "Water Bottle",
-        "Accessories",
-        "Steel water bottle near cafeteria",
-        "Cafeteria",
-        "Dec 08, 2025",
-        "Emma Brown"
-    )
-)
+import com.project.petpoint.view.ui.theme.VividAzure
+import com.project.petpoint.view.ui.theme.White
+import com.project.petpoint.viewmodel.LostFoundViewModel
 
 @Composable
-fun LostandFoundManagement()
-{
+fun LostAndFoundManagementScreen() {
+    val viewModel = remember { LostFoundViewModel(LostFoundRepoImpl()) }
+    val context = LocalContext.current
 
-var search by remember { mutableStateOf("") }
-var selectedType by remember { mutableStateOf("All") }
-var selectedStatus by remember { mutableStateOf("All") }
+    val reports by viewModel.filteredReports.observeAsState(initial = emptyList())
+    val loading by viewModel.loading.observeAsState(initial = false)
+    val message by viewModel.message.observeAsState()
 
-val filteredList = lostFoundList.filter { item ->
-    val matchesSearch =
-        item.title.contains(search, true) ||
-                item.category.contains(search, true) ||
-                item.location.contains(search, true)
+    LaunchedEffect(Unit) {
+        viewModel.getAllReports()
+    }
 
-    val matchesType =
-        selectedType == "All" || item.type == selectedType
-
-    val matchesStatus =
-        selectedStatus == "All" || item.status == selectedStatus
-
-    matchesSearch && matchesType && matchesStatus
-}
-
-LazyColumn(
-modifier = Modifier
-.fillMaxSize()
-.background(Azure),
-contentPadding = PaddingValues(20.dp),
-verticalArrangement = Arrangement.spacedBy(15.dp)
-) {
-    item {
-        Column {
-            Text("Lost & Found", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Text(
-                "Manage lost and found item reports",
-                fontSize = 14.sp,
-                color = Color.Gray
-            )
+    LaunchedEffect(message) {
+        message?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearMessage()
         }
     }
-
-    item {
-        OutlinedTextField(
-            value = search,
-            onValueChange = { search = it },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text("Search by title, category or location")
-            },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.baseline_search_24),
-                    contentDescription = "Search"
-                )
-            }
-        )
-    }
-
-    item {
-        TextButton(
-            onClick = { },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Blue, RoundedCornerShape(8.dp))
-        ) {
-            Text("+ Report Item", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-
-    item {
-        FilterRow(
-            options = listOf("All", "Lost", "Found"),
-            selected = selectedType,
-            onSelect = { selectedType = it }
-        )
-    }
-
-    item {
-        FilterRow(
-            options = listOf("All", "Pending", "Resolved"),
-            selected = selectedStatus,
-            onSelect = { selectedStatus = it }
-        )
-    }
-
-    items(filteredList, key = { it.id }) {
-        LostFoundItemCard(it)
-    }
-
-    if (filteredList.isEmpty()) {
-        item {
-            Text(
-                "No results found",
-                modifier = Modifier.fillMaxWidth(),
-                color = Color.Gray,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-        }
-    }
-}
-}
-
-@Composable
-fun FilterRow(
-    options: List<String>,
-    selected: String,
-    onSelect: (String) -> Unit
-) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        options.forEach {
-            val isSelected = it == selected
-            TextButton(
-                onClick = { onSelect(it) },
-                modifier = Modifier.background(
-                    if (isSelected) Color.Blue else Color.White,
-                    RoundedCornerShape(20.dp)
-                )
-            ) {
-                Text(
-                    it,
-                    color = if (isSelected) Color.White else Color.Black
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun LostFoundItemCard(item: LostFoundItem) {
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(12.dp))
+            .fillMaxSize()
+            .background(Azure)
             .padding(16.dp)
     ) {
-
-
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-
-            Badge(
-                text = item.type,
-                color = if (item.type == "Lost") Color(0xFFFEE2E2) else Color(0xFFDCFCE7),
-                textColor = if (item.type == "Lost") Color.Red else Color(0xFF15803D)
-            )
-
-            Badge(
-                text = item.status,
-                color = BlanchedAlmond,
-                textColor = DarkOrange
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(item.title, fontWeight = FontWeight.Bold)
-        Text(item.category, color = Color.Gray, fontSize = 13.sp)
-        Text(item.description, fontSize = 13.sp)
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        InfoRow(R.drawable.baseline_location_on_24, item.location)
-        InfoRow(R.drawable.baseline_calendar_today_24, item.date)
-        InfoRow(R.drawable.baseline_person_24, item.reportedBy)
-
-        Spacer(modifier = Modifier.height(8.dp))
-
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TextButton(onClick = { /* Edit */ }) {
-                Text("Edit")
+            Text(
+                "Manage Lost & Found",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            IconButton(onClick = {
+                // Open Add screen
+                context.startActivity(
+                    Intent(context, AddLostFoundReportActivity::class.java)
+                )
+            }) {
+                Icon(Icons.Default.Add, contentDescription = "Add report", tint = VividAzure)
             }
-            TextButton(onClick = { /* Delete */ }) {
-                Text("Delete", color = Color.Red)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Filters
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            FilterChip(
+                selected = viewModel.filterType.value == "All",
+                onClick = { viewModel.setFilterType("All") },
+                label = { Text("All") }
+            )
+            FilterChip(
+                selected = viewModel.filterType.value == "Lost",
+                onClick = { viewModel.setFilterType("Lost") },
+                label = { Text("Lost") }
+            )
+            FilterChip(
+                selected = viewModel.filterType.value == "Found",
+                onClick = { viewModel.setFilterType("Found") },
+                label = { Text("Found") }
+            )
+            FilterChip(
+                selected = viewModel.filterStatus.value == "All",
+                onClick = { viewModel.setFilterStatus("All") },
+                label = { Text("All Status") }
+            )
+            FilterChip(
+                selected = viewModel.filterStatus.value == "Pending",
+                onClick = { viewModel.setFilterStatus("Pending") },
+                label = { Text("Pending") }
+            )
+            FilterChip(
+                selected = viewModel.filterStatus.value == "Resolved",
+                onClick = { viewModel.setFilterStatus("Resolved") },
+                label = { Text("Resolved") }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = VividAzure
+            )
+        } else if (reports!!.isEmpty()) {
+            Text(
+                text = "No reports found",
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = Color.Gray
+            )
+        } else {
+            LazyColumn {
+                items(reports!!) { item ->
+                    LostFoundAdminCard(
+                        item = item,
+                        onEdit = {
+                            // Open the same screen in edit mode
+                            context.startActivity(
+                                Intent(context, AddLostFoundReportActivity::class.java).apply {
+                                    putExtra("lostId", item.lostId)
+                                }
+                            )
+                        },
+                        onDelete = {
+                            AlertDialog.Builder(context)
+                                .setTitle("Delete Report")
+                                .setMessage("Are you sure you want to delete \"${item.title}\" ?")
+                                .setPositiveButton("Delete") { _, _ ->
+                                    viewModel.deleteReport(item.lostId) { success, msg ->
+                                        // Toast is already handled in ViewModel
+                                    }
+                                }
+                                .setNegativeButton("Cancel", null)
+                                .show()
+                        }
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun Badge(text: String, color: Color, textColor: Color) {
-    Box(
-        modifier = Modifier
-            .background(color, RoundedCornerShape(20.dp))
-            .padding(horizontal = 10.dp, vertical = 4.dp)
-    ) {
-        Text(text, fontSize = 12.sp, color = textColor)
-    }
-}
-
-@Composable
-fun InfoRow(
-    icon: Int,
-    text: String
+fun LostFoundAdminCard(
+    item: LostFoundModel,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(vertical = 2.dp)
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = White)
     ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = null,
-            tint = Color.Gray,
-            modifier = Modifier.size(16.dp)
-        )
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(item.title, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                    Text(
+                        item.type.uppercase(),
+                        color = if (item.type == "Lost") Color(0xFFdc2626) else Color(0xFF16a34a),
+                        fontSize = 13.sp
+                    )
+                }
+                Badge(
+                    text = item.status,
+                    background = Color(0xFFfef3c7),
+                    textColor = Color(0xFFb45309)
+                )
+            }
 
-        Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-        Text(
-            text = text,
-            fontSize = 12.sp,
-            color = Color.DarkGray
-        )
+            if (item.imageUrl.isNotBlank()) {
+                AsyncImage(
+                    model = item.imageUrl,
+                    contentDescription = item.title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            Text("Location: ${item.location}", fontSize = 14.sp, color = Color.DarkGray)
+            Text("Category: ${item.category}", fontSize = 14.sp, color = Color.DarkGray)
+            Text(
+                "Reported by: ${item.reportedBy} • ${item.date}",
+                fontSize = 13.sp,
+                color = Color.Gray
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, null, tint = Color(0xFF2563eb))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Edit", color = Color(0xFF2563eb))
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                TextButton(onClick = onDelete) {
+                    Icon(Icons.Default.Delete, null, tint = Color.Red)
+                    Spacer(Modifier.width(4.dp))
+                    Text("Delete", color = Color.Red)
+                }
+            }
+        }
     }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun LostFoundPreview() {
-    LostAndFoundScreen()
 }

@@ -17,6 +17,28 @@
         android:theme="@style/Theme.PetPoint"
         tools:replace="android:fullBackupContent">
         <activity
+            android:name=".view.AddLostFoundReportActivity"
+            android:exported="true"
+            android:label="@string/title_activity_add_lost_found_report"
+            android:theme="@style/Theme.PetPoint">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".view.LostandFoundDetailActivity"
+            android:exported="true"
+            android:label="@string/title_activity_lostand_found_detail"
+            android:theme="@style/Theme.PetPoint">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".view.CheckoutActivity"
             android:exported="true"
             android:label="@string/title_activity_checkout"
