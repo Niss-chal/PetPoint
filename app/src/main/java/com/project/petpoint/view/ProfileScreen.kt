@@ -25,7 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
+import coil.compose.AsyncImage
 import com.project.petpoint.R
 import com.project.petpoint.repository.UserRepoImpl
 import com.project.petpoint.viewmodel.UserViewModel
