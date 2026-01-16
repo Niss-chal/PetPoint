@@ -16,94 +16,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PetPoint"
         tools:replace="android:fullBackupContent">
-        <activity
-            android:name=".view.CheckoutActivity"
-            android:exported="true"
-            android:label="@string/title_activity_checkout"
-            android:theme="@style/Theme.PetPoint">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".view.CartActivity"
-            android:exported="true"
-            android:label="@string/title_activity_cart"
-            android:theme="@style/Theme.PetPoint">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".view.ProductDetailActivity"
-            android:exported="true"
-            android:label="@string/title_activity_product_detail"
-            android:theme="@style/Theme.PetPoint">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".view.AddProductActivity"
-            android:exported="true"
-            android:label="@string/title_activity_add_product"
-            android:theme="@style/Theme.PetPoint">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".view.EditProfileActivity"
-            android:exported="true"
-            android:label="@string/title_activity_edit_profile"
-            android:theme="@style/Theme.PetPoint">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".view.OrderHistoryActivity"
-            android:exported="true"
-            android:label="@string/title_activity_order_history"
-            android:theme="@style/Theme.PetPoint">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".view.ResetPasswordActivity"
-            android:exported="true"
-            android:label="@string/title_activity_reset_password"
-            android:theme="@style/Theme.PetPoint">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".view.LoginActivity"
-            android:exported="true"
-            android:label="@string/title_activity_login"
-            android:theme="@style/Theme.PetPoint">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
         <activity
             android:name=".view.FrontpageActivity"
             android:exported="true"
@@ -111,48 +25,88 @@
             android:theme="@style/Theme.PetPoint">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".view.CheckoutActivity"
+            android:exported="true"
+            android:label="@string/title_activity_checkout"
+            android:theme="@style/Theme.PetPoint" />
+
+        <activity
+            android:name=".view.VetDetailActivity"
+            android:exported="true"
+            android:label="@string/title_activity_vet_detail"
+            android:theme="@style/Theme.PetPoint" />
+
+        <activity
+            android:name=".view.CartActivity"
+            android:exported="true"
+            android:label="@string/title_activity_cart"
+            android:theme="@style/Theme.PetPoint" />
+
+        <activity
+            android:name=".view.ProductDetailActivity"
+            android:exported="true"
+            android:label="@string/title_activity_product_detail"
+            android:theme="@style/Theme.PetPoint" />
+
+        <activity
+            android:name=".view.AddProductActivity"
+            android:exported="true"
+            android:label="@string/title_activity_add_product"
+            android:theme="@style/Theme.PetPoint" />
+
+        <activity
+            android:name=".view.EditProfileActivity"
+            android:exported="true"
+            android:label="@string/title_activity_edit_profile"
+            android:theme="@style/Theme.PetPoint" />
+
+        <activity
+            android:name=".view.OrderHistoryActivity"
+            android:exported="true"
+            android:label="@string/title_activity_order_history"
+            android:theme="@style/Theme.PetPoint" />
+
+        <activity
+            android:name=".view.ResetPasswordActivity"
+            android:exported="true"
+            android:label="@string/title_activity_reset_password"
+            android:theme="@style/Theme.PetPoint" />
+
+        <activity
+            android:name=".view.LoginActivity"
+            android:exported="true"
+            android:label="@string/title_activity_login"
+            android:theme="@style/Theme.PetPoint" />
+
         <activity
             android:name=".view.SignupActivity"
             android:exported="true"
             android:label="@string/title_activity_signup"
-            android:theme="@style/Theme.PetPoint">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            android:theme="@style/Theme.PetPoint" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
         <activity
             android:name=".view.DashboardActivity"
             android:exported="true"
             android:label="DashboardActivity"
-            android:theme="@style/Theme.PetPoint">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            android:theme="@style/Theme.PetPoint" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
         <activity
             android:name=".view.AdminDashboardActivity"
             android:exported="true"
             android:label="AdminDashboardActivity"
-            android:theme="@style/Theme.PetPoint">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            android:theme="@style/Theme.PetPoint" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
         <activity
             android:name=".view.ProfileActivity"
             android:exported="true"
             android:label="Profile"
             android:theme="@style/Theme.PetPoint" />
+
     </application>
 
 </manifest>
