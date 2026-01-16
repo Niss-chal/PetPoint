@@ -128,9 +128,10 @@ fun AddLostFoundReportScreen(
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let { msg ->
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            if (!msg.contains("success", ignoreCase = true)) {
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            }
             viewModel.clearMessage()
-            if (isEditMode) activity?.finish()
         }
     }
 
@@ -143,7 +144,7 @@ fun AddLostFoundReportScreen(
             Spacer(modifier = Modifier.height(40.dp))
 
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                if (isLoading) {
+                if (isLoading && isEditMode) {
                     Box(
                         modifier = Modifier.fillMaxWidth().padding(60.dp),
                         contentAlignment = Alignment.Center
@@ -297,6 +298,8 @@ fun AddLostFoundReportScreen(
                         return@Button
                     }
 
+                    isLoading = true
+
                     val saveAction: (String) -> Unit = { imageUrl ->
                         val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
@@ -312,18 +315,27 @@ fun AddLostFoundReportScreen(
                             reportedBy = currentUser.uid,
                             reportedByName = reporterName,
                             imageUrl = imageUrl,
-                            contactInfo = contactInfo.trim()
+                            contactInfo = contactInfo.trim(),
+                            isVisible = true   // MUST be here
                         )
 
                         if (isEditMode) {
                             viewModel.updateReport(model) { success, msg ->
+                                isLoading = false
                                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                if (success) activity?.finish()
+                                if (success) {
+                                    activity?.setResult(Activity.RESULT_OK)
+                                    activity?.finish()
+                                }
                             }
                         } else {
                             viewModel.addReport(model) { success, msg ->
+                                isLoading = false
                                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                if (success) activity?.finish()
+                                if (success) {
+                                    activity?.setResult(Activity.RESULT_OK)
+                                    activity?.finish()
+                                }
                             }
                         }
                     }
@@ -334,6 +346,7 @@ fun AddLostFoundReportScreen(
                                 if (url != null) {
                                     saveAction(url)
                                 } else {
+                                    isLoading = false
                                     Toast.makeText(context, "Image upload failed", Toast.LENGTH_SHORT).show()
                                 }
                             }
@@ -342,6 +355,7 @@ fun AddLostFoundReportScreen(
                             saveAction(existingImageUrl)
                         }
                         else -> {
+                            isLoading = false
                             Toast.makeText(context, "Please select an image", Toast.LENGTH_SHORT).show()
                         }
                     }

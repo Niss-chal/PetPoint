@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.model.LostFoundModel
@@ -45,8 +46,17 @@ fun LostAndFoundScreen() {
     val loading by viewModel.loading.observeAsState(initial = false)
     val searchQuery by viewModel.searchQuery.observeAsState(initial = "")
 
-    LaunchedEffect(Unit) {
+    // Refresh when screen is first loaded
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
         viewModel.getAllReports()
+    }
+
+    // Add a refresh trigger when returning from add/edit screen
+    DisposableEffect(Unit) {
+        onDispose {
+            // This will be called when leaving the screen
+        }
     }
 
     Scaffold(
@@ -81,7 +91,7 @@ fun LostAndFoundScreen() {
         ) {
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { viewModel.onSearchQueryChanged(it) },
+                onValueChange = { viewModel.onSearchQueryChange(it) },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Search lost & found items...") },
                 leadingIcon = { Icon(Icons.Default.Search, null) },
@@ -113,12 +123,21 @@ fun LostAndFoundScreen() {
             if (loading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color = VividAzure)
             } else if (reports!!.isEmpty()) {
-                Text(
-                    text = if (searchQuery.isEmpty()) "No reports available" else "No items found",
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    color = Color.Gray,
-                    fontSize = 16.sp
-                )
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = if (searchQuery.isEmpty()) "No reports available" else "No items found",
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TextButton(onClick = { viewModel.refreshReports() }) {
+                        Text("Refresh", color = VividAzure)
+                    }
+                }
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
@@ -232,5 +251,3 @@ fun LostFoundUserCard(
         }
     }
 }
-
-private fun LostFoundViewModel.onSearchQueryChanged(it: String) {}

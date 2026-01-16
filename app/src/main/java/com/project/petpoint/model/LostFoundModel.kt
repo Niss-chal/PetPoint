@@ -12,8 +12,9 @@ data class LostFoundModel(
     val reportedBy: String = "",
     val reportedByName: String? = null,
     val imageUrl: String = "",
-    val contactInfo: String = ""
-){
+    val contactInfo: String = "",
+    val isVisible: Boolean = true
+) {
 
     fun toMap(): Map<String, Any?> = mapOf(
         "lostId" to lostId,
@@ -28,6 +29,6 @@ data class LostFoundModel(
         "reportedByName" to reportedByName,
         "imageUrl" to imageUrl,
         "contactInfo" to contactInfo,
-
+        "isVisible" to isVisible
     )
 }

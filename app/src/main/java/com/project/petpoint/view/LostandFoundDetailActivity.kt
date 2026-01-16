@@ -61,8 +61,9 @@ fun LostAndFoundDetailScreen(lostId: String) {
     val currentUid = currentUser?.uid
 
     val isOwner = currentUid != null && item?.reportedBy == currentUid
-    val isAdmin = false  // ← TODO: Replace with real admin check (custom claims or user doc)
-    val canManage = isOwner || isAdmin
+    val isAdmin = false  // TODO: Replace with real admin check
+
+    var showHideDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(lostId) {
         if (lostId.isNotBlank()) viewModel.getReportById(lostId)
@@ -101,12 +102,15 @@ fun LostAndFoundDetailScreen(lostId: String) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = VividAzure)
             } else if (item == null) {
                 Text("Item not found", modifier = Modifier.align(Alignment.Center), color = Color.Gray)
+            } else if (item!!.isVisible == false) {
+                Text(
+                    "This report has been hidden by the owner",
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.Gray,
+                    fontSize = 18.sp
+                )
             } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                ) {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -153,7 +157,7 @@ fun LostAndFoundDetailScreen(lostId: String) {
                             DetailRow("Contact", item!!.contactInfo)
                         }
 
-                        if (canManage) {
+                        if (isOwner || isAdmin) {
                             Spacer(modifier = Modifier.height(32.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -161,7 +165,6 @@ fun LostAndFoundDetailScreen(lostId: String) {
                             ) {
                                 Button(
                                     onClick = {
-                                        // TODO: Navigate to edit screen
                                         context?.startActivity(
                                             Intent(context, AddLostFoundReportActivity::class.java).apply {
                                                 putExtra("lostId", item!!.lostId)
@@ -174,14 +177,11 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                 }
 
                                 Button(
-                                    onClick = {
-                                        // TODO: Show confirmation dialog → call viewModel.deleteReport()
-                                        Toast.makeText(context, "Delete clicked (implement confirmation)", Toast.LENGTH_SHORT).show()
-                                    },
+                                    onClick = { showHideDialog = true },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text("Delete Report")
+                                    Text("Hide / Delete")
                                 }
                             }
                         }
@@ -204,6 +204,32 @@ fun LostAndFoundDetailScreen(lostId: String) {
                         Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
+            }
+
+            if (showHideDialog) {
+                AlertDialog(
+                    onDismissRequest = { showHideDialog = false },
+                    title = { Text("Hide Report") },
+                    text = { Text("This report will disappear from the list for normal users.\nIt will still exist in the database.\n\nAre you sure?") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showHideDialog = false
+                            viewModel.hideReport(item!!.lostId) { success, msg ->
+                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                if (success) {
+                                    context?.finish()
+                                }
+                            }
+                        }) {
+                            Text("Hide")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showHideDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
             }
         }
     }

@@ -13,8 +13,9 @@ interface LostFoundRepo {
 
     fun getAllReports(callback: (Boolean, String, List<LostFoundModel>?) -> Unit)
 
-    // Optional: filter by type ("Lost" / "Found")
     fun getReportsByType(type: String, callback: (Boolean, String, List<LostFoundModel>?) -> Unit)
 
     fun uploadImage(context: android.content.Context, imageUri: android.net.Uri, callback: (String?) -> Unit)
+
+    fun hideReport(lostId: String, callback: (Boolean, String) -> Unit)
 }

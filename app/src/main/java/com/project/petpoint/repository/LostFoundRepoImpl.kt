@@ -28,7 +28,7 @@ class LostFoundRepoImpl : LostFoundRepo {
 
     override fun addReport(item: LostFoundModel, callback: (Boolean, String) -> Unit) {
         val id = ref.push().key ?: return callback(false, "Failed to generate ID")
-        val newItem = item.copy(lostId = id)
+        val newItem = item.copy(lostId = id, isVisible = true)  // Force visible
 
         ref.child(id).setValue(newItem).addOnCompleteListener {
             if (it.isSuccessful) {
@@ -87,16 +87,17 @@ class LostFoundRepoImpl : LostFoundRepo {
     override fun getAllReports(callback: (Boolean, String, List<LostFoundModel>?) -> Unit) {
         ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    val items = mutableListOf<LostFoundModel>()
-                    for (child in snapshot.children) {
-                        val item = child.getValue(LostFoundModel::class.java)
-                        if (item != null) items.add(item)
+                val items = mutableListOf<LostFoundModel>()
+                for (child in snapshot.children) {
+                    val item = child.getValue(LostFoundModel::class.java)
+                    if (item != null) {
+                        // Treat missing or null isVisible as true (old data compatibility)
+                        if (item.isVisible != false) {
+                            items.add(item)
+                        }
                     }
-                    callback(true, "Reports fetched", items)
-                } else {
-                    callback(true, "No reports found", emptyList())
                 }
+                callback(true, "Reports fetched", items)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -106,19 +107,16 @@ class LostFoundRepoImpl : LostFoundRepo {
     }
 
     override fun getReportsByType(type: String, callback: (Boolean, String, List<LostFoundModel>?) -> Unit) {
-        ref.orderByChild("type").equalTo(type)
+        ref.orderByChild("type")
+            .equalTo(type)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()) {
-                        val items = mutableListOf<LostFoundModel>()
-                        for (child in snapshot.children) {
-                            val item = child.getValue(LostFoundModel::class.java)
-                            if (item != null) items.add(item)
-                        }
-                        callback(true, "Reports fetched", items)
-                    } else {
-                        callback(true, "No reports found", emptyList())
+                    val items = mutableListOf<LostFoundModel>()
+                    for (child in snapshot.children) {
+                        val item = child.getValue(LostFoundModel::class.java)
+                        if (item != null && item.isVisible) items.add(item)
                     }
+                    callback(true, "Reports fetched", items)
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -165,5 +163,18 @@ class LostFoundRepoImpl : LostFoundRepo {
             }
         }
         return name
+    }
+
+    override fun hideReport(lostId: String, callback: (Boolean, String) -> Unit) {
+        ref.child(lostId)
+            .child("isVisible")
+            .setValue(false)
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    callback(true, "Report hidden successfully")
+                } else {
+                    callback(false, it.exception?.message ?: "Failed to hide report")
+                }
+            }
     }
 }

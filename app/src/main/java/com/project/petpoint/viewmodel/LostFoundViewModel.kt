@@ -9,36 +9,26 @@ import com.project.petpoint.repository.LostFoundRepo
 
 class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
 
-    // ── Main lists ──────────────────────────────────────────────────────────────
     private val _allReports = MutableLiveData<List<LostFoundModel>?>()
     val allReports get() = _allReports
 
     private val _filteredReports = MutableLiveData<List<LostFoundModel>?>()
     val filteredReports get() = _filteredReports
 
-    // ── Detail / Selected ───────────────────────────────────────────────────────
     private val _selectedReport = MutableLiveData<LostFoundModel?>()
     val selectedReport get() = _selectedReport
 
-    // ── Search & Filter state ───────────────────────────────────────────────────
     private val _searchQuery = MutableLiveData<String>()
     val searchQuery get() = _searchQuery
 
-    val filterType = MutableLiveData("All")       // All / Lost / Found
-    val filterStatus = MutableLiveData("All")     // All / Pending / Resolved
+    val filterType = MutableLiveData("All")
+    val filterStatus = MutableLiveData("All")
 
-    // ── UI states ───────────────────────────────────────────────────────────────
     private val _loading = MutableLiveData<Boolean>()
     val loading get() = _loading
 
     private val _message = MutableLiveData<String?>()
     val message get() = _message
-
-    init {
-        getAllReports()
-    }
-
-    // ── CRUD & Data fetching ────────────────────────────────────────────────────
 
     fun getAllReports() {
         _loading.value = true
@@ -72,7 +62,7 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
             callback(success, msg)
             if (success) {
                 _message.value = "Report added successfully"
-                getAllReports()           // refresh
+                getAllReports()  // force refresh after add
             } else {
                 _message.value = msg
             }
@@ -82,15 +72,31 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
     fun updateReport(item: LostFoundModel, callback: (Boolean, String) -> Unit = { _, _ -> }) {
         if (item.lostId.isBlank()) {
             _message.value = "Cannot update: missing ID"
+            callback(false, "Cannot update: missing ID")
             return
         }
         _loading.value = true
         repo.updateReport(item) { success, msg ->
             _loading.value = false
-            callback(success, msg)
             if (success) {
                 _message.value = "Report updated"
+                // Refresh the list after updating
                 getAllReports()
+            } else {
+                _message.value = msg
+            }
+            callback(success, msg)
+        }
+    }
+
+    fun hideReport(lostId: String, callback: (Boolean, String) -> Unit = { _, _ -> }) {
+        _loading.value = true
+        repo.hideReport(lostId) { success, msg ->
+            _loading.value = false
+            callback(success, msg)
+            if (success) {
+                _message.value = "Report hidden"
+                getAllReports()  // force refresh after hide
             } else {
                 _message.value = msg
             }
@@ -101,21 +107,20 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
         _loading.value = true
         repo.deleteReport(lostId) { success, msg ->
             _loading.value = false
-            callback(success, msg)
             if (success) {
                 _message.value = "Report deleted"
+                // Refresh the list after deleting
                 getAllReports()
             } else {
                 _message.value = msg
             }
+            callback(success, msg)
         }
     }
 
     fun uploadImage(context: Context, imageUri: Uri, callback: (String?) -> Unit) {
         repo.uploadImage(context, imageUri, callback)
     }
-
-    // ── Search & Filter logic ───────────────────────────────────────────────────
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
