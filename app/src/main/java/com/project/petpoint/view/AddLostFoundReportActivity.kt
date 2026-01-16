@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.model.LostFoundModel
 import com.project.petpoint.repository.LostFoundRepoImpl
@@ -306,7 +307,6 @@ fun AddLostFoundReportScreen(
                         val model = LostFoundModel(
                             lostId = editLostId ?: "",
                             type = if (isLost) "Lost" else "Found",
-                            status = "Pending",
                             title = title.trim(),
                             category = category.trim(),
                             description = description.trim(),

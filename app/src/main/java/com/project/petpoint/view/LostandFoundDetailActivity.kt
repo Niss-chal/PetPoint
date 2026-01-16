@@ -140,11 +140,6 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                 background = if (item!!.type == "Lost") Color(0xFFfee2e2) else Color(0xFFdcfce7),
                                 textColor = if (item!!.type == "Lost") Color(0xFFdc2626) else Color(0xFF15803d)
                             )
-                            Badge(
-                                text = item!!.status.uppercase(),
-                                background = Color(0xFFfef3c7),
-                                textColor = Color(0xFFb45309)
-                            )
                         }
 
                         Spacer(modifier = Modifier.height(20.dp))

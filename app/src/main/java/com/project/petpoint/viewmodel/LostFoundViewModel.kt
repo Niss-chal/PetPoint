@@ -132,16 +132,10 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
         applyFiltersAndSearch()
     }
 
-    fun setFilterStatus(status: String) {
-        filterStatus.value = status
-        applyFiltersAndSearch()
-    }
-
     private fun applyFiltersAndSearch() {
         val list = _allReports.value ?: emptyList()
         val query = _searchQuery.value.orEmpty().trim().lowercase()
         val type = filterType.value ?: "All"
-        val status = filterStatus.value ?: "All"
 
         val filtered = list.filter { report ->
             val matchesQuery = query.isEmpty() ||
@@ -151,9 +145,7 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
                     report.category.lowercase().contains(query)
 
             val matchesType = type == "All" || report.type == type
-            val matchesStatus = status == "All" || report.status == status
-
-            matchesQuery && matchesType && matchesStatus
+            matchesQuery && matchesType
         }
 
         _filteredReports.value = filtered

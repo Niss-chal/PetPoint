@@ -3,7 +3,6 @@ package com.project.petpoint.model
 data class LostFoundModel(
     val lostId: String = "",
     val type: String = "",
-    val status: String = "Pending",
     val title: String = "",
     val category: String = "",
     val description: String = "",
@@ -19,7 +18,6 @@ data class LostFoundModel(
     fun toMap(): Map<String, Any?> = mapOf(
         "lostId" to lostId,
         "type" to type,
-        "status" to status,
         "title" to title,
         "category" to category,
         "description" to description,

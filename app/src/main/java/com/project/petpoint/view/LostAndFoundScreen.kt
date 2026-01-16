@@ -113,9 +113,6 @@ fun LostAndFoundScreen() {
                 FilterChip(selected = viewModel.filterType.value == "All", onClick = { viewModel.setFilterType("All") }, label = { Text("All") })
                 FilterChip(selected = viewModel.filterType.value == "Lost", onClick = { viewModel.setFilterType("Lost") }, label = { Text("Lost") })
                 FilterChip(selected = viewModel.filterType.value == "Found", onClick = { viewModel.setFilterType("Found") }, label = { Text("Found") })
-                FilterChip(selected = viewModel.filterStatus.value == "All", onClick = { viewModel.setFilterStatus("All") }, label = { Text("All Status") })
-                FilterChip(selected = viewModel.filterStatus.value == "Pending", onClick = { viewModel.setFilterStatus("Pending") }, label = { Text("Pending") })
-                FilterChip(selected = viewModel.filterStatus.value == "Resolved", onClick = { viewModel.setFilterStatus("Resolved") }, label = { Text("Resolved") })
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -221,11 +218,6 @@ fun LostFoundUserCard(
                     text = item.type.uppercase(),
                     background = if (isLost) Color(0xFFfee2e2) else Color(0xFFdcfce7),
                     textColor = if (isLost) Color(0xFFdc2626) else Color(0xFF15803d)
-                )
-                Badge(
-                    text = item.status.uppercase(),
-                    background = Color(0xFFfef3c7),
-                    textColor = Color(0xFFb45309)
                 )
             }
 
