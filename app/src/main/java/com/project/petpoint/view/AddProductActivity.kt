@@ -240,7 +240,6 @@ fun AddProduct(
         item {
             Button(
                 onClick = {
-
                     when {
                         productName.isBlank() -> {
                             Toast.makeText(
@@ -269,6 +268,11 @@ fun AddProduct(
                                 "Please enter description",
                                 Toast.LENGTH_SHORT
                             ).show()
+                        }
+
+                        productCategory == "Select Category" -> {
+                            Toast.makeText(context, "Please choose a category", Toast.LENGTH_SHORT)
+                                .show()
                         }
 
                         productStock.isBlank() -> {
@@ -307,8 +311,8 @@ fun AddProduct(
                                         price = productPrice.toDouble(),
                                         description = productDescription,
                                         imageUrl = imageUrl,
-                                        stock = productStock.toInt()
-
+                                        stock = productStock.toInt(),
+                                        categoryId = productCategory
                                     )
                                     productViewModel.addProduct(productModel) { success, msg ->
                                         if (success) {
@@ -319,15 +323,11 @@ fun AddProduct(
                                             Toast.makeText(context, msg, Toast.LENGTH_SHORT)
                                                 .show()
                                         }
-
                                     }
                                 }
                             }
-
                         }
                     }
-
-
                 },
                 modifier = Modifier
                     .fillMaxWidth()
