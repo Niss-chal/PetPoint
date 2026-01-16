@@ -19,7 +19,7 @@ import com.project.petpoint.model.UserModel
 import java.io.InputStream
 import java.util.concurrent.Executors
 
-class UserRepoImpl : UserRepo {
+class gUserRepoImpl : UserRepo {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
