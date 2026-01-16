@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.model.LostFoundModel
 import com.project.petpoint.repository.LostFoundRepoImpl
 import com.project.petpoint.utils.ImageUtils
@@ -72,6 +73,23 @@ fun AddLostFoundReportScreen(
 ) {
     val viewModel = remember { LostFoundViewModel(LostFoundRepoImpl()) }
 
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    val currentUser = FirebaseAuth.getInstance().currentUser
+
+    if (currentUser == null) {
+        LaunchedEffect(Unit) {
+            Toast.makeText(context, "Please sign in to create or edit a report", Toast.LENGTH_LONG).show()
+            activity?.finish()
+        }
+        return
+    }
+
+    val reporterName = currentUser.displayName?.takeIf { it.isNotBlank() }
+        ?: currentUser.email?.split("@")?.firstOrNull()
+        ?: "User"
+
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
@@ -83,22 +101,17 @@ fun AddLostFoundReportScreen(
     var isLoading by remember { mutableStateOf(false) }
     var existingImageUrl by remember { mutableStateOf("") }
 
-    val context = LocalContext.current
-    val activity = context as? Activity
-
     val selectedItem by viewModel.selectedReport.observeAsState()
     val errorMessage by viewModel.message.observeAsState()
 
-    // Trigger load when editing
     LaunchedEffect(editLostId) {
         if (!editLostId.isNullOrBlank()) {
             isEditMode = true
             isLoading = true
-            viewModel.getReportById(editLostId)  // ← no callback here
+            viewModel.getReportById(editLostId)
         }
     }
 
-    // Fill form when item is loaded
     LaunchedEffect(selectedItem) {
         selectedItem?.let { item ->
             isLoading = false
@@ -109,18 +122,15 @@ fun AddLostFoundReportScreen(
             contactInfo = item.contactInfo
             isLost = item.type.lowercase() == "lost"
             existingImageUrl = item.imageUrl
-            viewModel.clearMessage()  // clear any previous error
+            viewModel.clearMessage()
         }
     }
 
-    // Show error message if loading failed
     LaunchedEffect(errorMessage) {
         errorMessage?.let { msg ->
             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
             viewModel.clearMessage()
-            if (isEditMode) {
-                activity?.finish()
-            }
+            if (isEditMode) activity?.finish()
         }
     }
 
@@ -141,7 +151,6 @@ fun AddLostFoundReportScreen(
                         CircularProgressIndicator(color = VividAzure)
                     }
                 } else {
-                    // Type
                     Text("Type", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -167,7 +176,6 @@ fun AddLostFoundReportScreen(
 
                     Spacer(Modifier.height(24.dp))
 
-                    // Title
                     Text("Title", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
@@ -180,7 +188,6 @@ fun AddLostFoundReportScreen(
 
                     Spacer(Modifier.height(20.dp))
 
-                    // Category
                     Text("Category", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
@@ -193,7 +200,6 @@ fun AddLostFoundReportScreen(
 
                     Spacer(Modifier.height(20.dp))
 
-                    // Location
                     Text("Location", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
@@ -206,7 +212,6 @@ fun AddLostFoundReportScreen(
 
                     Spacer(Modifier.height(20.dp))
 
-                    // Description
                     Text("Description", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
@@ -220,7 +225,6 @@ fun AddLostFoundReportScreen(
 
                     Spacer(Modifier.height(20.dp))
 
-                    // Contact Info
                     Text("Contact Info", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
@@ -236,7 +240,6 @@ fun AddLostFoundReportScreen(
             }
         }
 
-        // Image preview / upload
         item {
             Row(
                 modifier = Modifier
@@ -276,7 +279,6 @@ fun AddLostFoundReportScreen(
             }
         }
 
-        // Submit / Update button
         item {
             Spacer(Modifier.height(32.dp))
 
@@ -297,7 +299,6 @@ fun AddLostFoundReportScreen(
 
                     val saveAction: (String) -> Unit = { imageUrl ->
                         val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-                        val reportedBy = "User"  // ← Replace with FirebaseAuth later
 
                         val model = LostFoundModel(
                             lostId = editLostId ?: "",
@@ -308,7 +309,8 @@ fun AddLostFoundReportScreen(
                             description = description.trim(),
                             location = location.trim(),
                             date = date,
-                            reportedBy = reportedBy,
+                            reportedBy = currentUser.uid,
+                            reportedByName = reporterName,
                             imageUrl = imageUrl,
                             contactInfo = contactInfo.trim()
                         )

@@ -10,6 +10,7 @@ data class LostFoundModel(
     val location: String = "",
     val date: String = "",
     val reportedBy: String = "",
+    val reportedByName: String? = null,
     val imageUrl: String = "",
     val contactInfo: String = ""
 ){
@@ -24,6 +25,7 @@ data class LostFoundModel(
         "location" to location,
         "date" to date,
         "reportedBy" to reportedBy,
+        "reportedByName" to reportedByName,
         "imageUrl" to imageUrl,
         "contactInfo" to contactInfo,
 

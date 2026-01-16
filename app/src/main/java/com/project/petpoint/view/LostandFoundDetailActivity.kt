@@ -1,5 +1,7 @@
 package com.project.petpoint.view
 
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -24,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.repository.LostFoundRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.VividAzure
@@ -43,6 +46,7 @@ class LostandFoundDetailActivity : ComponentActivity() {
     }
 }
 
+@SuppressLint("ContextCastToActivity")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LostAndFoundDetailScreen(lostId: String) {
@@ -52,6 +56,13 @@ fun LostAndFoundDetailScreen(lostId: String) {
     val item by viewModel.selectedReport.observeAsState()
     val loading by viewModel.loading.observeAsState(initial = false)
     val message by viewModel.message.observeAsState()
+
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val currentUid = currentUser?.uid
+
+    val isOwner = currentUid != null && item?.reportedBy == currentUid
+    val isAdmin = false  // ← TODO: Replace with real admin check (custom claims or user doc)
+    val canManage = isOwner || isAdmin
 
     LaunchedEffect(lostId) {
         if (lostId.isNotBlank()) viewModel.getReportById(lostId)
@@ -137,9 +148,42 @@ fun LostAndFoundDetailScreen(lostId: String) {
                         DetailRow("Category", item!!.category)
                         DetailRow("Location", item!!.location)
                         DetailRow("Date", item!!.date)
-                        DetailRow("Reported by", item!!.reportedBy)
+                        DetailRow("Reported by", item!!.reportedByName ?: "Anonymous")
                         if (item!!.contactInfo.isNotBlank()) {
                             DetailRow("Contact", item!!.contactInfo)
+                        }
+
+                        if (canManage) {
+                            Spacer(modifier = Modifier.height(32.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                Button(
+                                    onClick = {
+                                        // TODO: Navigate to edit screen
+                                        context?.startActivity(
+                                            Intent(context, AddLostFoundReportActivity::class.java).apply {
+                                                putExtra("lostId", item!!.lostId)
+                                            }
+                                        )
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Edit Report")
+                                }
+
+                                Button(
+                                    onClick = {
+                                        // TODO: Show confirmation dialog → call viewModel.deleteReport()
+                                        Toast.makeText(context, "Delete clicked (implement confirmation)", Toast.LENGTH_SHORT).show()
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Delete Report")
+                                }
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(24.dp))

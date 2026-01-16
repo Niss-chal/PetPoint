@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.model.LostFoundModel
 import com.project.petpoint.repository.LostFoundRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
@@ -72,10 +73,11 @@ fun LostAndFoundManagementScreen() {
             )
 
             IconButton(onClick = {
-                // Open Add screen
-                context.startActivity(
-                    Intent(context, AddLostFoundReportActivity::class.java)
-                )
+                if (FirebaseAuth.getInstance().currentUser == null) {
+                    Toast.makeText(context, "Please sign in first", Toast.LENGTH_LONG).show()
+                } else {
+                    context.startActivity(Intent(context, AddLostFoundReportActivity::class.java))
+                }
             }) {
                 Icon(Icons.Default.Add, contentDescription = "Add report", tint = VividAzure)
             }
@@ -83,65 +85,32 @@ fun LostAndFoundManagementScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Filters
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            FilterChip(
-                selected = viewModel.filterType.value == "All",
-                onClick = { viewModel.setFilterType("All") },
-                label = { Text("All") }
-            )
-            FilterChip(
-                selected = viewModel.filterType.value == "Lost",
-                onClick = { viewModel.setFilterType("Lost") },
-                label = { Text("Lost") }
-            )
-            FilterChip(
-                selected = viewModel.filterType.value == "Found",
-                onClick = { viewModel.setFilterType("Found") },
-                label = { Text("Found") }
-            )
-            FilterChip(
-                selected = viewModel.filterStatus.value == "All",
-                onClick = { viewModel.setFilterStatus("All") },
-                label = { Text("All Status") }
-            )
-            FilterChip(
-                selected = viewModel.filterStatus.value == "Pending",
-                onClick = { viewModel.setFilterStatus("Pending") },
-                label = { Text("Pending") }
-            )
-            FilterChip(
-                selected = viewModel.filterStatus.value == "Resolved",
-                onClick = { viewModel.setFilterStatus("Resolved") },
-                label = { Text("Resolved") }
-            )
+            FilterChip(selected = viewModel.filterType.value == "All", onClick = { viewModel.setFilterType("All") }, label = { Text("All") })
+            FilterChip(selected = viewModel.filterType.value == "Lost", onClick = { viewModel.setFilterType("Lost") }, label = { Text("Lost") })
+            FilterChip(selected = viewModel.filterType.value == "Found", onClick = { viewModel.setFilterType("Found") }, label = { Text("Found") })
+            FilterChip(selected = viewModel.filterStatus.value == "All", onClick = { viewModel.setFilterStatus("All") }, label = { Text("All Status") })
+            FilterChip(selected = viewModel.filterStatus.value == "Pending", onClick = { viewModel.setFilterStatus("Pending") }, label = { Text("Pending") })
+            FilterChip(selected = viewModel.filterStatus.value == "Resolved", onClick = { viewModel.setFilterStatus("Resolved") }, label = { Text("Resolved") })
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         if (loading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = VividAzure
-            )
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color = VividAzure)
         } else if (reports!!.isEmpty()) {
-            Text(
-                text = "No reports found",
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = Color.Gray
-            )
+            Text("No reports found", modifier = Modifier.align(Alignment.CenterHorizontally), color = Color.Gray)
         } else {
             LazyColumn {
                 items(reports!!) { item ->
                     LostFoundAdminCard(
                         item = item,
                         onEdit = {
-                            // Open the same screen in edit mode
                             context.startActivity(
                                 Intent(context, AddLostFoundReportActivity::class.java).apply {
                                     putExtra("lostId", item.lostId)
@@ -153,8 +122,8 @@ fun LostAndFoundManagementScreen() {
                                 .setTitle("Delete Report")
                                 .setMessage("Are you sure you want to delete \"${item.title}\" ?")
                                 .setPositiveButton("Delete") { _, _ ->
-                                    viewModel.deleteReport(item.lostId) { success, msg ->
-                                        // Toast is already handled in ViewModel
+                                    viewModel.deleteReport(item.lostId) { _, msg ->
+                                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                                     }
                                 }
                                 .setNegativeButton("Cancel", null)
@@ -173,6 +142,11 @@ fun LostFoundAdminCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val currentUid = FirebaseAuth.getInstance().currentUser?.uid
+    val isOwner = currentUid != null && item.reportedBy == currentUid
+    val isAdmin = false  // ← TODO: Replace with real admin check
+    val canManage = isOwner || isAdmin
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -219,27 +193,28 @@ fun LostFoundAdminCard(
             Text("Location: ${item.location}", fontSize = 14.sp, color = Color.DarkGray)
             Text("Category: ${item.category}", fontSize = 14.sp, color = Color.DarkGray)
             Text(
-                "Reported by: ${item.reportedBy} • ${item.date}",
+                "Reported by: ${item.reportedByName ?: "Anonymous"} • ${item.date}",
                 fontSize = 13.sp,
                 color = Color.Gray
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, null, tint = Color(0xFF2563eb))
-                    Spacer(Modifier.width(4.dp))
-                    Text("Edit", color = Color(0xFF2563eb))
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                TextButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, null, tint = Color.Red)
-                    Spacer(Modifier.width(4.dp))
-                    Text("Delete", color = Color.Red)
+            if (canManage) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onEdit) {
+                        Icon(Icons.Default.Edit, null, tint = Color(0xFF2563eb))
+                        Spacer(Modifier.width(4.dp))
+                        Text("Edit", color = Color(0xFF2563eb))
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TextButton(onClick = onDelete) {
+                        Icon(Icons.Default.Delete, null, tint = Color.Red)
+                        Spacer(Modifier.width(4.dp))
+                        Text("Delete", color = Color.Red)
+                    }
                 }
             }
         }
