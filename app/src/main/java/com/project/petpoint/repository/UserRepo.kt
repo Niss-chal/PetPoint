@@ -1,5 +1,7 @@
 package com.project.petpoint.repository
 
+import android.content.Context
+import android.net.Uri
 import com.google.firebase.auth.FirebaseUser
 import com.project.petpoint.model.UserModel
 
@@ -48,5 +50,14 @@ interface UserRepo{
         userId: String,
         model: UserModel,
         callback: (Boolean, String) -> Unit
+    )
+
+    fun uploadProfileImage(context: Context,
+                           imageUri: Uri,
+                           callback: (String?) -> Unit)
+
+    fun updateProfileImage(
+        userId: String,
+        imageUrl: String
     )
 }

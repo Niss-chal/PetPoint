@@ -1,5 +1,13 @@
 package com.project.petpoint.repository
 
+import android.content.Context
+import android.database.Cursor
+import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import android.provider.OpenableColumns
+import com.cloudinary.Cloudinary
+import com.cloudinary.utils.ObjectUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
@@ -8,43 +16,66 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.project.petpoint.model.UserModel
-import kotlin.collections.toMap
+import java.io.InputStream
+import java.util.concurrent.Executors
 
 class gUserRepoImpl : UserRepo {
 
-    val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    private val ref: DatabaseReference = database.getReference("users")
 
-    val ref: DatabaseReference = database.getReference("users")
+    // Cloudinary configuration
+    private val cloudinary = Cloudinary(
+        mapOf(
+            "cloud_name" to "dlnlxghqk",
+            "api_key" to "429244379134354",
+            "api_secret" to "p4NzH01x2uIdfGtYvk0sBiunpSA"
+        )
+    )
+
+    //Autentatication
 
     override fun login(
         email: String,
         password: String,
         callback: (Boolean, String) -> Unit
     ) {
-        auth.signInWithEmailAndPassword(email,password)
+        auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener {
-                if(it.isSuccessful){
-                    callback(true,"Login successfully")
-                }
-                else{
-                    callback(false,"${it.exception?.message}")
+                if (it.isSuccessful) {
+                    callback(true, "Login successfully")
+                } else {
+                    callback(false, it.exception?.message ?: "Login failed")
                 }
             }
     }
 
-    override fun updateProfile(
-        userId: String,
-        model: UserModel,
-        callback: (Boolean, String) -> Unit
+    override fun register(
+        email: String,
+        password: String,
+        callback: (Boolean, String, String) -> Unit
     ) {
-        ref.child(userId).updateChildren(model.toMap()).addOnCompleteListener {
-            if(it.isSuccessful){
-                callback(true,"Profile Updated Successfully")
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    callback(true, "Registered Successfully", auth.currentUser?.uid ?: "")
+                } else {
+                    callback(false, it.exception?.message ?: "Registration failed", "")
+                }
             }
-            else{
-                callback(false,"${it.exception?.message}")
-            }
+    }
+
+    override fun getCurrentUser(): FirebaseUser? {
+        return auth.currentUser
+    }
+
+    override fun logout(callback: (Boolean, String) -> Unit) {
+        try {
+            auth.signOut()
+            callback(true, "Logout Successfully")
+        } catch (e: Exception) {
+            callback(false, e.message ?: "Logout failed")
         }
     }
 
@@ -53,22 +84,41 @@ class gUserRepoImpl : UserRepo {
         callback: (Boolean, String) -> Unit
     ) {
         auth.sendPasswordResetEmail(email).addOnCompleteListener {
-            if(it.isSuccessful){
-                callback(true,"Password changed successfully")
-            }
-            else{
-                callback(false,"${it.exception?.message}")
+            if (it.isSuccessful) {
+                callback(true, "Password reset email sent")
+            } else {
+                callback(false, it.exception?.message ?: "Failed")
             }
         }
     }
 
-    override fun logout(callback: (Boolean, String) -> Unit) {
-        try {
-            auth.signOut()
-            callback(true,"Logout Successfully")
+    //user crude
 
-        }catch (e: Exception){
-            callback(false,e.message.toString())
+    override fun addUserToDatabase(
+        userId: String,
+        model: UserModel,
+        callback: (Boolean, String) -> Unit
+    ) {
+        ref.child(userId).setValue(model).addOnCompleteListener {
+            if (it.isSuccessful) {
+                callback(true, "User added successfully")
+            } else {
+                callback(false, it.exception?.message ?: "Failed")
+            }
+        }
+    }
+
+    override fun updateProfile(
+        userId: String,
+        model: UserModel,
+        callback: (Boolean, String) -> Unit
+    ) {
+        ref.child(userId).updateChildren(model.toMap()).addOnCompleteListener {
+            if (it.isSuccessful) {
+                callback(true, "Profile Updated Successfully")
+            } else {
+                callback(false, it.exception?.message ?: "Update failed")
+            }
         }
     }
 
@@ -77,54 +127,30 @@ class gUserRepoImpl : UserRepo {
         callback: (Boolean, String) -> Unit
     ) {
         ref.child(userId).removeValue().addOnCompleteListener {
-            if(it.isSuccessful){
-                callback(true,"Account Deleted successfully")
-            }
-            else{
-                callback(false,"${it.exception?.message}")
+            if (it.isSuccessful) {
+                callback(true, "Account Deleted Successfully")
+            } else {
+                callback(false, it.exception?.message ?: "Delete failed")
             }
         }
     }
 
-    override fun register(
-        email: String,
-        password: String,
-        callback: (Boolean, String, String) -> Unit
+    override fun getAllUser(
+        callback: (Boolean, String, List<UserModel>?) -> Unit
     ) {
-        auth.createUserWithEmailAndPassword(email,password).addOnCompleteListener{
-            if(it.isSuccessful){
-                callback(true,"Registered Successfully","${auth.currentUser?.uid}")
-            }
-            else{
-                callback(false,"${it.exception?.message}","")
-            }
-        }
-    }
-
-    override fun getCurrentUser(): FirebaseUser? {
-        return auth.currentUser
-    }
-
-    override fun getAllUser(callback: (Boolean, String, List<UserModel>?) -> Unit) {
-        ref.addValueEventListener(object : ValueEventListener{
+        ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                if(snapshot.exists()){
-                    val allUsers = mutableListOf<UserModel>()
-
-                    for(data in snapshot.children){
-                        val user = data.getValue(UserModel::class.java)
-                        if(user!= null){
-                            allUsers.add(user)
-                        }
-                    }
-                    callback(true,"User Fetched Successfully",allUsers)
+                val users = mutableListOf<UserModel>()
+                for (data in snapshot.children) {
+                    val user = data.getValue(UserModel::class.java)
+                    if (user != null) users.add(user)
                 }
+                callback(true, "Users fetched", users)
             }
 
             override fun onCancelled(error: DatabaseError) {
-                callback(false,error.message,emptyList())
+                callback(false, error.message, emptyList())
             }
-
         })
     }
 
@@ -132,34 +158,56 @@ class gUserRepoImpl : UserRepo {
         userId: String,
         callback: (Boolean, String, UserModel?) -> Unit
     ) {
-        ref.child(userId).addValueEventListener(object : ValueEventListener{
+        ref.child(userId).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                if(snapshot.exists()){
-                    val users = snapshot.getValue(UserModel :: class.java)
-                    if(users !=null){
-                        callback(true,"Profile Fetched",users)
-                    }
+                val user = snapshot.getValue(UserModel::class.java)
+                if (user != null) {
+                    callback(true, "User fetched", user)
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                callback(false,error.message,null)
+                callback(false, error.message, null)
             }
         })
     }
 
-    override fun addUserToDatabase(
-        userId: String,
-        model: UserModel,
-        callback: (Boolean, String) -> Unit
+
+    override fun uploadProfileImage(
+        context: Context,
+        imageUri: Uri,
+        callback: (String?) -> Unit
     ) {
-        ref.child(userId).setValue(model).addOnCompleteListener {
-            if(it.isSuccessful){
-                callback(true,"Registration Successful")
-            }
-            else{
-                callback(false,"${it.exception?.message}")
+        val executor = Executors.newSingleThreadExecutor()
+        executor.execute {
+            try {
+                val inputStream: InputStream? =
+                    context.contentResolver.openInputStream(imageUri)
+
+                val response = cloudinary.uploader().upload(
+                    inputStream,
+                    ObjectUtils.asMap("resource_type", "image")
+                )
+
+                val imageUrl = response["secure_url"] as String?
+
+                Handler(Looper.getMainLooper()).post {
+                    callback(imageUrl)
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Handler(Looper.getMainLooper()).post {
+                    callback(null)
+                }
             }
         }
+    }
+
+    override fun updateProfileImage(
+        userId: String,
+        imageUrl: String
+    ) {
+        ref.child(userId).child("profileImage").setValue(imageUrl)
     }
 }

@@ -43,7 +43,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import coil.compose.AsyncImage
+//import coil3.compose.AsyncImage
 import com.project.petpoint.model.ProductModel
 import com.project.petpoint.repository.ProductRepo
 import com.project.petpoint.repository.ProductRepoImpl
