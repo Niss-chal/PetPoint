@@ -10,7 +10,7 @@ import com.google.firebase.database.ValueEventListener
 import com.project.petpoint.model.UserModel
 import kotlin.collections.toMap
 
-class UserRepoImpl : UserRepo {
+class gUserRepoImpl : UserRepo {
 
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
     val database: FirebaseDatabase = FirebaseDatabase.getInstance()
