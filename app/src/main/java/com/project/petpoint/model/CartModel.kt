@@ -8,7 +8,7 @@ data class CartModel(
     val price: Double = 0.0,
     val imageUrl: String = "",
     var quantity: Int = 1,
-    val maxStock: Int = 0,
+    val maxStock: Int = 10,
     val addedAt: Long = System.currentTimeMillis()
 ) {
     fun toMap(): Map<String, Any?> {
