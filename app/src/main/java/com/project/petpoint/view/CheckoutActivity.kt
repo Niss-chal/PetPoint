@@ -144,6 +144,7 @@ fun CheckoutScreen() {
                             isExpanded = expandedSection == "delivery",
                             onToggle = { expandedSection = if (expandedSection == "delivery") "" else "delivery" }
                         ) {
+                            //Full Name textfield
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 OutlinedTextField(
                                     value = fullName,
