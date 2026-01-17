@@ -133,7 +133,7 @@ fun AdminDashBody(){
                 0-> HomeScreen()
                 1-> ProductManagementScreen()
                 2-> VetManagementScreen()
-                3-> LostandFoundManagement()
+                3-> LostAndFoundManagementScreen()
                 else -> HomeScreen()
             }
         }

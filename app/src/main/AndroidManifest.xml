@@ -19,6 +19,29 @@
 
 
         <activity
+            android:name=".view.AddLostFoundReportActivity"
+            android:exported="true"
+            android:label="@string/title_activity_add_lost_found_report"
+            android:theme="@style/Theme.PetPoint">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".view.LostandFoundDetailActivity"
+            android:exported="true"
+            android:label="@string/title_activity_lostand_found_detail"
+            android:theme="@style/Theme.PetPoint">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".view.CheckoutActivity"
             android:name=".view.FrontpageActivity"
             android:exported="true"
             android:label="@string/title_activity_frontpage"
@@ -39,6 +62,13 @@
             android:name=".view.VetDetailActivity"
             android:exported="true"
             android:label="@string/title_activity_vet_detail"
+            android:theme="@style/Theme.PetPoint">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
             android:theme="@style/Theme.PetPoint" />
 
         <activity
