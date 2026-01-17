@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -45,7 +46,7 @@ fun LostAndFoundManagementScreen() {
     val message by viewModel.message.observeAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.getAllReports()
+        viewModel.getAllReports(includeHidden = true)
     }
 
     LaunchedEffect(message) {
@@ -67,7 +68,7 @@ fun LostAndFoundManagementScreen() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                "Manage Lost & Found",
+                "Manage Lost & Found Reports",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -91,9 +92,21 @@ fun LostAndFoundManagementScreen() {
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            FilterChip(selected = viewModel.filterType.value == "All", onClick = { viewModel.setFilterType("All") }, label = { Text("All") })
-            FilterChip(selected = viewModel.filterType.value == "Lost", onClick = { viewModel.setFilterType("Lost") }, label = { Text("Lost") })
-            FilterChip(selected = viewModel.filterType.value == "Found", onClick = { viewModel.setFilterType("Found") }, label = { Text("Found") })
+            FilterChip(
+                selected = viewModel.filterType.value == "All",
+                onClick = { viewModel.setFilterType("All") },
+                label = { Text("All") }
+            )
+            FilterChip(
+                selected = viewModel.filterType.value == "Lost",
+                onClick = { viewModel.setFilterType("Lost") },
+                label = { Text("Lost") }
+            )
+            FilterChip(
+                selected = viewModel.filterType.value == "Found",
+                onClick = { viewModel.setFilterType("Found") },
+                label = { Text("Found") }
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -101,7 +114,11 @@ fun LostAndFoundManagementScreen() {
         if (loading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color = VividAzure)
         } else if (reports!!.isEmpty()) {
-            Text("No reports found", modifier = Modifier.align(Alignment.CenterHorizontally), color = Color.Gray)
+            Text(
+                "No reports found",
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = Color.Gray
+            )
         } else {
             LazyColumn {
                 items(reports!!) { item ->
@@ -114,14 +131,16 @@ fun LostAndFoundManagementScreen() {
                                 }
                             )
                         },
-                        onDelete = {
+                        onHide = {
                             AlertDialog.Builder(context)
-                                .setTitle("Delete Report")
-                                .setMessage("Are you sure you want to delete \"${item.title}\" ?")
-                                .setPositiveButton("Delete") { _, _ ->
-                                    viewModel.deleteReport(item.lostId) { _, msg ->
-                                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                    }
+                                .setTitle("Hide Report")
+                                .setMessage(
+                                    "Are you sure you want to hide \"${item.title}\"?\n\n" +
+                                            "It will no longer be visible to other users, " +
+                                            "but you can still see and restore it from this management screen."
+                                )
+                                .setPositiveButton("Hide") { _, _ ->
+                                    viewModel.hideReport(item.lostId)
                                 }
                                 .setNegativeButton("Cancel", null)
                                 .show()
@@ -137,12 +156,15 @@ fun LostAndFoundManagementScreen() {
 fun LostFoundAdminCard(
     item: LostFoundModel,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onHide: () -> Unit
 ) {
     val currentUid = FirebaseAuth.getInstance().currentUser?.uid
     val isOwner = currentUid != null && item.reportedBy == currentUid
-    val isAdmin = false  // ← TODO: Replace with real admin check
+    val isAdmin = false  // TODO: implement real admin check
     val canManage = isOwner || isAdmin
+
+    val statusColor = if (item.isVisible) Color(0xFF16a34a) else Color(0xFFdc2626)
+    val statusText = if (item.isVisible) "Visible" else "Hidden"
 
     Card(
         modifier = Modifier
@@ -159,13 +181,21 @@ fun LostFoundAdminCard(
             ) {
                 Column {
                     Text(item.title, fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                    Text(
-                        item.type.uppercase(),
-                        color = if (item.type == "Lost") Color(0xFFdc2626) else Color(0xFF16a34a),
-                        fontSize = 13.sp
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            item.type.uppercase(),
+                            color = if (item.type == "Lost") Color(0xFFdc2626) else Color(0xFF16a34a),
+                            fontSize = 13.sp
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            "• $statusText",
+                            color = statusColor,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
-
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -203,10 +233,10 @@ fun LostFoundAdminCard(
                         Text("Edit", color = Color(0xFF2563eb))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    TextButton(onClick = onDelete) {
-                        Icon(Icons.Default.Delete, null, tint = Color.Red)
+                    TextButton(onClick = onHide) {
+                        Icon(Icons.Default.VisibilityOff, null, tint = Color(0xFF7c3aed))
                         Spacer(Modifier.width(4.dp))
-                        Text("Delete", color = Color.Red)
+                        Text("Hide", color = Color(0xFF7c3aed))
                     }
                 }
             }

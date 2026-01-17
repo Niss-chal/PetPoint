@@ -2,6 +2,7 @@ package com.project.petpoint.viewmodel
 
 import android.content.Context
 import android.net.Uri
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.project.petpoint.model.LostFoundModel
@@ -9,112 +10,121 @@ import com.project.petpoint.repository.LostFoundRepo
 
 class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
 
+    // Main data sources
     private val _allReports = MutableLiveData<List<LostFoundModel>?>()
-    val allReports get() = _allReports
+    val allReports: LiveData<List<LostFoundModel>?> get() = _allReports
 
     private val _filteredReports = MutableLiveData<List<LostFoundModel>?>()
-    val filteredReports get() = _filteredReports
+    val filteredReports: LiveData<List<LostFoundModel>?> get() = _filteredReports
 
     private val _selectedReport = MutableLiveData<LostFoundModel?>()
-    val selectedReport get() = _selectedReport
+    val selectedReport: LiveData<LostFoundModel?> get() = _selectedReport
 
+    // UI state
     private val _searchQuery = MutableLiveData<String>()
-    val searchQuery get() = _searchQuery
+    val searchQuery: LiveData<String> get() = _searchQuery
 
     val filterType = MutableLiveData("All")
-    val filterStatus = MutableLiveData("All")
 
     private val _loading = MutableLiveData<Boolean>()
-    val loading get() = _loading
+    val loading: LiveData<Boolean> get() = _loading
 
     private val _message = MutableLiveData<String?>()
-    val message get() = _message
+    val message: LiveData<String?> get() = _message
 
-    fun getAllReports() {
+    /**
+     * Load all reports
+     * @param includeHidden - true for management/admin view, false for public users
+     */
+    fun getAllReports(includeHidden: Boolean = false) {
         _loading.value = true
-        repo.getAllReports { success, msg, data ->
+
+        repo.getAllReports { success, message, data ->
             _loading.value = false
-            if (success) {
-                _allReports.value = data
+
+            if (success && data != null) {
+                val visibleOnly = data.filter { it.isVisible }
+                _allReports.value = if (includeHidden) data else visibleOnly
                 applyFiltersAndSearch()
             } else {
-                _message.value = msg
+                _message.value = message ?: "Failed to load reports"
             }
         }
     }
 
     fun getReportById(lostId: String) {
+        if (lostId.isBlank()) return
+
         _loading.value = true
-        repo.getReportById(lostId) { success, msg, data ->
+        repo.getReportById(lostId) { success, msg, report ->
             _loading.value = false
             if (success) {
-                _selectedReport.value = data
+                _selectedReport.value = report
             } else {
                 _message.value = msg
             }
         }
     }
 
-    fun addReport(item: LostFoundModel, callback: (Boolean, String) -> Unit = { _, _ -> }) {
+    fun addReport(item: LostFoundModel, onResult: (Boolean, String) -> Unit = { _, _ -> }) {
         _loading.value = true
         repo.addReport(item) { success, msg ->
             _loading.value = false
-            callback(success, msg)
+            onResult(success, msg)
+
             if (success) {
                 _message.value = "Report added successfully"
-                getAllReports()  // force refresh after add
+                // Refresh management view style (show all including newly added)
+                getAllReports(includeHidden = true)
             } else {
                 _message.value = msg
             }
         }
     }
 
-    fun updateReport(item: LostFoundModel, callback: (Boolean, String) -> Unit = { _, _ -> }) {
+    fun updateReport(item: LostFoundModel, onResult: (Boolean, String) -> Unit = { _, _ -> }) {
         if (item.lostId.isBlank()) {
-            _message.value = "Cannot update: missing ID"
-            callback(false, "Cannot update: missing ID")
+            _message.value = "Cannot update: missing report ID"
+            onResult(false, "Missing report ID")
             return
         }
+
         _loading.value = true
         repo.updateReport(item) { success, msg ->
             _loading.value = false
+            onResult(success, msg)
+
             if (success) {
-                _message.value = "Report updated"
-                // Refresh the list after updating
-                getAllReports()
+                _message.value = "Report updated successfully"
+                getAllReports(includeHidden = true)
             } else {
                 _message.value = msg
             }
-            callback(success, msg)
         }
     }
 
-    fun hideReport(lostId: String, callback: (Boolean, String) -> Unit = { _, _ -> }) {
+    fun hideReport(lostId: String, onResult: (Boolean, String) -> Unit = { _, _ -> }) {
+        if (lostId.isBlank()) {
+            _message.value = "Invalid report ID"
+            onResult(false, "Invalid report ID")
+            return
+        }
+
         _loading.value = true
         repo.hideReport(lostId) { success, msg ->
             _loading.value = false
-            callback(success, msg)
-            if (success) {
-                _message.value = "Report hidden"
-                getAllReports()  // force refresh after hide
-            } else {
-                _message.value = msg
-            }
-        }
-    }
+            onResult(success, msg)
 
-    fun deleteReport(lostId: String, callback: (Boolean, String) -> Unit = { _, _ -> }) {
-        _loading.value = true
-        repo.deleteReport(lostId) { success, msg ->
-            _loading.value = false
             if (success) {
-                _message.value = "Report deleted"
-                // Refresh the list after deleting
-                getAllReports()
+                _message.value = "Report hidden successfully"
+                // Most important line - FORCE new fetch instead of relying on cache
+                getAllReports(includeHidden = true)   // management
+                // OR if you want to be extra sure:
+                // _allReports.value = null
+                // getAllReports(includeHidden = false)  // for public too
             } else {
                 _message.value = msg
             }
-            callback(success, msg)
         }
     }
 
@@ -122,6 +132,7 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
         repo.uploadImage(context, imageUri, callback)
     }
 
+    // Search & Filter handling
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
         applyFiltersAndSearch()
@@ -133,29 +144,39 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
     }
 
     private fun applyFiltersAndSearch() {
-        val list = _allReports.value ?: emptyList()
-        val query = _searchQuery.value.orEmpty().trim().lowercase()
-        val type = filterType.value ?: "All"
+        val currentList = _allReports.value ?: emptyList()
+        val query = _searchQuery.value?.trim()?.lowercase() ?: ""
+        val selectedType = filterType.value ?: "All"
 
-        val filtered = list.filter { report ->
-            val matchesQuery = query.isEmpty() ||
+        val filteredList = currentList.filter { report ->
+            // Search matching
+            val matchesSearch = query.isEmpty() ||
                     report.title.lowercase().contains(query) ||
                     report.description.lowercase().contains(query) ||
                     report.location.lowercase().contains(query) ||
                     report.category.lowercase().contains(query)
 
-            val matchesType = type == "All" || report.type == type
-            matchesQuery && matchesType
+            // Type filter matching
+            val matchesType = selectedType == "All" ||
+                    report.type.equals(selectedType, ignoreCase = true)
+
+            matchesSearch && matchesType
         }
 
-        _filteredReports.value = filtered
+        _filteredReports.value = filteredList
     }
 
     fun clearMessage() {
         _message.value = null
     }
 
-    fun refreshReports() {
-        getAllReports()
+    // Convenience method for public screens
+    fun refreshPublicReports() {
+        getAllReports(includeHidden = false)
+    }
+
+    // Convenience method for management/admin screens
+    fun refreshAllReports() {
+        getAllReports(includeHidden = true)
     }
 }

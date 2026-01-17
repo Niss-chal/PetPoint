@@ -7,7 +7,6 @@ interface LostFoundRepo {
 
     fun updateReport(item: LostFoundModel, callback: (Boolean, String) -> Unit)
 
-    fun deleteReport(lostId: String, callback: (Boolean, String) -> Unit)
 
     fun getReportById(lostId: String, callback: (Boolean, String, LostFoundModel?) -> Unit)
 

@@ -53,15 +53,6 @@ class LostFoundRepoImpl : LostFoundRepo {
         }
     }
 
-    override fun deleteReport(lostId: String, callback: (Boolean, String) -> Unit) {
-        ref.child(lostId).removeValue().addOnCompleteListener {
-            if (it.isSuccessful) {
-                callback(true, "Report deleted successfully")
-            } else {
-                callback(false, it.exception?.message ?: "Unknown error")
-            }
-        }
-    }
 
     override fun getReportById(lostId: String, callback: (Boolean, String, LostFoundModel?) -> Unit) {
         ref.child(lostId).addListenerForSingleValueEvent(object : ValueEventListener {
@@ -90,14 +81,9 @@ class LostFoundRepoImpl : LostFoundRepo {
                 val items = mutableListOf<LostFoundModel>()
                 for (child in snapshot.children) {
                     val item = child.getValue(LostFoundModel::class.java)
-                    if (item != null) {
-                        // Treat missing or null isVisible as true (old data compatibility)
-                        if (item.isVisible != false) {
-                            items.add(item)
-                        }
-                    }
+                    item?.let { items.add(it) }  // return ALL items - filtering in ViewModel
                 }
-                callback(true, "Reports fetched", items)
+                callback(true, "Success", items)
             }
 
             override fun onCancelled(error: DatabaseError) {

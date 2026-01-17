@@ -46,16 +46,11 @@ fun LostAndFoundScreen() {
     val loading by viewModel.loading.observeAsState(initial = false)
     val searchQuery by viewModel.searchQuery.observeAsState(initial = "")
 
-    // Refresh when screen is first loaded
-    val lifecycleOwner = LocalLifecycleOwner.current
-    LaunchedEffect(lifecycleOwner) {
-        viewModel.getAllReports()
-    }
-
-    // Add a refresh trigger when returning from add/edit screen
-    DisposableEffect(Unit) {
-        onDispose {
-            // This will be called when leaving the screen
+    LaunchedEffect(Unit) {
+        viewModel.message.observeForever { msg ->
+            if (msg?.contains("hidden", ignoreCase = true) == true) {
+                viewModel.refreshPublicReports()
+            }
         }
     }
 
@@ -89,6 +84,7 @@ fun LostAndFoundScreen() {
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
+            // Search field
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChange(it) },
@@ -104,57 +100,79 @@ fun LostAndFoundScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Filter chips
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                FilterChip(selected = viewModel.filterType.value == "All", onClick = { viewModel.setFilterType("All") }, label = { Text("All") })
-                FilterChip(selected = viewModel.filterType.value == "Lost", onClick = { viewModel.setFilterType("Lost") }, label = { Text("Lost") })
-                FilterChip(selected = viewModel.filterType.value == "Found", onClick = { viewModel.setFilterType("Found") }, label = { Text("Found") })
+                FilterChip(
+                    selected = viewModel.filterType.value == "All",
+                    onClick = { viewModel.setFilterType("All") },
+                    label = { Text("All") }
+                )
+                FilterChip(
+                    selected = viewModel.filterType.value == "Lost",
+                    onClick = { viewModel.setFilterType("Lost") },
+                    label = { Text("Lost") }
+                )
+                FilterChip(
+                    selected = viewModel.filterType.value == "Found",
+                    onClick = { viewModel.setFilterType("Found") },
+                    label = { Text("Found") }
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (loading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color = VividAzure)
-            } else if (reports!!.isEmpty()) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = if (searchQuery.isEmpty()) "No reports available" else "No items found",
-                        color = Color.Gray,
-                        fontSize = 16.sp
+            when {
+                loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        color = VividAzure
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    TextButton(onClick = { viewModel.refreshReports() }) {
-                        Text("Refresh", color = VividAzure)
+                }
+
+                reports!!.isEmpty() -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = if (searchQuery.isEmpty()) "No reports available" else "No items found",
+                            color = Color.Gray,
+                            fontSize = 16.sp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        TextButton(onClick = { viewModel.refreshPublicReports() }) {  // ← Fixed: use correct method
+                            Text("Refresh", color = VividAzure)
+                        }
                     }
                 }
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(bottom = 80.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(reports!!.size) { index ->
-                        val item = reports!![index]
-                        LostFoundUserCard(
-                            item = item,
-                            onClick = {
-                                context.startActivity(
-                                    Intent(context, LostandFoundDetailActivity::class.java).apply {
-                                        putExtra("lostId", item.lostId)
-                                    }
-                                )
-                            }
-                        )
+
+                else -> {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(bottom = 80.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(reports!!.size) { index ->
+                            val item = reports!![index]
+                            LostFoundUserCard(
+                                item = item,
+                                onClick = {
+                                    context.startActivity(
+                                        Intent(context, LostandFoundDetailActivity::class.java).apply {
+                                            putExtra("lostId", item.lostId)
+                                        }
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -162,6 +180,7 @@ fun LostAndFoundScreen() {
     }
 }
 
+// LostFoundUserCard remains the same...
 @Composable
 fun LostFoundUserCard(
     item: LostFoundModel,

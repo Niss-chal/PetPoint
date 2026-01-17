@@ -61,12 +61,14 @@ fun LostAndFoundDetailScreen(lostId: String) {
     val currentUid = currentUser?.uid
 
     val isOwner = currentUid != null && item?.reportedBy == currentUid
-    val isAdmin = false  // TODO: Replace with real admin check
+    val isAdmin = false  // TODO: Replace with real admin check logic
 
     var showHideDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(lostId) {
-        if (lostId.isNotBlank()) viewModel.getReportById(lostId)
+        if (lostId.isNotBlank()) {
+            viewModel.getReportById(lostId)
+        }
     }
 
     LaunchedEffect(message) {
@@ -99,10 +101,17 @@ fun LostAndFoundDetailScreen(lostId: String) {
                 .padding(padding)
         ) {
             if (loading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = VividAzure)
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = VividAzure
+                )
             } else if (item == null) {
-                Text("Item not found", modifier = Modifier.align(Alignment.Center), color = Color.Gray)
-            } else if (item!!.isVisible == false) {
+                Text(
+                    "Item not found",
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.Gray
+                )
+            } else if (!item!!.isVisible && !isOwner && !isAdmin) {
                 Text(
                     "This report has been hidden by the owner",
                     modifier = Modifier.align(Alignment.Center),
@@ -111,6 +120,7 @@ fun LostAndFoundDetailScreen(lostId: String) {
                 )
             } else {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    // Image
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -125,14 +135,22 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                 contentScale = ContentScale.Crop
                             )
                         } else {
-                            Text("No photo", modifier = Modifier.align(Alignment.Center), color = Color.Gray)
+                            Text(
+                                "No photo available",
+                                modifier = Modifier.align(Alignment.Center),
+                                color = Color.Gray
+                            )
                         }
                     }
 
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(item!!.title, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = item!!.title,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Badge(
@@ -140,20 +158,30 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                 background = if (item!!.type == "Lost") Color(0xFFfee2e2) else Color(0xFFdcfce7),
                                 textColor = if (item!!.type == "Lost") Color(0xFFdc2626) else Color(0xFF15803d)
                             )
+
+                            if (isOwner || isAdmin) {
+                                Badge(
+                                    text = if (item!!.isVisible) "Visible" else "Hidden",
+                                    background = if (item!!.isVisible) Color(0xFFd1fae5) else Color(0xFFfee2e2),
+                                    textColor = if (item!!.isVisible) Color(0xFF065f46) else Color(0xFF991b1b)
+                                )
+                            }
                         }
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
                         DetailRow("Category", item!!.category)
                         DetailRow("Location", item!!.location)
                         DetailRow("Date", item!!.date)
                         DetailRow("Reported by", item!!.reportedByName ?: "Anonymous")
+
                         if (item!!.contactInfo.isNotBlank()) {
                             DetailRow("Contact", item!!.contactInfo)
                         }
 
                         if (isOwner || isAdmin) {
                             Spacer(modifier = Modifier.height(32.dp))
+
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -166,7 +194,8 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                             }
                                         )
                                     },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.buttonColors(containerColor = VividAzure)
                                 ) {
                                     Text("Edit Report")
                                 }
@@ -176,15 +205,16 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text("Hide / Delete")
+                                    Text("Hide Report")
                                 }
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(32.dp))
 
                         Text("Description", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(8.dp))
+
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = White)
@@ -201,11 +231,21 @@ fun LostAndFoundDetailScreen(lostId: String) {
                 }
             }
 
+            // ────────────────────────────────────────────────
+            //              HIDE CONFIRMATION DIALOG
+            // ────────────────────────────────────────────────
             if (showHideDialog) {
                 AlertDialog(
                     onDismissRequest = { showHideDialog = false },
-                    title = { Text("Hide Report") },
-                    text = { Text("This report will disappear from the list for normal users.\nIt will still exist in the database.\n\nAre you sure?") },
+                    title = { Text("Hide This Report?") },
+                    text = {
+                        Text(
+                            "This action will make the report invisible to other users.\n\n" +
+                                    "You (and admins) will still be able to see and restore it " +
+                                    "from the management screen later.\n\n" +
+                                    "Are you sure you want to continue?"
+                        )
+                    },
                     confirmButton = {
                         TextButton(onClick = {
                             showHideDialog = false
@@ -231,7 +271,11 @@ fun LostAndFoundDetailScreen(lostId: String) {
 }
 
 @Composable
-fun Badge(text: String, background: Color, textColor: Color) {
+fun Badge(
+    text: String,
+    background: Color,
+    textColor: Color
+) {
     Surface(
         color = background,
         shape = RoundedCornerShape(16.dp)
@@ -247,8 +291,19 @@ fun Badge(text: String, background: Color, textColor: Color) {
 
 @Composable
 private fun DetailRow(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-        Text("$label: ", fontWeight = FontWeight.Medium, color = Color.Gray)
-        Text(value, modifier = Modifier.weight(1f))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+    ) {
+        Text(
+            text = "$label: ",
+            fontWeight = FontWeight.Medium,
+            color = Color.Gray
+        )
+        Text(
+            text = value,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
