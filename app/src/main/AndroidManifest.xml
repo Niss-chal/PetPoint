@@ -41,7 +41,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".view.CheckoutActivity"
             android:name=".view.FrontpageActivity"
             android:exported="true"
             android:label="@string/title_activity_frontpage"
