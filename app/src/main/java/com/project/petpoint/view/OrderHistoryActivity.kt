@@ -28,13 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import com.google.firebase.auth.FirebaseAuth
-import com.project.petpoint.model.OrderModel
-import com.project.petpoint.repository.OrderRepoImpl
-import com.project.petpoint.viewmodel.OrderViewModel
-import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
 

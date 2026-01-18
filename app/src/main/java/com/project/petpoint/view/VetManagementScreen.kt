@@ -160,7 +160,7 @@ fun VetManagementScreen() {
         }
     }
 
-    // ── Add Doctor Dialog ───────────────────────────────────────
+
     if (showAddDialog) {
         VetFormDialog(
             title = "Add Veterinarian",
