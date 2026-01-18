@@ -68,7 +68,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-            android:theme="@style/Theme.PetPoint" />
 
         <activity
             android:name=".view.CartActivity"
