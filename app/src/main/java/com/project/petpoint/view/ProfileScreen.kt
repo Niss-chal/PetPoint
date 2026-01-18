@@ -136,20 +136,55 @@ fun ProfileScreen() {
                 Spacer(modifier = Modifier.height(25.dp))
             }
 
-            item { ProfileMenuItem(icon = R.drawable.baseline_settings_24, text = "Settings") }
-            item { ProfileMenuItem(icon = R.drawable.baseline_history_24, text = "Order History") }
-            item { ProfileMenuItem(icon = R.drawable.baseline_logout_24, text = "Log Out") }
+            // Profile menu items
+            item {
+                ProfileMenuItem(icon = R.drawable.baseline_settings_24, text = "Settings") {
+                    // TODO: Open settings screen
+                }
+            }
+
+            item {
+                ProfileMenuItem(icon = R.drawable.baseline_history_24, text = "Order History") {
+                    // Navigate to OrderHistoryActivity
+                    context.startActivity(Intent(context, OrderHistoryActivity::class.java))
+                }
+            }
+
+            item {
+                ProfileMenuItem(icon = R.drawable.baseline_logout_24, text = "Log Out") {
+                    // TODO: Log out user
+                }
+            }
+
+            // Back Button at the bottom
+            item {
+                Spacer(modifier = Modifier.height(30.dp))
+                Button(
+                    onClick = {
+                        context.startActivity(Intent(context, DashboardActivity::class.java))
+                        (context as? ComponentActivity)?.finish()
+                    },
+                    shape = RoundedCornerShape(20.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = VividAzure),
+                    modifier = Modifier
+                        .fillMaxWidth(0.85f)
+                        .height(50.dp)
+                ) {
+                    Text("Back", color = Color.White, fontSize = 16.sp)
+                }
+            }
         }
     }
 }
 
+// Updated ProfileMenuItem to accept onClick
 @Composable
-fun ProfileMenuItem(icon: Int, text: String) {
+fun ProfileMenuItem(icon: Int, text: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 40.dp, vertical = 18.dp)
-            .clickable { },
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
