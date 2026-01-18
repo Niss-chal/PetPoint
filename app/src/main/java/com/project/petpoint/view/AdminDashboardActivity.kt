@@ -10,7 +10,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,11 +27,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import com.project.petpoint.R
 import com.project.petpoint.ui.theme.White
 import com.project.petpoint.view.ui.theme.Azure
-import com.project.petpoint.view.ui.theme.PetPointTheme
 import com.project.petpoint.view.ui.theme.VividAzure
 
 class AdminDashboardActivity : ComponentActivity() {
@@ -133,7 +130,7 @@ fun AdminDashBody(){
                 0-> HomeScreen()
                 1-> ProductManagementScreen()
                 2-> VetManagementScreen()
-                3-> LostandFoundManagement()
+                3-> LostAndFoundManagementScreen()
                 else -> HomeScreen()
             }
         }

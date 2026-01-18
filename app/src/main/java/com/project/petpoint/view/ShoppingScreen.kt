@@ -1,10 +1,7 @@
-package com.project.petpoint.view
-
-import android.content.Intent
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,15 +27,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
+import android.content.Intent
+import android.widget.Toast
+import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.R
 import com.project.petpoint.model.ProductModel
 import com.project.petpoint.repository.CartRepoImpl
 import com.project.petpoint.repository.ProductRepoImpl
 import com.project.petpoint.ui.theme.Black
+import com.project.petpoint.view.ProductDetailActivity
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.Green
+import com.project.petpoint.view.ui.theme.Orange
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
 import com.project.petpoint.viewmodel.CartViewModel
@@ -47,7 +50,7 @@ import com.project.petpoint.viewmodel.ProductViewModel
 @Composable
 fun ShopScreen() {
     val viewModel = remember { ProductViewModel(ProductRepoImpl()) }
-    val cartViewModel = remember{ CartViewModel(CartRepoImpl()) }
+    val cartViewModel = remember { CartViewModel(CartRepoImpl()) }
     val context = LocalContext.current
 
     val searchQuery by viewModel.searchQuery.observeAsState(initial = "")
@@ -55,8 +58,9 @@ fun ShopScreen() {
     val loading by viewModel.loading.observeAsState(initial = false)
     val message by viewModel.message.observeAsState()
 
-    val userId = FirebaseAuth.getInstance().currentUser?.uid?: ""
+    var selectedCategory by remember { mutableStateOf("All") }
 
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     LaunchedEffect(Unit) {
         viewModel.getAllProduct()
@@ -66,6 +70,16 @@ fun ShopScreen() {
     LaunchedEffect(message) {
         message?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val categories = listOf("All", "Food", "Toys", "Accessories", "Clothes", "Medicine", "Other")
+
+    val productsToDisplay = remember(filteredProducts, selectedCategory) {
+        if (selectedCategory == "All") {
+            filteredProducts ?: emptyList()
+        } else {
+            filteredProducts?.filter { it.categoryId == selectedCategory } ?: emptyList()
         }
     }
 
@@ -97,7 +111,33 @@ fun ShopScreen() {
             singleLine = true
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp)
+        ) {
+            items(categories.size) { index ->
+                val category = categories[index]
+                Button(
+                    onClick = { selectedCategory = category },
+                    modifier = Modifier.height(36.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedCategory == category) VividAzure else White,
+                        contentColor = if (selectedCategory == category) White else Black
+                    ),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Text(
+                        text = category,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Loading Indicator
         if (loading) {
@@ -109,7 +149,7 @@ fun ShopScreen() {
             ) {
                 CircularProgressIndicator(color = VividAzure)
             }
-        } else if (filteredProducts?.isEmpty() ?: true) {
+        } else if (productsToDisplay.isEmpty()) {
             // Empty State
             Box(
                 modifier = Modifier
@@ -133,8 +173,8 @@ fun ShopScreen() {
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(filteredProducts?.size ?: 0) { index ->
-                    filteredProducts?.get(index)?.let { product ->
+                items(productsToDisplay.size) { index ->
+                    productsToDisplay.getOrNull(index)?.let { product ->
                         UserProductCard(
                             product = product,
                             onClick = {
@@ -143,13 +183,11 @@ fun ShopScreen() {
                                 context.startActivity(intent)
                             },
                             onAddToCart = {
-                                cartViewModel.addToCart(product, userId){
-                                    success,message ->
-                                    if(success){
-                                        Toast.makeText(context,message,Toast.LENGTH_SHORT).show()
-                                    }
-                                    else{
-                                        Toast.makeText(context,message,Toast.LENGTH_SHORT).show()
+                                cartViewModel.addToCart(product, userId) { success, message ->
+                                    if (success) {
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }

@@ -11,30 +11,27 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+
 import com.project.petpoint.R
+import com.project.petpoint.repository.UserRepoImpl
+import com.project.petpoint.viewmodel.UserViewModel
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.VividAzure
-import com.project.petpoint.view.ui.theme.VividOrange
 
 class ProfileActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,54 +47,77 @@ class ProfileActivity : ComponentActivity() {
 fun ProfileScreen() {
 
     val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
+    val userId = sharedPref.getString("userId", null)
+
+    val userViewModel = remember { UserViewModel(UserRepoImpl()) }
+
+    // Observe user LiveData
+    var userName by remember { mutableStateOf(sharedPref.getString("name", "Guest")) }
+    var profileImageUrl by remember { mutableStateOf<String?>(null) }
+
+    if (userId != null) {
+        LaunchedEffect(userId) {
+            userViewModel.getUserById(userId)
+        }
+        val userState by userViewModel.users.observeAsState()
+        userState?.let { user ->
+            userName = user.name
+            profileImageUrl = user.profileImage
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-            LazyColumn (
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Azure)
                 .padding(top = 50.dp),
-
             horizontalAlignment = Alignment.CenterHorizontally,
-                contentPadding = PaddingValues(bottom = 20.dp)
+            contentPadding = PaddingValues(bottom = 20.dp)
         ) {
-           item {
-               Spacer(modifier = Modifier.height(20.dp))
-           }
 
-           item{
-            Image(
-                painter = painterResource(id = R.drawable.profile),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-            )}
+            item { Spacer(modifier = Modifier.height(20.dp)) }
 
-                item {
-                    Spacer(modifier = Modifier.height(10.dp))
-
-
-                    val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
-                    val userName = sharedPref.getString("name", "Guest")
-
-                    Text(
-                        text = userName ?: "Guest",
-                        fontSize = 22.sp,
-                        color = Color.Black
+            item {
+                if (!profileImageUrl.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = profileImageUrl,
+                        contentDescription = "Profile Image",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.profile),
+                        contentDescription = "Profile Image",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
                     )
                 }
+            }
 
-
-
-                item {
-
+            item {
                 Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = userName ?: "Guest",
+                    fontSize = 22.sp,
+                    color = Color.Black
+                )
+            }
 
+            item {
+                Spacer(modifier = Modifier.height(10.dp))
                 Button(
-                    onClick = { val intent = Intent(context, EditProfileActivity::class.java)
-                        context.startActivity(intent) },
+                    onClick = {
+                        context.startActivity(
+                            Intent(context, EditProfileActivity::class.java)
+                        )
+                    },
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = VividAzure),
                     modifier = Modifier.width(160.dp)
@@ -106,57 +126,65 @@ fun ProfileScreen() {
                 }
             }
 
-
             item {
-
-
                 Spacer(modifier = Modifier.height(40.dp))
-
-
                 Divider(
                     color = Color.Gray.copy(alpha = 0.3f),
                     thickness = 1.dp,
                     modifier = Modifier.padding(horizontal = 40.dp)
                 )
-
                 Spacer(modifier = Modifier.height(25.dp))
-
             }
+
+            // Profile menu items
             item {
-
-                ProfileMenuItem(icon = R.drawable.baseline_settings_24, text = "Settings")
-            }
-
-            item{
-            ProfileMenuItem(icon = R.drawable.baseline_history_24, text = "Order History")
+                ProfileMenuItem(icon = R.drawable.baseline_settings_24, text = "Settings") {
+                    // TODO: Open settings screen
+                }
             }
 
             item {
-                ProfileMenuItem(icon = R.drawable.baseline_logout_24, text = "Log Out")
+                ProfileMenuItem(icon = R.drawable.baseline_history_24, text = "Order History") {
+                    // Navigate to OrderHistoryActivity
+                    context.startActivity(Intent(context, OrderHistoryActivity::class.java))
+                }
             }
 
-
-
-
-
+            item {
+                ProfileMenuItem(icon = R.drawable.baseline_logout_24, text = "Log Out") {
+                    // TODO: Log out user
+                }
             }
 
-
-
+            // Back Button at the bottom
+            item {
+                Spacer(modifier = Modifier.height(30.dp))
+                Button(
+                    onClick = {
+                        context.startActivity(Intent(context, DashboardActivity::class.java))
+                        (context as? ComponentActivity)?.finish()
+                    },
+                    shape = RoundedCornerShape(20.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = VividAzure),
+                    modifier = Modifier
+                        .fillMaxWidth(0.85f)
+                        .height(50.dp)
+                ) {
+                    Text("Back", color = Color.White, fontSize = 16.sp)
+                }
+            }
+        }
     }
 }
 
-
-
-
-
+// Updated ProfileMenuItem to accept onClick
 @Composable
-fun ProfileMenuItem(icon: Int, text: String) {
+fun ProfileMenuItem(icon: Int, text: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 40.dp, vertical = 18.dp)
-            .clickable { },
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -165,16 +193,7 @@ fun ProfileMenuItem(icon: Int, text: String) {
             tint = VividAzure,
             modifier = Modifier.size(26.dp)
         )
-
         Spacer(modifier = Modifier.width(20.dp))
-
         Text(text = text, fontSize = 18.sp, color = Color.Black)
     }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun ProfileScreenPreview() {
-    ProfileScreen()
 }

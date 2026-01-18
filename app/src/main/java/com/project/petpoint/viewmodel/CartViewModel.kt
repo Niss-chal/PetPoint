@@ -1,5 +1,6 @@
 package com.project.petpoint.viewmodel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.project.petpoint.model.CartModel
@@ -8,27 +9,22 @@ import com.project.petpoint.repository.CartRepo
 
 class CartViewModel(private val repo: CartRepo) : ViewModel() {
 
-    private val _cartItems = MutableLiveData<List<CartModel>?>()
-    val cartItems: MutableLiveData<List<CartModel>?> get() = _cartItems
+    private val _cartItems = MutableLiveData<List<CartModel>>(emptyList())
+    val cartItems: LiveData<List<CartModel>> get() = _cartItems
 
-    private val _loading = MutableLiveData<Boolean>()
-    val loading: MutableLiveData<Boolean> get() = _loading
+    private val _loading = MutableLiveData(false)
+    val loading: LiveData<Boolean> get() = _loading
 
     private val _message = MutableLiveData<String?>()
-    val message: MutableLiveData<String?> get() = _message
+    val message: LiveData<String?> get() = _message
 
-    private val _totalPrice = MutableLiveData<Double>()
-    val totalPrice: MutableLiveData<Double> get() = _totalPrice
+    private val _totalPrice = MutableLiveData(0.0)
+    val totalPrice: LiveData<Double> get() = _totalPrice
 
-    private val _totalItems = MutableLiveData<Int>()
-    val totalItems: MutableLiveData<Int> get() = _totalItems
+    private val _totalItems = MutableLiveData(0)
+    val totalItems: LiveData<Int> get() = _totalItems
 
-    fun addToCart(
-        product: ProductModel,
-        userId: String,
-        quantity: Int = 1,
-        callback: (Boolean, String) -> Unit
-    ) {
+    fun addToCart(product: ProductModel, userId: String, quantity: Int = 1, callback: (Boolean, String) -> Unit) {
         if (product.stock <= 0) {
             _message.postValue("${product.name} is out of stock")
             callback(false, "${product.name} is out of stock")
@@ -36,50 +32,30 @@ class CartViewModel(private val repo: CartRepo) : ViewModel() {
         }
 
         _loading.postValue(true)
-
         repo.addToCart(product, userId, quantity) { success, msg ->
             _loading.postValue(false)
             _message.postValue(msg)
-            if (success) {
-                getCartItems(userId) { _, _, _ -> }
-            }
+            if (success) getCartItems(userId) { _, _, _ -> }
             callback(success, msg)
         }
     }
 
-    fun getCartItems(
-        userId: String,
-        callback: (Boolean, String, List<CartModel>?) -> Unit
-    ) {
+    fun getCartItems(userId: String, callback: (Boolean, String, List<CartModel>) -> Unit) {
         _loading.postValue(true)
         repo.getCartItems(userId) { success, msg, data ->
             _loading.postValue(false)
-            if (success) {
-                _cartItems.postValue(data)
-                calculateTotals(data)
-            } else {
-                _cartItems.postValue(null)
-                _message.postValue(msg)
-            }
-            callback(success, msg, data)
+            val safeList = data ?: emptyList()
+            _cartItems.postValue(safeList)
+            calculateTotals(safeList)
+            if (!success) _message.postValue(msg)
+            callback(success, msg, safeList)
         }
     }
 
-    fun updateCartItemQuantity(
-        cartId: String,
-        quantity: Int,
-        callback: (Boolean, String) -> Unit
-    ) {
+    fun updateCartItemQuantity(cartId: String, quantity: Int, callback: (Boolean, String) -> Unit) {
         repo.updateCartItemQuantity(cartId, quantity) { success, msg ->
             if (success) {
-                // Update local list
-                val updatedList = _cartItems.value?.map { item ->
-                    if (item.cartItemId == cartId) {
-                        item.copy(quantity = quantity)
-                    } else {
-                        item
-                    }
-                }
+                val updatedList = _cartItems.value?.map { if (it.cartItemId == cartId) it.copy(quantity = quantity) else it } ?: emptyList()
                 _cartItems.postValue(updatedList)
                 calculateTotals(updatedList)
             } else {
@@ -89,17 +65,13 @@ class CartViewModel(private val repo: CartRepo) : ViewModel() {
         }
     }
 
-    fun removeFromCart(
-        cartId: String,
-        callback: (Boolean, String) -> Unit
-    ) {
+    fun removeFromCart(cartId: String, callback: (Boolean, String) -> Unit) {
         _loading.postValue(true)
         repo.removeFromCart(cartId) { success, msg ->
             _loading.postValue(false)
             if (success) {
                 _message.postValue("Item removed from cart")
-                // Update local list
-                val updatedList = _cartItems.value?.filter { it.cartItemId != cartId }
+                val updatedList = _cartItems.value?.filter { it.cartItemId != cartId } ?: emptyList()
                 _cartItems.postValue(updatedList)
                 calculateTotals(updatedList)
             } else {
@@ -109,10 +81,7 @@ class CartViewModel(private val repo: CartRepo) : ViewModel() {
         }
     }
 
-    fun clearCart(
-        userId: String,
-        callback: (Boolean, String) -> Unit
-    ) {
+    fun clearCart(userId: String, callback: (Boolean, String) -> Unit) {
         _loading.postValue(true)
         repo.clearCart(userId) { success, msg ->
             _loading.postValue(false)
@@ -128,17 +97,6 @@ class CartViewModel(private val repo: CartRepo) : ViewModel() {
         }
     }
 
-    fun getCartItemCount(
-        userId: String,
-        callback: (Int) -> Unit
-    ) {
-        repo.getCartItemCount(userId) { count ->
-            _totalItems.postValue(count)
-            callback(count)
-        }
-    }
-
-
     fun increaseQuantity(cartItem: CartModel, callback: (Boolean, String) -> Unit = { _, _ -> }) {
         if (cartItem.canIncreaseQuantity()) {
             updateCartItemQuantity(cartItem.cartItemId, cartItem.quantity + 1, callback)
@@ -148,7 +106,6 @@ class CartViewModel(private val repo: CartRepo) : ViewModel() {
         }
     }
 
-
     fun decreaseQuantity(cartItem: CartModel, callback: (Boolean, String) -> Unit = { _, _ -> }) {
         if (cartItem.canDecreaseQuantity()) {
             updateCartItemQuantity(cartItem.cartItemId, cartItem.quantity - 1, callback)
@@ -157,15 +114,10 @@ class CartViewModel(private val repo: CartRepo) : ViewModel() {
         }
     }
 
-
-    private fun calculateTotals(items: List<CartModel>?) {
-        val total = items?.sumOf { it.getTotalPrice() } ?: 0.0
-        val count = items?.sumOf { it.quantity } ?: 0
-
-        _totalPrice.postValue(total)
-        _totalItems.postValue(count)
+    private fun calculateTotals(items: List<CartModel>) {
+        _totalPrice.postValue(items.sumOf { it.getTotalPrice() })
+        _totalItems.postValue(items.sumOf { it.quantity })
     }
-
 
     fun clearMessage() {
         _message.postValue(null)

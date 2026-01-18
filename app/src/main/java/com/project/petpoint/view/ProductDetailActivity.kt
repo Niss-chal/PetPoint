@@ -28,10 +28,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.repository.CartRepoImpl
 import com.project.petpoint.repository.ProductRepoImpl
@@ -136,7 +134,7 @@ fun ProductDescriptionScreen(productId: String) {
                     ) {
                         if (!product!!.imageUrl.isNullOrEmpty() && product!!.imageUrl != "") {
                             AsyncImage(
-                                model = ImageRequest.Builder(LocalPlatformContext.current)
+                                model = ImageRequest.Builder(LocalContext.current)
                                     .data(product!!.imageUrl)
                                     .crossfade(true)
                                     .build(),
