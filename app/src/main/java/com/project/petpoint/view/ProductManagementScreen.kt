@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.sp
 import com.project.petpoint.model.ProductModel
 import com.project.petpoint.repository.ProductRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
-import com.project.petpoint.view.ui.theme.Black
 import com.project.petpoint.view.ui.theme.Green
 import com.project.petpoint.view.ui.theme.GreyOrange
 import com.project.petpoint.view.ui.theme.VividAzure
