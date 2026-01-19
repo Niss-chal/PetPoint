@@ -14,6 +14,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -28,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.repository.LostFoundRepoImpl
+import com.project.petpoint.utils.AuthUtils
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
@@ -56,14 +59,14 @@ fun LostAndFoundDetailScreen(lostId: String) {
     val item by viewModel.selectedReport.observeAsState()
     val loading by viewModel.loading.observeAsState(initial = false)
     val message by viewModel.message.observeAsState()
+    val isAdmin by viewModel.isAdmin.observeAsState(initial = false)
 
-    val currentUser = FirebaseAuth.getInstance().currentUser
-    val currentUid = currentUser?.uid
-
+    val currentUid = FirebaseAuth.getInstance().currentUser?.uid
     val isOwner = currentUid != null && item?.reportedBy == currentUid
-    val isAdmin = false  // TODO: Replace with real admin check logic
+    val canManage = isOwner || isAdmin
 
-    var showHideDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showRestoreDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(lostId) {
         if (lostId.isNotBlank()) {
@@ -106,21 +109,35 @@ fun LostAndFoundDetailScreen(lostId: String) {
                     color = VividAzure
                 )
             } else if (item == null) {
-                Text(
-                    "Item not found",
+                Text("Item not found", modifier = Modifier.align(Alignment.Center), color = Color.Gray)
+            } else if (!item!!.isVisible && !isAdmin) {
+                Column(
                     modifier = Modifier.align(Alignment.Center),
-                    color = Color.Gray
-                )
-            } else if (!item!!.isVisible && !isOwner && !isAdmin) {
-                Text(
-                    "This report has been hidden by the owner",
-                    modifier = Modifier.align(Alignment.Center),
-                    color = Color.Gray,
-                    fontSize = 18.sp
-                )
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        Icons.Default.DeleteForever,
+                        contentDescription = null,
+                        tint = Color(0xFF9ca3af),
+                        modifier = Modifier.size(72.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "This report has been deleted",
+                        color = Color(0xFF6b7280),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "It is no longer visible",
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                }
             } else {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    // Image
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -135,20 +152,12 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                 contentScale = ContentScale.Crop
                             )
                         } else {
-                            Text(
-                                "No photo available",
-                                modifier = Modifier.align(Alignment.Center),
-                                color = Color.Gray
-                            )
+                            Text("No photo available", modifier = Modifier.align(Alignment.Center), color = Color.Gray)
                         }
                     }
 
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = item!!.title,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Text(item!!.title, fontSize = 24.sp, fontWeight = FontWeight.Bold)
 
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -159,11 +168,11 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                 textColor = if (item!!.type == "Lost") Color(0xFFdc2626) else Color(0xFF15803d)
                             )
 
-                            if (isOwner || isAdmin) {
+                            if (isAdmin && !item!!.isVisible) {
                                 Badge(
-                                    text = if (item!!.isVisible) "Visible" else "Hidden",
-                                    background = if (item!!.isVisible) Color(0xFFd1fae5) else Color(0xFFfee2e2),
-                                    textColor = if (item!!.isVisible) Color(0xFF065f46) else Color(0xFF991b1b)
+                                    text = "Hidden (deleted)",
+                                    background = Color(0xFFfee2e2),
+                                    textColor = Color(0xFF991b1b)
                                 )
                             }
                         }
@@ -179,7 +188,7 @@ fun LostAndFoundDetailScreen(lostId: String) {
                             DetailRow("Contact", item!!.contactInfo)
                         }
 
-                        if (isOwner || isAdmin) {
+                        if (canManage) {
                             Spacer(modifier = Modifier.height(32.dp))
 
                             Row(
@@ -200,12 +209,22 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                     Text("Edit Report")
                                 }
 
-                                Button(
-                                    onClick = { showHideDialog = true },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text("Hide Report")
+                                if (item!!.isVisible) {
+                                    Button(
+                                        onClick = { showDeleteDialog = true },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text(if (isAdmin) "Hide Report" else "Delete Report")
+                                    }
+                                } else if (isAdmin) {
+                                    Button(
+                                        onClick = { showRestoreDialog = true },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF16a34a)),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Restore Report")
+                                    }
                                 }
                             }
                         }
@@ -231,61 +250,60 @@ fun LostAndFoundDetailScreen(lostId: String) {
                 }
             }
 
-            // ────────────────────────────────────────────────
-            //              HIDE CONFIRMATION DIALOG
-            // ────────────────────────────────────────────────
-            if (showHideDialog) {
+            // Delete confirmation dialog
+            if (showDeleteDialog) {
                 AlertDialog(
-                    onDismissRequest = { showHideDialog = false },
-                    title = { Text("Hide This Report?") },
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = { Text(if (isAdmin) "Hide Report" else "Delete Report") },
                     text = {
                         Text(
-                            "This action will make the report invisible to other users.\n\n" +
-                                    "You (and admins) will still be able to see and restore it " +
-                                    "from the management screen later.\n\n" +
-                                    "Are you sure you want to continue?"
+                            if (isAdmin) {
+                                "This will hide the report from all users (including the owner).\nAdmins can still restore it later."
+                            } else {
+                                "This report will be removed from public view and from your list.\nYou will not be able to see or restore it afterward."
+                            }
                         )
                     },
                     confirmButton = {
                         TextButton(onClick = {
-                            showHideDialog = false
+                            showDeleteDialog = false
                             viewModel.hideReport(item!!.lostId) { success, msg ->
                                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                if (success) {
-                                    context?.finish()
-                                }
+                                if (success) context?.finish()
                             }
                         }) {
-                            Text("Hide")
+                            Text(if (isAdmin) "Hide" else "Delete")
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showHideDialog = false }) {
-                            Text("Cancel")
+                        TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                    }
+                )
+            }
+
+            // Restore dialog (admin only)
+            if (showRestoreDialog) {
+                AlertDialog(
+                    onDismissRequest = { showRestoreDialog = false },
+                    title = { Text("Restore Report") },
+                    text = { Text("This will make the report visible again to everyone.") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showRestoreDialog = false
+                            viewModel.unhideReport(item!!.lostId) { success, msg ->
+                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                if (success) context?.finish()
+                            }
+                        }) {
+                            Text("Restore")
                         }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showRestoreDialog = false }) { Text("Cancel") }
                     }
                 )
             }
         }
-    }
-}
-
-@Composable
-fun Badge(
-    text: String,
-    background: Color,
-    textColor: Color
-) {
-    Surface(
-        color = background,
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Text(
-            text = text,
-            color = textColor,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            fontSize = 14.sp
-        )
     }
 }
 
@@ -304,6 +322,25 @@ private fun DetailRow(label: String, value: String) {
         Text(
             text = value,
             modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun Badge(
+    text: String,
+    background: Color,
+    textColor: Color
+) {
+    Surface(
+        color = background,
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Text(
+            text = text,
+            color = textColor,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            fontSize = 14.sp
         )
     }
 }

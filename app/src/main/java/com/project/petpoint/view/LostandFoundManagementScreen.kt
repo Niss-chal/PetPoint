@@ -14,7 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -44,6 +44,7 @@ fun LostAndFoundManagementScreen() {
     val reports by viewModel.filteredReports.observeAsState(initial = emptyList())
     val loading by viewModel.loading.observeAsState(initial = false)
     val message by viewModel.message.observeAsState()
+    val isAdmin by viewModel.isAdmin.observeAsState(initial = false)
 
     LaunchedEffect(Unit) {
         viewModel.getAllReports(includeHidden = true)
@@ -68,9 +69,10 @@ fun LostAndFoundManagementScreen() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                "Manage Lost & Found Reports",
+                text = "Manage Lost & Found Reports${if (isAdmin) " (Admin)" else ""}",
                 fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
             )
 
             IconButton(onClick = {
@@ -86,6 +88,7 @@ fun LostAndFoundManagementScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Filter chips
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -112,38 +115,85 @@ fun LostAndFoundManagementScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         if (loading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color = VividAzure)
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = VividAzure
+            )
         } else if (reports!!.isEmpty()) {
             Text(
                 "No reports found",
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = Color.Gray
+                color = Color.Gray,
+                fontSize = 16.sp
             )
         } else {
             LazyColumn {
                 items(reports!!) { item ->
+                    val currentUid = FirebaseAuth.getInstance().currentUser?.uid
+                    val isOwner = currentUid != null && item.reportedBy == currentUid
+                    val canManage = isOwner || isAdmin
+
                     LostFoundAdminCard(
                         item = item,
+                        isAdmin = isAdmin,
+                        canManage = canManage,
                         onEdit = {
-                            context.startActivity(
-                                Intent(context, AddLostFoundReportActivity::class.java).apply {
-                                    putExtra("lostId", item.lostId)
-                                }
-                            )
+                            if (canManage) {
+                                context.startActivity(
+                                    Intent(context, AddLostFoundReportActivity::class.java).apply {
+                                        putExtra("lostId", item.lostId)
+                                    }
+                                )
+                            } else {
+                                Toast.makeText(context, "No permission to edit", Toast.LENGTH_SHORT).show()
+                            }
                         },
                         onHide = {
-                            AlertDialog.Builder(context)
-                                .setTitle("Hide Report")
-                                .setMessage(
-                                    "Are you sure you want to hide \"${item.title}\"?\n\n" +
-                                            "It will no longer be visible to other users, " +
-                                            "but you can still see and restore it from this management screen."
-                                )
-                                .setPositiveButton("Hide") { _, _ ->
-                                    viewModel.hideReport(item.lostId)
+                            if (canManage && item.isVisible) {
+                                AlertDialog.Builder(context)
+                                    .setTitle(if (isAdmin) "Hide Report" else "Delete Report")
+                                    .setMessage(
+                                        if (isAdmin) {
+                                            "Hide \"${item.title}\"?\nIt will be invisible to everyone (including the owner)."
+                                        } else {
+                                            "Delete \"${item.title}\"?\nThis report will be removed from your view and public lists.\nThis cannot be undone by you."
+                                        }
+                                    )
+                                    .setPositiveButton(if (isAdmin) "Hide" else "Delete") { _, _ ->
+                                        viewModel.hideReport(item.lostId) { success, msg ->
+                                            Toast.makeText(
+                                                context,
+                                                msg ?: if (success) "Success" else "Failed",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                    .setNegativeButton("Cancel", null)
+                                    .show()
+                            }
+                        },
+                        onUnhide = {
+                            if (isAdmin && !item.isVisible) {
+                                if (item.lostId.isBlank()) {
+                                    Toast.makeText(context, "Invalid report ID", Toast.LENGTH_SHORT).show()
+                                    return@LostFoundAdminCard
                                 }
-                                .setNegativeButton("Cancel", null)
-                                .show()
+
+                                AlertDialog.Builder(context)
+                                    .setTitle("Restore Report")
+                                    .setMessage("Make \"${item.title}\" visible again?")
+                                    .setPositiveButton("Restore") { _, _ ->
+                                        viewModel.unhideReport(item.lostId) { success, msg ->
+                                            Toast.makeText(
+                                                context,
+                                                msg ?: if (success) "Report restored" else "Failed to restore",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                    .setNegativeButton("Cancel", null)
+                                    .show()
+                            }
                         }
                     )
                 }
@@ -155,16 +205,14 @@ fun LostAndFoundManagementScreen() {
 @Composable
 fun LostFoundAdminCard(
     item: LostFoundModel,
+    isAdmin: Boolean,
+    canManage: Boolean,
     onEdit: () -> Unit,
-    onHide: () -> Unit
+    onHide: () -> Unit,
+    onUnhide: () -> Unit
 ) {
-    val currentUid = FirebaseAuth.getInstance().currentUser?.uid
-    val isOwner = currentUid != null && item.reportedBy == currentUid
-    val isAdmin = false  // TODO: implement real admin check
-    val canManage = isOwner || isAdmin
-
     val statusColor = if (item.isVisible) Color(0xFF16a34a) else Color(0xFFdc2626)
-    val statusText = if (item.isVisible) "Visible" else "Hidden"
+    val statusText = if (item.isVisible) "Visible" else "Deleted"
 
     Card(
         modifier = Modifier
@@ -225,18 +273,44 @@ fun LostFoundAdminCard(
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onEdit) {
                         Icon(Icons.Default.Edit, null, tint = Color(0xFF2563eb))
                         Spacer(Modifier.width(4.dp))
                         Text("Edit", color = Color(0xFF2563eb))
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    TextButton(onClick = onHide) {
-                        Icon(Icons.Default.VisibilityOff, null, tint = Color(0xFF7c3aed))
-                        Spacer(Modifier.width(4.dp))
-                        Text("Hide", color = Color(0xFF7c3aed))
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    if (item.isVisible) {
+                        TextButton(onClick = onHide) {
+                            Icon(Icons.Default.Delete, null, tint = Color(0xFFdc2626))
+                            Spacer(Modifier.width(4.dp))
+                            Text(if (isAdmin) "Hide" else "Delete", color = Color(0xFFdc2626))
+                        }
+                    } else if (isAdmin) {
+                        TextButton(onClick = onUnhide) {
+                            Icon(Icons.Default.Visibility, null, tint = Color(0xFF16a34a))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Restore", color = Color(0xFF16a34a))
+                        }
+                    } else {
+                        // Owner sees only status - no action
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(end = 16.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = Color(0xFF9ca3af),
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text("Deleted", color = Color(0xFF9ca3af), fontSize = 14.sp)
+                        }
                     }
                 }
             }

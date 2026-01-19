@@ -5,8 +5,11 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.project.petpoint.model.LostFoundModel
 import com.project.petpoint.repository.LostFoundRepo
+import com.project.petpoint.utils.AuthUtils
+import kotlinx.coroutines.launch
 
 class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
 
@@ -32,6 +35,16 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
     private val _message = MutableLiveData<String?>()
     val message: LiveData<String?> get() = _message
 
+    // Admin status (checked once on init)
+    private val _isAdmin = MutableLiveData<Boolean>(false)
+    val isAdmin: LiveData<Boolean> get() = _isAdmin
+
+    init {
+        viewModelScope.launch {
+            _isAdmin.value = AuthUtils.isCurrentUserAdmin()
+        }
+    }
+
     /**
      * Load all reports
      * @param includeHidden - true for management/admin view, false for public users
@@ -44,7 +57,7 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
 
             if (success && data != null) {
                 val visibleOnly = data.filter { it.isVisible }
-                _allReports.value = if (includeHidden) data else visibleOnly
+                _allReports.value = if (includeHidden || _isAdmin.value == true) data else visibleOnly
                 applyFiltersAndSearch()
             } else {
                 _message.value = message ?: "Failed to load reports"
@@ -61,7 +74,7 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
             if (success) {
                 _selectedReport.value = report
             } else {
-                _message.value = msg
+                _message.value = msg ?: "Report not found"
             }
         }
     }
@@ -74,21 +87,14 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
 
             if (success) {
                 _message.value = "Report added successfully"
-                // Refresh management view style (show all including newly added)
                 getAllReports(includeHidden = true)
             } else {
-                _message.value = msg
+                _message.value = msg ?: "Failed to add report"
             }
         }
     }
 
     fun updateReport(item: LostFoundModel, onResult: (Boolean, String) -> Unit = { _, _ -> }) {
-        if (item.lostId.isBlank()) {
-            _message.value = "Cannot update: missing report ID"
-            onResult(false, "Missing report ID")
-            return
-        }
-
         _loading.value = true
         repo.updateReport(item) { success, msg ->
             _loading.value = false
@@ -98,7 +104,7 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
                 _message.value = "Report updated successfully"
                 getAllReports(includeHidden = true)
             } else {
-                _message.value = msg
+                _message.value = msg ?: "Failed to update report"
             }
         }
     }
@@ -111,19 +117,40 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
         }
 
         _loading.value = true
+        println("DEBUG VM: Calling hideReport for $lostId")
+
         repo.hideReport(lostId) { success, msg ->
             _loading.value = false
             onResult(success, msg)
 
+            println("DEBUG VM: hideReport callback - success=$success, msg=$msg")
+
             if (success) {
                 _message.value = "Report hidden successfully"
-                // Most important line - FORCE new fetch instead of relying on cache
-                getAllReports(includeHidden = true)   // management
-                // OR if you want to be extra sure:
-                // _allReports.value = null
-                // getAllReports(includeHidden = false)  // for public too
+                getAllReports(includeHidden = true)  // force refresh
             } else {
-                _message.value = msg
+                _message.value = msg ?: "Failed to hide report"
+            }
+        }
+    }
+
+    fun unhideReport(lostId: String, onResult: (Boolean, String) -> Unit = { _, _ -> }) {
+        if (lostId.isBlank()) {
+            _message.value = "Invalid report ID"
+            onResult(false, "Invalid report ID")
+            return
+        }
+
+        _loading.value = true
+        repo.unhideReport(lostId) { success, msg ->
+            _loading.value = false
+            onResult(success, msg)
+
+            if (success) {
+                _message.value = "Report restored successfully"
+                getAllReports(includeHidden = true)  // refresh management view
+            } else {
+                _message.value = msg ?: "Failed to restore report"
             }
         }
     }
@@ -149,14 +176,12 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
         val selectedType = filterType.value ?: "All"
 
         val filteredList = currentList.filter { report ->
-            // Search matching
             val matchesSearch = query.isEmpty() ||
                     report.title.lowercase().contains(query) ||
                     report.description.lowercase().contains(query) ||
                     report.location.lowercase().contains(query) ||
                     report.category.lowercase().contains(query)
 
-            // Type filter matching
             val matchesType = selectedType == "All" ||
                     report.type.equals(selectedType, ignoreCase = true)
 
@@ -170,12 +195,11 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
         _message.value = null
     }
 
-    // Convenience method for public screens
+    // Convenience methods
     fun refreshPublicReports() {
         getAllReports(includeHidden = false)
     }
 
-    // Convenience method for management/admin screens
     fun refreshAllReports() {
         getAllReports(includeHidden = true)
     }
