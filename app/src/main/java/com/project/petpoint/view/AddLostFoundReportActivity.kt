@@ -176,7 +176,7 @@ fun AddLostFoundReportScreen(
                         FilterChip(
                             selected = !isLost,
                             onClick = { isLost = false },
-                            label = { Text("Found") },
+                            label = { Text("Rescued") },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = Color(0xFFdcfce7),
                                 selectedLabelColor = Color(0xFF15803d)
@@ -327,7 +327,7 @@ fun AddLostFoundReportScreen(
 
                         val model = LostFoundModel(
                             lostId = editLostId ?: "",
-                            type = if (isLost) "Lost" else "Found",
+                            type = if (isLost) "Lost" else "Rescued",
                             title = title.trim(),
                             category = category.trim(),
                             description = description.trim(),

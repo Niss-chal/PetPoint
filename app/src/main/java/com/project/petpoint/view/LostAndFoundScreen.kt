@@ -122,6 +122,11 @@ fun LostAndFoundScreen() {
                     onClick = { viewModel.setFilterType("Found") },
                     label = { Text("Found") }
                 )
+                FilterChip(
+                    selected = viewModel.filterType.value == "Rescued",
+                    onClick = { viewModel.setFilterType("Rescued") },
+                    label = { Text("Rescued") }
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))

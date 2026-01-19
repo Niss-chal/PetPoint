@@ -109,6 +109,11 @@ fun LostAndFoundManagementScreen() {
                 onClick = { viewModel.setFilterType("Found") },
                 label = { Text("Found") }
             )
+            FilterChip(
+                selected = viewModel.filterType.value == "Rescued",
+                onClick = { viewModel.setFilterType("Rescued") },
+                label = { Text("Rescued") }
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -235,7 +240,7 @@ fun LostFoundAdminCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Start
                 ) {
-                    val newStatus = if (item.type == "Lost") "Found" else "Lost"
+                    val newStatus = if (item.type == "Lost") "Rescued" else "Lost"
                     TextButton(onClick = { onChangeStatus(newStatus) }) {
                         Icon(Icons.Default.SwapVert, null, tint = Color(0xFF059669))
                         Spacer(Modifier.width(4.dp))
