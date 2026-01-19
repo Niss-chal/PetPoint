@@ -5,11 +5,13 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.project.petpoint.model.LostFoundModel
 import com.project.petpoint.repository.LostFoundRepo
-import com.project.petpoint.utils.AuthUtils
-import kotlinx.coroutines.launch
 
 class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
 
@@ -35,29 +37,58 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
     private val _message = MutableLiveData<String?>()
     val message: LiveData<String?> get() = _message
 
-    // Admin status (checked once on init)
-    private val _isAdmin = MutableLiveData<Boolean>(false)
+    // Admin role check
+    private val _isAdmin = MutableLiveData<Boolean>()
     val isAdmin: LiveData<Boolean> get() = _isAdmin
 
-    init {
-        viewModelScope.launch {
-            _isAdmin.value = AuthUtils.isCurrentUserAdmin()
+    /**
+     * Check if current user is admin
+     */
+    fun checkAdminStatus() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser == null) {
+            _isAdmin.value = false
+            return
         }
+
+        FirebaseDatabase.getInstance()
+            .getReference("users")
+            .child(currentUser.uid)
+            .child("role")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val role = snapshot.getValue(String::class.java)
+                    _isAdmin.value = role == "admin"
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    _isAdmin.value = false
+                }
+            })
+    }
+
+    /**
+     * Check if user can manage a specific report
+     * @return true if user is owner OR admin
+     */
+    fun canManageReport(report: LostFoundModel): Boolean {
+        val currentUid = FirebaseAuth.getInstance().currentUser?.uid ?: return false
+        val isOwner = report.reportedBy == currentUid
+        val adminStatus = _isAdmin.value ?: false
+        return isOwner || adminStatus
     }
 
     /**
      * Load all reports
-     * @param includeHidden - true for management/admin view, false for public users
      */
-    fun getAllReports(includeHidden: Boolean = false) {
+    fun getAllReports() {
         _loading.value = true
 
         repo.getAllReports { success, message, data ->
             _loading.value = false
 
             if (success && data != null) {
-                val visibleOnly = data.filter { it.isVisible }
-                _allReports.value = if (includeHidden || _isAdmin.value == true) data else visibleOnly
+                _allReports.value = data
                 applyFiltersAndSearch()
             } else {
                 _message.value = message ?: "Failed to load reports"
@@ -74,7 +105,7 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
             if (success) {
                 _selectedReport.value = report
             } else {
-                _message.value = msg ?: "Report not found"
+                _message.value = msg
             }
         }
     }
@@ -87,14 +118,20 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
 
             if (success) {
                 _message.value = "Report added successfully"
-                getAllReports(includeHidden = true)
+                refreshReports()
             } else {
-                _message.value = msg ?: "Failed to add report"
+                _message.value = msg
             }
         }
     }
 
     fun updateReport(item: LostFoundModel, onResult: (Boolean, String) -> Unit = { _, _ -> }) {
+        if (item.lostId.isBlank()) {
+            _message.value = "Cannot update: missing report ID"
+            onResult(false, "Missing report ID")
+            return
+        }
+
         _loading.value = true
         repo.updateReport(item) { success, msg ->
             _loading.value = false
@@ -102,14 +139,14 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
 
             if (success) {
                 _message.value = "Report updated successfully"
-                getAllReports(includeHidden = true)
+                refreshReports()
             } else {
-                _message.value = msg ?: "Failed to update report"
+                _message.value = msg
             }
         }
     }
 
-    fun hideReport(lostId: String, onResult: (Boolean, String) -> Unit = { _, _ -> }) {
+    fun deleteReport(lostId: String, onResult: (Boolean, String) -> Unit = { _, _ -> }) {
         if (lostId.isBlank()) {
             _message.value = "Invalid report ID"
             onResult(false, "Invalid report ID")
@@ -117,24 +154,20 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
         }
 
         _loading.value = true
-        println("DEBUG VM: Calling hideReport for $lostId")
-
-        repo.hideReport(lostId) { success, msg ->
+        repo.deleteReport(lostId) { success, msg ->
             _loading.value = false
             onResult(success, msg)
 
-            println("DEBUG VM: hideReport callback - success=$success, msg=$msg")
-
             if (success) {
-                _message.value = "Report hidden successfully"
-                getAllReports(includeHidden = true)  // force refresh
+                _message.value = "Report deleted successfully"
+                refreshReports()
             } else {
-                _message.value = msg ?: "Failed to hide report"
+                _message.value = msg
             }
         }
     }
 
-    fun unhideReport(lostId: String, onResult: (Boolean, String) -> Unit = { _, _ -> }) {
+    fun changeStatus(lostId: String, newType: String, onResult: (Boolean, String) -> Unit = { _, _ -> }) {
         if (lostId.isBlank()) {
             _message.value = "Invalid report ID"
             onResult(false, "Invalid report ID")
@@ -142,15 +175,15 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
         }
 
         _loading.value = true
-        repo.unhideReport(lostId) { success, msg ->
+        repo.changeStatus(lostId, newType) { success, msg ->
             _loading.value = false
             onResult(success, msg)
 
             if (success) {
-                _message.value = "Report restored successfully"
-                getAllReports(includeHidden = true)  // refresh management view
+                _message.value = "Status changed to $newType"
+                refreshReports()
             } else {
-                _message.value = msg ?: "Failed to restore report"
+                _message.value = msg
             }
         }
     }
@@ -195,12 +228,8 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
         _message.value = null
     }
 
-    // Convenience methods
-    fun refreshPublicReports() {
-        getAllReports(includeHidden = false)
-    }
-
-    fun refreshAllReports() {
-        getAllReports(includeHidden = true)
+    fun refreshReports() {
+        _allReports.value = null
+        getAllReports()
     }
 }

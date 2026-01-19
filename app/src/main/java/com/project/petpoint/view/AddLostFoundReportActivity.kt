@@ -26,7 +26,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.model.LostFoundModel
 import com.project.petpoint.repository.LostFoundRepoImpl
@@ -102,6 +101,10 @@ fun AddLostFoundReportScreen(
     var isLoading by remember { mutableStateOf(false) }
     var existingImageUrl by remember { mutableStateOf("") }
 
+    // Store original reporter info when editing
+    var originalReportedBy by remember { mutableStateOf("") }
+    var originalReportedByName by remember { mutableStateOf("") }
+
     val selectedItem by viewModel.selectedReport.observeAsState()
     val errorMessage by viewModel.message.observeAsState()
 
@@ -123,6 +126,11 @@ fun AddLostFoundReportScreen(
             contactInfo = item.contactInfo
             isLost = item.type.lowercase() == "lost"
             existingImageUrl = item.imageUrl
+
+            // CRITICAL: Store original reporter info
+            originalReportedBy = item.reportedBy
+            originalReportedByName = item.reportedByName ?: ""
+
             viewModel.clearMessage()
         }
     }
@@ -304,6 +312,19 @@ fun AddLostFoundReportScreen(
                     val saveAction: (String) -> Unit = { imageUrl ->
                         val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
+
+                        val finalReportedBy = if (isEditMode && originalReportedBy.isNotBlank()) {
+                            originalReportedBy
+                        } else {
+                            currentUser.uid
+                        }
+
+                        val finalReportedByName = if (isEditMode && originalReportedByName.isNotBlank()) {
+                            originalReportedByName
+                        } else {
+                            reporterName
+                        }
+
                         val model = LostFoundModel(
                             lostId = editLostId ?: "",
                             type = if (isLost) "Lost" else "Found",
@@ -312,11 +333,11 @@ fun AddLostFoundReportScreen(
                             description = description.trim(),
                             location = location.trim(),
                             date = date,
-                            reportedBy = currentUser.uid,
-                            reportedByName = reporterName,
+                            reportedBy = finalReportedBy,
+                            reportedByName = finalReportedByName,
                             imageUrl = imageUrl,
                             contactInfo = contactInfo.trim(),
-                            isVisible = true   // MUST be here
+                            isVisible = true
                         )
 
                         if (isEditMode) {

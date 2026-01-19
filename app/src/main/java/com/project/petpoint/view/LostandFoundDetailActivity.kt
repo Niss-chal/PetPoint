@@ -14,8 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -30,7 +28,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.repository.LostFoundRepoImpl
-import com.project.petpoint.utils.AuthUtils
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
@@ -61,12 +58,18 @@ fun LostAndFoundDetailScreen(lostId: String) {
     val message by viewModel.message.observeAsState()
     val isAdmin by viewModel.isAdmin.observeAsState(initial = false)
 
-    val currentUid = FirebaseAuth.getInstance().currentUser?.uid
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val currentUid = currentUser?.uid
+
     val isOwner = currentUid != null && item?.reportedBy == currentUid
     val canManage = isOwner || isAdmin
 
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var showRestoreDialog by remember { mutableStateOf(false) }
+    var showStatusDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.checkAdminStatus()
+    }
 
     LaunchedEffect(lostId) {
         if (lostId.isNotBlank()) {
@@ -109,35 +112,14 @@ fun LostAndFoundDetailScreen(lostId: String) {
                     color = VividAzure
                 )
             } else if (item == null) {
-                Text("Item not found", modifier = Modifier.align(Alignment.Center), color = Color.Gray)
-            } else if (!item!!.isVisible && !isAdmin) {
-                Column(
+                Text(
+                    "Item not found",
                     modifier = Modifier.align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        Icons.Default.DeleteForever,
-                        contentDescription = null,
-                        tint = Color(0xFF9ca3af),
-                        modifier = Modifier.size(72.dp)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "This report has been deleted",
-                        color = Color(0xFF6b7280),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "It is no longer visible",
-                        color = Color.Gray,
-                        fontSize = 16.sp
-                    )
-                }
+                    color = Color.Gray
+                )
             } else {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    // Image
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -152,30 +134,28 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                 contentScale = ContentScale.Crop
                             )
                         } else {
-                            Text("No photo available", modifier = Modifier.align(Alignment.Center), color = Color.Gray)
+                            Text(
+                                "No photo available",
+                                modifier = Modifier.align(Alignment.Center),
+                                color = Color.Gray
+                            )
                         }
                     }
 
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(item!!.title, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = item!!.title,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Badge(
-                                text = item!!.type.uppercase(),
-                                background = if (item!!.type == "Lost") Color(0xFFfee2e2) else Color(0xFFdcfce7),
-                                textColor = if (item!!.type == "Lost") Color(0xFFdc2626) else Color(0xFF15803d)
-                            )
-
-                            if (isAdmin && !item!!.isVisible) {
-                                Badge(
-                                    text = "Hidden (deleted)",
-                                    background = Color(0xFFfee2e2),
-                                    textColor = Color(0xFF991b1b)
-                                )
-                            }
-                        }
+                        Badge(
+                            text = item!!.type.uppercase(),
+                            background = if (item!!.type == "Lost") Color(0xFFfee2e2) else Color(0xFFdcfce7),
+                            textColor = if (item!!.type == "Lost") Color(0xFFdc2626) else Color(0xFF15803d)
+                        )
 
                         Spacer(modifier = Modifier.height(24.dp))
 
@@ -191,9 +171,24 @@ fun LostAndFoundDetailScreen(lostId: String) {
                         if (canManage) {
                             Spacer(modifier = Modifier.height(32.dp))
 
+                            // Status change button
+                            val newStatus = if (item!!.type == "Lost") "Found" else "Lost"
+                            Button(
+                                onClick = { showStatusDialog = true },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF059669)
+                                )
+                            ) {
+                                Text("Mark as $newStatus")
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Edit and Delete buttons
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 Button(
                                     onClick = {
@@ -206,25 +201,17 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                     modifier = Modifier.weight(1f),
                                     colors = ButtonDefaults.buttonColors(containerColor = VividAzure)
                                 ) {
-                                    Text("Edit Report")
+                                    Text("Edit")
                                 }
 
-                                if (item!!.isVisible) {
-                                    Button(
-                                        onClick = { showDeleteDialog = true },
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Text(if (isAdmin) "Hide Report" else "Delete Report")
-                                    }
-                                } else if (isAdmin) {
-                                    Button(
-                                        onClick = { showRestoreDialog = true },
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF16a34a)),
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Text("Restore Report")
-                                    }
+                                Button(
+                                    onClick = { showDeleteDialog = true },
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFFdc2626)
+                                    )
+                                ) {
+                                    Text("Delete")
                                 }
                             }
                         }
@@ -250,79 +237,73 @@ fun LostAndFoundDetailScreen(lostId: String) {
                 }
             }
 
-            // Delete confirmation dialog
+            // Delete Dialog
             if (showDeleteDialog) {
                 AlertDialog(
                     onDismissRequest = { showDeleteDialog = false },
-                    title = { Text(if (isAdmin) "Hide Report" else "Delete Report") },
+                    title = { Text("Delete Permanently?") },
                     text = {
                         Text(
-                            if (isAdmin) {
-                                "This will hide the report from all users (including the owner).\nAdmins can still restore it later."
-                            } else {
-                                "This report will be removed from public view and from your list.\nYou will not be able to see or restore it afterward."
-                            }
+                            "Are you sure you want to permanently delete \"${item!!.title}\"?\n\n" +
+                                    "This action CANNOT be undone."
                         )
                     },
                     confirmButton = {
-                        TextButton(onClick = {
-                            showDeleteDialog = false
-                            viewModel.hideReport(item!!.lostId) { success, msg ->
-                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                if (success) context?.finish()
-                            }
-                        }) {
-                            Text(if (isAdmin) "Hide" else "Delete")
+                        TextButton(
+                            onClick = {
+                                showDeleteDialog = false
+                                viewModel.deleteReport(item!!.lostId) { success, msg ->
+                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                    if (success) {
+                                        context?.finish()
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = Color(0xFFdc2626)
+                            )
+                        ) {
+                            Text("Delete Permanently")
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                        TextButton(onClick = { showDeleteDialog = false }) {
+                            Text("Cancel")
+                        }
                     }
                 )
             }
 
-            // Restore dialog (admin only)
-            if (showRestoreDialog) {
+            // Status Change Dialog
+            if (showStatusDialog) {
+                val newStatus = if (item!!.type == "Lost") "Found" else "Lost"
                 AlertDialog(
-                    onDismissRequest = { showRestoreDialog = false },
-                    title = { Text("Restore Report") },
-                    text = { Text("This will make the report visible again to everyone.") },
+                    onDismissRequest = { showStatusDialog = false },
+                    title = { Text("Change Status") },
+                    text = {
+                        Text("Change the status of this report to \"$newStatus\"?")
+                    },
                     confirmButton = {
                         TextButton(onClick = {
-                            showRestoreDialog = false
-                            viewModel.unhideReport(item!!.lostId) { success, msg ->
+                            showStatusDialog = false
+                            viewModel.changeStatus(item!!.lostId, newStatus) { success, msg ->
                                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                if (success) context?.finish()
+                                if (success) {
+                                    viewModel.getReportById(item!!.lostId)
+                                }
                             }
                         }) {
-                            Text("Restore")
+                            Text("Change to $newStatus")
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showRestoreDialog = false }) { Text("Cancel") }
+                        TextButton(onClick = { showStatusDialog = false }) {
+                            Text("Cancel")
+                        }
                     }
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun DetailRow(label: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp)
-    ) {
-        Text(
-            text = "$label: ",
-            fontWeight = FontWeight.Medium,
-            color = Color.Gray
-        )
-        Text(
-            text = value,
-            modifier = Modifier.weight(1f)
-        )
     }
 }
 
@@ -341,6 +322,25 @@ fun Badge(
             color = textColor,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             fontSize = 14.sp
+        )
+    }
+}
+
+@Composable
+private fun DetailRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+    ) {
+        Text(
+            text = "$label: ",
+            fontWeight = FontWeight.Medium,
+            color = Color.Gray
+        )
+        Text(
+            text = value,
+            modifier = Modifier.weight(1f)
         )
     }
 }
