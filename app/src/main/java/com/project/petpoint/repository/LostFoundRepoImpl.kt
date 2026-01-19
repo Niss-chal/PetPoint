@@ -28,7 +28,7 @@ class LostFoundRepoImpl : LostFoundRepo {
 
     override fun addReport(item: LostFoundModel, callback: (Boolean, String) -> Unit) {
         val id = ref.push().key ?: return callback(false, "Failed to generate ID")
-        val newItem = item.copy(lostId = id, isVisible = true)  // Force visible
+        val newItem = item.copy(lostId = id, isVisible = true)
 
         ref.child(id).setValue(newItem).addOnCompleteListener {
             if (it.isSuccessful) {
@@ -44,7 +44,8 @@ class LostFoundRepoImpl : LostFoundRepo {
             callback(false, "Invalid report ID")
             return
         }
-        ref.child(item.lostId).updateChildren(item.toMap()).addOnCompleteListener {
+
+        ref.child(item.lostId).setValue(item).addOnCompleteListener {
             if (it.isSuccessful) {
                 callback(true, "Report updated successfully")
             } else {
@@ -53,6 +54,20 @@ class LostFoundRepoImpl : LostFoundRepo {
         }
     }
 
+    override fun deleteReport(lostId: String, callback: (Boolean, String) -> Unit) {
+        if (lostId.isBlank()) {
+            callback(false, "Invalid report ID")
+            return
+        }
+
+        ref.child(lostId).removeValue().addOnCompleteListener {
+            if (it.isSuccessful) {
+                callback(true, "Report deleted successfully")
+            } else {
+                callback(false, it.exception?.message ?: "Failed to delete report")
+            }
+        }
+    }
 
     override fun getReportById(lostId: String, callback: (Boolean, String, LostFoundModel?) -> Unit) {
         ref.child(lostId).addListenerForSingleValueEvent(object : ValueEventListener {
@@ -81,7 +96,7 @@ class LostFoundRepoImpl : LostFoundRepo {
                 val items = mutableListOf<LostFoundModel>()
                 for (child in snapshot.children) {
                     val item = child.getValue(LostFoundModel::class.java)
-                    item?.let { items.add(it) }  // return ALL items - filtering in ViewModel
+                    item?.let { items.add(it) }
                 }
                 callback(true, "Success", items)
             }
@@ -109,6 +124,22 @@ class LostFoundRepoImpl : LostFoundRepo {
                     callback(false, error.message, null)
                 }
             })
+    }
+
+    override fun changeStatus(lostId: String, newType: String, callback: (Boolean, String) -> Unit) {
+        if (lostId.isBlank()) {
+            callback(false, "Invalid report ID")
+            return
+        }
+
+        ref.child(lostId).child("type").setValue(newType)
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    callback(true, "Status changed to $newType")
+                } else {
+                    callback(false, it.exception?.message ?: "Failed to change status")
+                }
+            }
     }
 
     override fun uploadImage(context: Context, imageUri: Uri, callback: (String?) -> Unit) {
@@ -149,18 +180,5 @@ class LostFoundRepoImpl : LostFoundRepo {
             }
         }
         return name
-    }
-
-    override fun hideReport(lostId: String, callback: (Boolean, String) -> Unit) {
-        ref.child(lostId)
-            .child("isVisible")
-            .setValue(false)
-            .addOnCompleteListener {
-                if (it.isSuccessful) {
-                    callback(true, "Report hidden successfully")
-                } else {
-                    callback(false, it.exception?.message ?: "Failed to hide report")
-                }
-            }
     }
 }

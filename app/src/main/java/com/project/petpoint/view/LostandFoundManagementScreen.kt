@@ -14,7 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -44,9 +44,11 @@ fun LostAndFoundManagementScreen() {
     val reports by viewModel.filteredReports.observeAsState(initial = emptyList())
     val loading by viewModel.loading.observeAsState(initial = false)
     val message by viewModel.message.observeAsState()
+    val isAdmin by viewModel.isAdmin.observeAsState(initial = false)
 
     LaunchedEffect(Unit) {
-        viewModel.getAllReports(includeHidden = true)
+        viewModel.checkAdminStatus()
+        viewModel.getAllReports()
     }
 
     LaunchedEffect(message) {
@@ -107,12 +109,20 @@ fun LostAndFoundManagementScreen() {
                 onClick = { viewModel.setFilterType("Found") },
                 label = { Text("Found") }
             )
+            FilterChip(
+                selected = viewModel.filterType.value == "Rescued",
+                onClick = { viewModel.setFilterType("Rescued") },
+                label = { Text("Rescued") }
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         if (loading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color = VividAzure)
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = VividAzure
+            )
         } else if (reports!!.isEmpty()) {
             Text(
                 "No reports found",
@@ -124,6 +134,8 @@ fun LostAndFoundManagementScreen() {
                 items(reports!!) { item ->
                     LostFoundAdminCard(
                         item = item,
+                        isAdmin = isAdmin,
+                        viewModel = viewModel,
                         onEdit = {
                             context.startActivity(
                                 Intent(context, AddLostFoundReportActivity::class.java).apply {
@@ -131,16 +143,25 @@ fun LostAndFoundManagementScreen() {
                                 }
                             )
                         },
-                        onHide = {
+                        onDelete = {
                             AlertDialog.Builder(context)
-                                .setTitle("Hide Report")
+                                .setTitle("Delete Report")
                                 .setMessage(
-                                    "Are you sure you want to hide \"${item.title}\"?\n\n" +
-                                            "It will no longer be visible to other users, " +
-                                            "but you can still see and restore it from this management screen."
+                                    "Are you sure you want to permanently delete \"${item.title}\"?\n\n" +
+                                            "This action cannot be undone."
                                 )
-                                .setPositiveButton("Hide") { _, _ ->
-                                    viewModel.hideReport(item.lostId)
+                                .setPositiveButton("Delete") { _, _ ->
+                                    viewModel.deleteReport(item.lostId)
+                                }
+                                .setNegativeButton("Cancel", null)
+                                .show()
+                        },
+                        onChangeStatus = { newStatus ->
+                            AlertDialog.Builder(context)
+                                .setTitle("Change Status")
+                                .setMessage("Change status to \"$newStatus\"?")
+                                .setPositiveButton("Change") { _, _ ->
+                                    viewModel.changeStatus(item.lostId, newStatus)
                                 }
                                 .setNegativeButton("Cancel", null)
                                 .show()
@@ -155,16 +176,15 @@ fun LostAndFoundManagementScreen() {
 @Composable
 fun LostFoundAdminCard(
     item: LostFoundModel,
+    isAdmin: Boolean,
+    viewModel: LostFoundViewModel,
     onEdit: () -> Unit,
-    onHide: () -> Unit
+    onDelete: () -> Unit,
+    onChangeStatus: (String) -> Unit
 ) {
     val currentUid = FirebaseAuth.getInstance().currentUser?.uid
     val isOwner = currentUid != null && item.reportedBy == currentUid
-    val isAdmin = false  // TODO: implement real admin check
     val canManage = isOwner || isAdmin
-
-    val statusColor = if (item.isVisible) Color(0xFF16a34a) else Color(0xFFdc2626)
-    val statusText = if (item.isVisible) "Visible" else "Hidden"
 
     Card(
         modifier = Modifier
@@ -181,20 +201,11 @@ fun LostFoundAdminCard(
             ) {
                 Column {
                     Text(item.title, fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            item.type.uppercase(),
-                            color = if (item.type == "Lost") Color(0xFFdc2626) else Color(0xFF16a34a),
-                            fontSize = 13.sp
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            "• $statusText",
-                            color = statusColor,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    Text(
+                        item.type.uppercase(),
+                        color = if (item.type == "Lost") Color(0xFFdc2626) else Color(0xFF16a34a),
+                        fontSize = 13.sp
+                    )
                 }
             }
 
@@ -223,6 +234,21 @@ fun LostFoundAdminCard(
 
             if (canManage) {
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // Status change button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    val newStatus = if (item.type == "Lost") "Rescued" else "Lost"
+                    TextButton(onClick = { onChangeStatus(newStatus) }) {
+                        Icon(Icons.Default.SwapVert, null, tint = Color(0xFF059669))
+                        Spacer(Modifier.width(4.dp))
+                        Text("Mark as $newStatus", color = Color(0xFF059669))
+                    }
+                }
+
+                // Action buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
@@ -232,11 +258,13 @@ fun LostFoundAdminCard(
                         Spacer(Modifier.width(4.dp))
                         Text("Edit", color = Color(0xFF2563eb))
                     }
+
                     Spacer(modifier = Modifier.width(8.dp))
-                    TextButton(onClick = onHide) {
-                        Icon(Icons.Default.VisibilityOff, null, tint = Color(0xFF7c3aed))
+
+                    TextButton(onClick = onDelete) {
+                        Icon(Icons.Default.Delete, null, tint = Color(0xFFdc2626))
                         Spacer(Modifier.width(4.dp))
-                        Text("Hide", color = Color(0xFF7c3aed))
+                        Text("Delete", color = Color(0xFFdc2626))
                     }
                 }
             }

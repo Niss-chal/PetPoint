@@ -49,7 +49,7 @@ fun LostAndFoundScreen() {
     LaunchedEffect(Unit) {
         viewModel.message.observeForever { msg ->
             if (msg?.contains("hidden", ignoreCase = true) == true) {
-                viewModel.refreshPublicReports()
+                viewModel.refreshReports()
             }
         }
     }
@@ -122,6 +122,11 @@ fun LostAndFoundScreen() {
                     onClick = { viewModel.setFilterType("Found") },
                     label = { Text("Found") }
                 )
+                FilterChip(
+                    selected = viewModel.filterType.value == "Rescued",
+                    onClick = { viewModel.setFilterType("Rescued") },
+                    label = { Text("Rescued") }
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -146,7 +151,7 @@ fun LostAndFoundScreen() {
                             fontSize = 16.sp
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        TextButton(onClick = { viewModel.refreshPublicReports() }) {  // ← Fixed: use correct method
+                        TextButton(onClick = { viewModel.refreshReports() }) {
                             Text("Refresh", color = VividAzure)
                         }
                     }
