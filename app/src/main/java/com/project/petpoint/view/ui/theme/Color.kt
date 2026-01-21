@@ -33,6 +33,9 @@ val BlanchedAlmond = Color(0xFFFFF3CD)
 
 val LightPink = Color(0xFFFEE2E2)
 val greyyy = Color(0xFFD9D6D6)
+val lightgreen = Color(0xFF16a34a)
+val crimson = Color(0xFFdc2626)
+
 
 val PurpleGrey808 = Color(0xFFD2CDE0)
 

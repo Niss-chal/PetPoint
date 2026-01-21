@@ -41,7 +41,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
@@ -55,6 +54,8 @@ import com.project.petpoint.view.ui.theme.Green
 import com.project.petpoint.view.ui.theme.PurpleGrey808
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
+import com.project.petpoint.view.ui.theme.crimson
+import com.project.petpoint.view.ui.theme.lightgreen
 import com.project.petpoint.viewmodel.HomeViewModel
 
 @Composable
@@ -283,7 +284,7 @@ fun ReportActivityItem(report: LostFoundModel) {
     val isLost = report.type == "Lost"
     ActivityItemCard(
         icon = if (isLost) Icons.Default.Search else Icons.Default.Pets,
-        iconColor = if (isLost) Color(0xFFdc2626) else Color(0xFF16a34a),
+        iconColor = if (isLost) crimson else lightgreen,
         title = report.title,
         subtitle = "${report.type} Pet",
         additionalInfo = report.location,
@@ -368,10 +369,4 @@ fun ActivityItemCard(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    HomeScreen()
 }
