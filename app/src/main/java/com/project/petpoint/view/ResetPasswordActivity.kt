@@ -10,8 +10,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +28,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,6 +59,8 @@ fun PetPointResetPasswordUI() {
     val userViewModel = remember { UserViewModel(UserRepoImpl()) }
     val context = LocalContext.current
     val activity = context as? Activity
+    val scrollState = rememberScrollState()
+
 
 
     Scaffold { padding ->
@@ -64,6 +70,8 @@ fun PetPointResetPasswordUI() {
                 .fillMaxSize()
                 .padding(padding)
                 .background(Azure)
+                .verticalScroll(scrollState)
+                .imePadding()
         ) {
 
             // PAW ICON TOP & Title Area
@@ -153,6 +161,7 @@ fun PetPointResetPasswordUI() {
                             onValueChange = { email = it },
                             placeholder = { Text("") }, // Updated placeholder
                             shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                             colors = TextFieldDefaults.colors(
                                 unfocusedContainerColor = GreyOrange,
                                 focusedContainerColor = GreyOrange,
