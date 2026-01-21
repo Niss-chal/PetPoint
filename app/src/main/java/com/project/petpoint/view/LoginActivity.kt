@@ -243,50 +243,69 @@ fun PetPointLoginUI() {
                         Button(
                             onClick = {
                                 if (email.isNotBlank() && password.isNotBlank()) {
-
                                     userViewModel.login(email, password) { success, message ->
                                         if (success) {
                                             val userId = userViewModel.getCurrentUser()?.uid
                                             if (userId != null) {
-                                                userViewModel.checkUserRole(userId) { role ->
-                                                    when (role) {
-                                                        "admin" -> {
-                                                            Toast.makeText(
-                                                                context,
-                                                                "Welcome!",
-                                                                Toast.LENGTH_SHORT
-                                                            ).show()
-                                                            context.startActivity(
-                                                                Intent(
+                                                // First, fetch the user data from Firebase
+                                                userViewModel.getUserById(userId)
+
+                                                // Observe the user data
+                                                userViewModel.users.observeForever { user ->
+                                                    if (user != null) {
+                                                        // Save user data to SharedPreferences
+                                                        val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
+                                                        val editor = sharedPref.edit()
+                                                        editor.putString("userId", userId)
+                                                        editor.putString("name", user.name ?: "")
+                                                        editor.putString("email", user.email ?: "")
+                                                        editor.putString("phone", user.phonenumber ?: "")
+                                                        editor.putString("address", user.address ?: "")
+                                                        editor.putString("profileImage", user.profileImage)
+                                                        editor.putString("role", user.role ?: "buyer")
+                                                        editor.apply()
+
+                                                        // Now check role and navigate
+                                                        when (user.role) {
+                                                            "admin" -> {
+                                                                Toast.makeText(
                                                                     context,
-                                                                    AdminDashboardActivity::class.java
+                                                                    "Welcome Admin!",
+                                                                    Toast.LENGTH_SHORT
+                                                                ).show()
+                                                                context.startActivity(
+                                                                    Intent(
+                                                                        context,
+                                                                        AdminDashboardActivity::class.java
+                                                                    )
                                                                 )
-                                                            )
-                                                            activity?.finish()
+                                                                activity?.finish()
+                                                            }
+                                                            "buyer" -> {
+                                                                Toast.makeText(
+                                                                    context,
+                                                                    "Welcome!",
+                                                                    Toast.LENGTH_SHORT
+                                                                ).show()
+                                                                context.startActivity(
+                                                                    Intent(
+                                                                        context,
+                                                                        DashboardActivity::class.java
+                                                                    )
+                                                                )
+                                                                activity?.finish()
+                                                            }
+                                                            else -> {
+                                                                Toast.makeText(
+                                                                    context,
+                                                                    "User role not found",
+                                                                    Toast.LENGTH_SHORT
+                                                                ).show()
+                                                            }
                                                         }
 
-                                                        "buyer" -> {
-                                                            Toast.makeText(
-                                                                context,
-                                                                "Welcome!",
-                                                                Toast.LENGTH_SHORT
-                                                            ).show()
-                                                            context.startActivity(
-                                                                Intent(
-                                                                    context,
-                                                                    DashboardActivity::class.java
-                                                                )
-                                                            )
-                                                            activity?.finish()
-                                                        }
-
-                                                        else -> {
-                                                            Toast.makeText(
-                                                                context,
-                                                                "User role not found",
-                                                                Toast.LENGTH_SHORT
-                                                            ).show()
-                                                        }
+                                                        // Remove observer to prevent multiple triggers
+                                                        userViewModel.users.removeObserver { }
                                                     }
                                                 }
                                             } else {
@@ -297,8 +316,7 @@ fun PetPointLoginUI() {
                                                 ).show()
                                             }
                                         } else {
-                                            Toast.makeText(context, message, Toast.LENGTH_SHORT)
-                                                .show()
+                                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                         }
                                     }
                                 } else {

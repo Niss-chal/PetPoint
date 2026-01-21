@@ -56,14 +56,15 @@ fun EditProfileBody() {
 
     val userId = sharedPref.getString("userId", null)
 
-    var name by remember { mutableStateOf(sharedPref.getString("name", "") ?: "") }
-    var email by remember { mutableStateOf(sharedPref.getString("email", "") ?: "") }
-    var phone by remember { mutableStateOf(sharedPref.getString("phone", "") ?: "") }
-    var address by remember { mutableStateOf(sharedPref.getString("address", "") ?: "") }
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
 
     // Image state
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-    var profileImageUrl by remember { mutableStateOf<String?>(sharedPref.getString("profileImage", null)) }
+    var profileImageUrl by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
 
     // Image picker
     val imagePickerLauncher =
@@ -71,14 +72,41 @@ fun EditProfileBody() {
             selectedImageUri = uri
         }
 
-    // Fetch current image from Firebase
+    // Fetch current user data from Firebase (not SharedPreferences!)
     LaunchedEffect(userId) {
         if (userId != null) {
             userViewModel.getUserById(userId)
-            userViewModel.users.observeForever { user ->
-                user?.profileImage?.let { profileImageUrl = it }
+        }
+    }
+
+
+
+    // Observe user data and update state
+    DisposableEffect(Unit) {
+        val observer = androidx.lifecycle.Observer<UserModel?> { user ->
+            user?.let {
+                name = it.name ?: ""
+                email = it.email ?: ""
+                phone = it.phonenumber ?: ""
+                address = it.address ?: ""
+                profileImageUrl = it.profileImage
+                isLoading = false
             }
         }
+        userViewModel.users.observeForever(observer)
+        onDispose {
+            userViewModel.users.removeObserver(observer)
+        }
+    }
+
+    if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
     }
 
     Column(
@@ -205,16 +233,7 @@ fun EditProfileBody() {
 
             Button(
                 onClick = {
-
-                    val editor = sharedPref.edit()
-                    editor.putString("name", name)
-                    editor.putString("email", email)
-                    editor.putString("phone", phone)
-                    editor.putString("address", address)
-                    editor.apply()
-
                     if (userId != null) {
-
                         val updatedUser = UserModel(
                             userId = userId,
                             name = name,
@@ -228,13 +247,26 @@ fun EditProfileBody() {
                                 if (imageUrl != null) {
                                     userViewModel.updateProfileImage(userId, imageUrl)
                                     profileImageUrl = imageUrl
-                                    editor.putString("profileImage", imageUrl).apply()
+
+                                    // Update SharedPreferences
+                                    val editor = sharedPref.edit()
+                                    editor.putString("profileImage", imageUrl)
+                                    editor.apply()
                                 }
                             }
                         }
 
-                        userViewModel.updateProfile(userId, updatedUser) { _, message ->
+                        userViewModel.updateProfile(userId, updatedUser) { success, message ->
                             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+
+                            if (success) {
+                                // Update SharedPreferences with new data
+                                val editor = sharedPref.edit()
+                                editor.putString("name", name)
+                                editor.putString("phone", phone)
+                                editor.putString("address", address)
+                                editor.apply()
+                            }
                         }
                     }
                 },
@@ -252,7 +284,6 @@ fun EditProfileBody() {
 
             Button(
                 onClick = {
-                    context.startActivity(Intent(context, ProfileActivity::class.java))
                     (context as? Activity)?.finish()
                 },
                 modifier = Modifier.fillMaxWidth(),

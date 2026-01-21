@@ -136,13 +136,6 @@ fun ProfileScreen() {
                 Spacer(modifier = Modifier.height(25.dp))
             }
 
-            // Profile menu items
-            item {
-                ProfileMenuItem(icon = R.drawable.baseline_settings_24, text = "Settings") {
-                    // TODO: Open settings screen
-                }
-            }
-
             item {
                 ProfileMenuItem(icon = R.drawable.baseline_history_24, text = "Order History") {
                     // Navigate to OrderHistoryActivity
@@ -153,24 +146,6 @@ fun ProfileScreen() {
             item {
                 ProfileMenuItem(icon = R.drawable.baseline_logout_24, text = "Log Out") {
                     // TODO: Log out user
-                }
-            }
-
-            // Back Button at the bottom
-            item {
-                Spacer(modifier = Modifier.height(30.dp))
-                Button(
-                    onClick = {
-                        context.startActivity(Intent(context, DashboardActivity::class.java))
-                        (context as? ComponentActivity)?.finish()
-                    },
-                    shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = VividAzure),
-                    modifier = Modifier
-                        .fillMaxWidth(0.85f)
-                        .height(50.dp)
-                ) {
-                    Text("Back", color = Color.White, fontSize = 16.sp)
                 }
             }
         }
