@@ -187,9 +187,7 @@ fun LostFoundAdminCard(
     val canManage = isOwner || isAdmin
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = White)
     ) {
@@ -201,9 +199,14 @@ fun LostFoundAdminCard(
             ) {
                 Column {
                     Text(item.title, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                    val typeLower = item.type.lowercase()
                     Text(
-                        item.type.uppercase(),
-                        color = if (item.type == "Lost") Color(0xFFdc2626) else Color(0xFF16a34a),
+                        typeLower.uppercase(),
+                        color = when {
+                            typeLower == "lost" -> Color(0xFFdc2626)
+                            typeLower == "found" -> Color(0xFF0369a1)
+                            else -> Color(0xFF16a34a)
+                        },
                         fontSize = 13.sp
                     )
                 }
@@ -235,20 +238,19 @@ fun LostFoundAdminCard(
             if (canManage) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Status change button
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    val newStatus = if (item.type == "Lost") "Rescued" else "Lost"
-                    TextButton(onClick = { onChangeStatus(newStatus) }) {
-                        Icon(Icons.Default.SwapVert, null, tint = Color(0xFF059669))
-                        Spacer(Modifier.width(4.dp))
-                        Text("Mark as $newStatus", color = Color(0xFF059669))
+                if (item.type.equals("Lost", ignoreCase = true)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        TextButton(onClick = { onChangeStatus("Found") }) {
+                            Icon(Icons.Default.SwapVert, null, tint = Color(0xFF059669))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Mark as Found", color = Color(0xFF059669))
+                        }
                     }
                 }
 
-                // Action buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
