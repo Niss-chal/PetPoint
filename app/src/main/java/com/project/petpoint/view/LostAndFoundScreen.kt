@@ -94,7 +94,7 @@ fun LostAndFoundScreen() {
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChange(it) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Search lost & found items...") },
+                placeholder = { Text("Search lost & found pets...") },
                 leadingIcon = { Icon(Icons.Default.Search, null) },
                 shape = RoundedCornerShape(12.dp),
                 colors = TextFieldDefaults.colors(

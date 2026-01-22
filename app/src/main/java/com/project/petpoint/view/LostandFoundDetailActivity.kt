@@ -113,7 +113,7 @@ fun LostAndFoundDetailScreen(lostId: String) {
                 )
             } else if (item == null) {
                 Text(
-                    "Item not found",
+                    "Pet not found",
                     modifier = Modifier.align(Alignment.Center),
                     color = Color.Gray
                 )
