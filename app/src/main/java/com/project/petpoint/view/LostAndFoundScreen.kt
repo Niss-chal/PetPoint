@@ -26,12 +26,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.model.LostFoundModel
 import com.project.petpoint.repository.LostFoundRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
+import com.project.petpoint.view.ui.theme.Davygrey
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
 import com.project.petpoint.viewmodel.LostFoundViewModel
@@ -45,12 +45,17 @@ fun LostAndFoundScreen() {
     val reports by viewModel.filteredReports.observeAsState(initial = emptyList())
     val loading by viewModel.loading.observeAsState(initial = false)
     val searchQuery by viewModel.searchQuery.observeAsState(initial = "")
+    val message by viewModel.message.observeAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.message.observeForever { msg ->
-            if (msg?.contains("hidden", ignoreCase = true) == true) {
-                viewModel.refreshReports()
-            }
+        viewModel.checkAdminStatus()
+        viewModel.getAllReports()
+    }
+
+    LaunchedEffect(message) {
+        message?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearMessage()
         }
     }
 
@@ -259,7 +264,7 @@ fun LostFoundUserCard(
             Text(
                 text = "Reported by ${item.reportedByName ?: "Anonymous"}",
                 fontSize = 12.sp,
-                color = Color(0xFF555555),
+                color = Davygrey,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

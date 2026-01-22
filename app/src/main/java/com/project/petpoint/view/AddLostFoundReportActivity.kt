@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,6 +32,7 @@ import com.project.petpoint.model.LostFoundModel
 import com.project.petpoint.repository.LostFoundRepoImpl
 import com.project.petpoint.utils.ImageUtils
 import com.project.petpoint.view.ui.theme.Azure
+import com.project.petpoint.view.ui.theme.Black
 import com.project.petpoint.view.ui.theme.Orange
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
@@ -101,7 +103,6 @@ fun AddLostFoundReportScreen(
     var isLoading by remember { mutableStateOf(false) }
     var existingImageUrl by remember { mutableStateOf("") }
 
-    // Store original reporter info when editing
     var originalReportedBy by remember { mutableStateOf("") }
     var originalReportedByName by remember { mutableStateOf("") }
 
@@ -127,7 +128,6 @@ fun AddLostFoundReportScreen(
             isLost = item.type.lowercase() == "lost"
             existingImageUrl = item.imageUrl
 
-            // CRITICAL: Store original reporter info
             originalReportedBy = item.reportedBy
             originalReportedByName = item.reportedByName ?: ""
 
@@ -144,263 +144,290 @@ fun AddLostFoundReportScreen(
         }
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Azure)
-    ) {
-        item {
-            Spacer(modifier = Modifier.height(40.dp))
-
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                if (isLoading && isEditMode) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().padding(60.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = VividAzure)
-                    }
-                } else {
-                    Text("Type", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                    Spacer(Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        FilterChip(
-                            selected = isLost,
-                            onClick = { isLost = true },
-                            label = { Text("Lost") },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFFfee2e2),
-                                selectedLabelColor = Color(0xFFdc2626)
-                            )
-                        )
-                        FilterChip(
-                            selected = !isLost,
-                            onClick = { isLost = false },
-                            label = { Text("Rescued") },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFFdcfce7),
-                                selectedLabelColor = Color(0xFF15803d)
-                            )
-                        )
-                    }
-
-                    Spacer(Modifier.height(24.dp))
-
-                    Text("Title", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = title,
-                        onValueChange = { title = it },
-                        placeholder = { Text("e.g. Lost Golden Retriever") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = if (isEditMode) "Edit Report" else "Add Lost/Found Report",
+                        fontWeight = FontWeight.Bold,
+                        color = Black
                     )
-
-                    Spacer(Modifier.height(20.dp))
-
-                    Text("Category", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = category,
-                        onValueChange = { category = it },
-                        placeholder = { Text("e.g. Dog, Cat, Bird") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-
-                    Spacer(Modifier.height(20.dp))
-
-                    Text("Location", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = location,
-                        onValueChange = { location = it },
-                        placeholder = { Text("e.g. Thamel, Kathmandu") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-
-                    Spacer(Modifier.height(20.dp))
-
-                    Text("Description", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = description,
-                        onValueChange = { description = it },
-                        placeholder = { Text("Details about the pet/item...") },
-                        modifier = Modifier.fillMaxWidth().height(140.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        maxLines = 6
-                    )
-
-                    Spacer(Modifier.height(20.dp))
-
-                    Text("Contact Info", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = contactInfo,
-                        onValueChange = { contactInfo = it },
-                        placeholder = { Text("Phone / WhatsApp / Email") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-
-                    Spacer(Modifier.height(28.dp))
-                }
-            }
-        }
-
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(160.dp)
-                        .clickable(onClick = onPickImage)
-                        .background(Color.LightGray, RoundedCornerShape(12.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (selectedImageUri != null) {
-                        AsyncImage(
-                            model = selectedImageUri,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                },
+                navigationIcon = {
+                    IconButton(onClick = { activity?.finish() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                            contentDescription = "Back"
                         )
-                    } else if (existingImageUrl.isNotBlank()) {
-                        AsyncImage(
-                            model = existingImageUrl,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Default.Image, null, tint = Color.Gray, modifier = Modifier.size(40.dp))
-                            Spacer(Modifier.height(8.dp))
-                            Text("Upload Image", color = Color.DarkGray)
-                        }
-                    }
-                }
-            }
-        }
-
-        item {
-            Spacer(Modifier.height(32.dp))
-
-            Button(
-                onClick = {
-                    if (title.trim().isEmpty()) {
-                        Toast.makeText(context, "Please enter title", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-                    if (category.trim().isEmpty()) {
-                        Toast.makeText(context, "Please enter category", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-                    if (location.trim().isEmpty()) {
-                        Toast.makeText(context, "Please enter location", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-
-                    isLoading = true
-
-                    val saveAction: (String) -> Unit = { imageUrl ->
-                        val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-
-
-                        val finalReportedBy = if (isEditMode && originalReportedBy.isNotBlank()) {
-                            originalReportedBy
-                        } else {
-                            currentUser.uid
-                        }
-
-                        val finalReportedByName = if (isEditMode && originalReportedByName.isNotBlank()) {
-                            originalReportedByName
-                        } else {
-                            reporterName
-                        }
-
-                        val model = LostFoundModel(
-                            lostId = editLostId ?: "",
-                            type = if (isLost) "Lost" else "Rescued",
-                            title = title.trim(),
-                            category = category.trim(),
-                            description = description.trim(),
-                            location = location.trim(),
-                            date = date,
-                            reportedBy = finalReportedBy,
-                            reportedByName = finalReportedByName,
-                            imageUrl = imageUrl,
-                            contactInfo = contactInfo.trim(),
-                            isVisible = true
-                        )
-
-                        if (isEditMode) {
-                            viewModel.updateReport(model) { success, msg ->
-                                isLoading = false
-                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                if (success) {
-                                    activity?.setResult(Activity.RESULT_OK)
-                                    activity?.finish()
-                                }
-                            }
-                        } else {
-                            viewModel.addReport(model) { success, msg ->
-                                isLoading = false
-                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                if (success) {
-                                    activity?.setResult(Activity.RESULT_OK)
-                                    activity?.finish()
-                                }
-                            }
-                        }
-                    }
-
-                    when {
-                        selectedImageUri != null -> {
-                            viewModel.uploadImage(context, selectedImageUri!!) { url ->
-                                if (url != null) {
-                                    saveAction(url)
-                                } else {
-                                    isLoading = false
-                                    Toast.makeText(context, "Image upload failed", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }
-                        existingImageUrl.isNotBlank() -> {
-                            saveAction(existingImageUrl)
-                        }
-                        else -> {
-                            isLoading = false
-                            Toast.makeText(context, "Please select an image", Toast.LENGTH_SHORT).show()
-                        }
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Orange),
-                shape = RoundedCornerShape(12.dp),
-                enabled = !isLoading
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = White)
-                    Spacer(Modifier.width(12.dp))
-                }
-                Text(
-                    text = if (isEditMode) "Update Report" else "Submit Report",
-                    color = White,
-                    fontWeight = FontWeight.Bold
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Azure
                 )
+            )
+        },
+        modifier = Modifier.fillMaxSize()
+    ) { innerPadding ->
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Azure)
+                .padding(innerPadding)
+        ) {
+            item {
+                Spacer(modifier = Modifier.height(40.dp))
+
+                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    if (isLoading && isEditMode) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(60.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = VividAzure)
+                        }
+                    } else {
+                        Text("Type", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        Spacer(Modifier.height(8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            FilterChip(
+                                selected = isLost,
+                                onClick = { isLost = true },
+                                label = { Text("Lost / Missing") },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFFfee2e2),
+                                    selectedLabelColor = Color(0xFFdc2626)
+                                )
+                            )
+                            FilterChip(
+                                selected = !isLost,
+                                onClick = { isLost = false },
+                                label = { Text("Found / Rescued") },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFFdcfce7),
+                                    selectedLabelColor = Color(0xFF15803d)
+                                )
+                            )
+                        }
+
+                        Spacer(Modifier.height(24.dp))
+
+                        Text("Title", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = title,
+                            onValueChange = { title = it },
+                            placeholder = { Text("e.g. Lost Golden Retriever") },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        Spacer(Modifier.height(20.dp))
+
+                        Text("Category", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = category,
+                            onValueChange = { category = it },
+                            placeholder = { Text("e.g. Dog, Cat, Bird") },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        Spacer(Modifier.height(20.dp))
+
+                        Text("Location", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = location,
+                            onValueChange = { location = it },
+                            placeholder = { Text("e.g. Thamel, Kathmandu") },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        Spacer(Modifier.height(20.dp))
+
+                        Text("Description", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = description,
+                            onValueChange = { description = it },
+                            placeholder = { Text("Details about the pet/item...") },
+                            modifier = Modifier.fillMaxWidth().height(140.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            maxLines = 6
+                        )
+
+                        Spacer(Modifier.height(20.dp))
+
+                        Text("Contact Info", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = contactInfo,
+                            onValueChange = { contactInfo = it },
+                            placeholder = { Text("Phone / WhatsApp / Email") },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        Spacer(Modifier.height(28.dp))
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(60.dp))
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(160.dp)
+                            .clickable(onClick = onPickImage)
+                            .background(Color.LightGray, RoundedCornerShape(12.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (selectedImageUri != null) {
+                            AsyncImage(
+                                model = selectedImageUri,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else if (existingImageUrl.isNotBlank()) {
+                            AsyncImage(
+                                model = existingImageUrl,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Default.Image, null, tint = Color.Gray, modifier = Modifier.size(40.dp))
+                                Spacer(Modifier.height(8.dp))
+                                Text("Upload Image", color = Color.DarkGray)
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                Spacer(Modifier.height(32.dp))
+
+                Button(
+                    onClick = {
+                        if (title.trim().isEmpty()) {
+                            Toast.makeText(context, "Please enter title", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (category.trim().isEmpty()) {
+                            Toast.makeText(context, "Please enter category", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (location.trim().isEmpty()) {
+                            Toast.makeText(context, "Please enter location", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        isLoading = true
+
+                        val saveAction: (String) -> Unit = { imageUrl ->
+                            val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+                            val finalReportedBy = if (isEditMode && originalReportedBy.isNotBlank()) {
+                                originalReportedBy
+                            } else {
+                                currentUser.uid
+                            }
+
+                            val finalReportedByName = if (isEditMode && originalReportedByName.isNotBlank()) {
+                                originalReportedByName
+                            } else {
+                                reporterName
+                            }
+
+                            val model = LostFoundModel(
+                                lostId = editLostId ?: "",
+                                type = if (isLost) "Lost" else "Rescued",
+                                title = title.trim(),
+                                category = category.trim(),
+                                description = description.trim(),
+                                location = location.trim(),
+                                date = date,
+                                reportedBy = finalReportedBy,
+                                reportedByName = finalReportedByName,
+                                imageUrl = imageUrl,
+                                contactInfo = contactInfo.trim(),
+                                isVisible = true
+                            )
+
+                            if (isEditMode) {
+                                viewModel.updateReport(model) { success, msg ->
+                                    isLoading = false
+                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                    if (success) {
+                                        activity?.setResult(Activity.RESULT_OK)
+                                        activity?.finish()
+                                    }
+                                }
+                            } else {
+                                viewModel.addReport(model) { success, msg ->
+                                    isLoading = false
+                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                    if (success) {
+                                        activity?.setResult(Activity.RESULT_OK)
+                                        activity?.finish()
+                                    }
+                                }
+                            }
+                        }
+
+                        when {
+                            selectedImageUri != null -> {
+                                viewModel.uploadImage(context, selectedImageUri!!) { url ->
+                                    if (url != null) {
+                                        saveAction(url)
+                                    } else {
+                                        isLoading = false
+                                        Toast.makeText(context, "Image upload failed", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                            existingImageUrl.isNotBlank() -> {
+                                saveAction(existingImageUrl)
+                            }
+                            else -> {
+                                isLoading = false
+                                Toast.makeText(context, "Please select an image", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Orange),
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = !isLoading
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = White)
+                        Spacer(Modifier.width(12.dp))
+                    }
+                    Text(
+                        text = if (isEditMode) "Update Report" else "Submit Report",
+                        color = White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(60.dp))
+            }
         }
     }
 }

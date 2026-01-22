@@ -151,10 +151,19 @@ fun LostAndFoundDetailScreen(lostId: String) {
 
                         Spacer(modifier = Modifier.height(8.dp))
 
+                        val typeLower = item!!.type.lowercase()
                         Badge(
                             text = item!!.type.uppercase(),
-                            background = if (item!!.type == "Lost") Color(0xFFfee2e2) else Color(0xFFdcfce7),
-                            textColor = if (item!!.type == "Lost") Color(0xFFdc2626) else Color(0xFF15803d)
+                            background = when {
+                                typeLower == "lost" -> Color(0xFFfee2e2)
+                                typeLower == "found" -> Color(0xFFe0f2fe)
+                                else -> Color(0xFFdcfce7)
+                            },
+                            textColor = when {
+                                typeLower == "lost" -> Color(0xFFdc2626)
+                                typeLower == "found" -> Color(0xFF0369a1)
+                                else -> Color(0xFF15803d)
+                            }
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
@@ -168,24 +177,22 @@ fun LostAndFoundDetailScreen(lostId: String) {
                             DetailRow("Contact", item!!.contactInfo)
                         }
 
-                        if (canManage) {
+                        // Only allow marking Lost → Found
+                        if (canManage && item!!.type.equals("Lost", ignoreCase = true)) {
                             Spacer(modifier = Modifier.height(32.dp))
 
-                            // Status change button
-                            val newStatus = if (item!!.type == "Lost") "Found" else "Lost"
                             Button(
                                 onClick = { showStatusDialog = true },
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF059669)
-                                )
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF059669))
                             ) {
-                                Text("Mark as $newStatus")
+                                Text("Mark as Found")
                             }
+                        }
 
+                        if (canManage) {
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            // Edit and Delete buttons
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -207,9 +214,7 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                 Button(
                                     onClick = { showDeleteDialog = true },
                                     modifier = Modifier.weight(1f),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFFdc2626)
-                                    )
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFdc2626))
                                 ) {
                                     Text("Delete")
                                 }
@@ -237,7 +242,6 @@ fun LostAndFoundDetailScreen(lostId: String) {
                 }
             }
 
-            // Delete Dialog
             if (showDeleteDialog) {
                 AlertDialog(
                     onDismissRequest = { showDeleteDialog = false },
@@ -259,9 +263,7 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                     }
                                 }
                             },
-                            colors = ButtonDefaults.textButtonColors(
-                                contentColor = Color(0xFFdc2626)
-                            )
+                            colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFdc2626))
                         ) {
                             Text("Delete Permanently")
                         }
@@ -274,26 +276,24 @@ fun LostAndFoundDetailScreen(lostId: String) {
                 )
             }
 
-            // Status Change Dialog
             if (showStatusDialog) {
-                val newStatus = if (item!!.type == "Lost") "Found" else "Lost"
                 AlertDialog(
                     onDismissRequest = { showStatusDialog = false },
                     title = { Text("Change Status") },
                     text = {
-                        Text("Change the status of this report to \"$newStatus\"?")
+                        Text("Mark this report as \"Found\"?\nThis action cannot be reversed.")
                     },
                     confirmButton = {
                         TextButton(onClick = {
                             showStatusDialog = false
-                            viewModel.changeStatus(item!!.lostId, newStatus) { success, msg ->
+                            viewModel.changeStatus(item!!.lostId, "Found") { success, msg ->
                                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                                 if (success) {
                                     viewModel.getReportById(item!!.lostId)
                                 }
                             }
                         }) {
-                            Text("Change to $newStatus")
+                            Text("Mark as Found")
                         }
                     },
                     dismissButton = {
@@ -308,15 +308,8 @@ fun LostAndFoundDetailScreen(lostId: String) {
 }
 
 @Composable
-fun Badge(
-    text: String,
-    background: Color,
-    textColor: Color
-) {
-    Surface(
-        color = background,
-        shape = RoundedCornerShape(16.dp)
-    ) {
+fun Badge(text: String, background: Color, textColor: Color) {
+    Surface(color = background, shape = RoundedCornerShape(16.dp)) {
         Text(
             text = text,
             color = textColor,
@@ -328,19 +321,8 @@ fun Badge(
 
 @Composable
 private fun DetailRow(label: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp)
-    ) {
-        Text(
-            text = "$label: ",
-            fontWeight = FontWeight.Medium,
-            color = Color.Gray
-        )
-        Text(
-            text = value,
-            modifier = Modifier.weight(1f)
-        )
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+        Text("$label: ", fontWeight = FontWeight.Medium, color = Color.Gray)
+        Text(value, modifier = Modifier.weight(1f))
     }
 }

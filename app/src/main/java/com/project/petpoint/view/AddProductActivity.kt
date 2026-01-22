@@ -5,8 +5,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -38,9 +40,25 @@ class AddProductActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AddProduct(null, {})
+            AddProductScreen()
         }
     }
+}
+
+@Composable
+fun AddProductScreen() {
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+    }
+
+    AddProduct(
+        selectedImageUri = selectedImageUri,
+        onPickImage = { imagePickerLauncher.launch("image/*") }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
