@@ -12,7 +12,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,7 +22,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -47,7 +45,8 @@ import com.project.petpoint.view.ui.theme.GreyOrange
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
 import com.project.petpoint.viewmodel.UserViewModel
-import kotlinx.coroutines.launch
+import androidx.core.content.edit
+import com.project.petpoint.model.UserModel
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +60,7 @@ class LoginActivity : ComponentActivity() {
 @Composable
 fun PetPointLoginUI() {
 
-    var userViewModel = remember { UserViewModel(UserRepoImpl()) }
+    val userViewModel = remember { UserViewModel(UserRepoImpl()) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var visibility by remember { mutableStateOf(false) }
@@ -247,84 +246,57 @@ fun PetPointLoginUI() {
                                         if (success) {
                                             val userId = userViewModel.getCurrentUser()?.uid
                                             if (userId != null) {
-                                                // First, fetch the user data from Firebase
                                                 userViewModel.getUserById(userId)
 
-                                                // Observe the user data
-                                                userViewModel.users.observeForever { user ->
-                                                    if (user != null) {
-                                                        // Save user data to SharedPreferences
-                                                        val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
-                                                        val editor = sharedPref.edit()
-                                                        editor.putString("userId", userId)
-                                                        editor.putString("name", user.name ?: "")
-                                                        editor.putString("email", user.email ?: "")
-                                                        editor.putString("phone", user.phonenumber ?: "")
-                                                        editor.putString("address", user.address ?: "")
-                                                        editor.putString("profileImage", user.profileImage)
-                                                        editor.putString("role", user.role ?: "buyer")
-                                                        editor.apply()
+                                                // Create observer variable to store reference
+                                                var observer: androidx.lifecycle.Observer<UserModel?>? = null
 
-                                                        // Now check role and navigate
+                                                observer = androidx.lifecycle.Observer { user ->
+                                                    if (user != null) {
+                                                        val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
+                                                        sharedPref.edit {
+                                                            putString("userId", userId)
+                                                            putString("name", user.name)
+                                                            putString("email", user.email)
+                                                            putString("phone", user.phonenumber)
+                                                            putString("address", user.address)
+                                                            putString("profileImage", user.profileImage)
+                                                            putString("role", user.role)
+                                                        }
+
                                                         when (user.role) {
                                                             "admin" -> {
-                                                                Toast.makeText(
-                                                                    context,
-                                                                    "Welcome Admin!",
-                                                                    Toast.LENGTH_SHORT
-                                                                ).show()
-                                                                context.startActivity(
-                                                                    Intent(
-                                                                        context,
-                                                                        AdminDashboardActivity::class.java
-                                                                    )
-                                                                )
+                                                                Toast.makeText(context, "Welcome Admin!", Toast.LENGTH_SHORT).show()
+                                                                context.startActivity(Intent(context, AdminDashboardActivity::class.java))
                                                                 activity?.finish()
                                                             }
                                                             "buyer" -> {
-                                                                Toast.makeText(
-                                                                    context,
-                                                                    "Welcome!",
-                                                                    Toast.LENGTH_SHORT
-                                                                ).show()
-                                                                context.startActivity(
-                                                                    Intent(
-                                                                        context,
-                                                                        DashboardActivity::class.java
-                                                                    )
-                                                                )
+                                                                Toast.makeText(context, "Welcome!", Toast.LENGTH_SHORT).show()
+                                                                context.startActivity(Intent(context, DashboardActivity::class.java))
                                                                 activity?.finish()
                                                             }
                                                             else -> {
-                                                                Toast.makeText(
-                                                                    context,
-                                                                    "User role not found",
-                                                                    Toast.LENGTH_SHORT
-                                                                ).show()
+                                                                Toast.makeText(context, "User role not found", Toast.LENGTH_SHORT).show()
                                                             }
                                                         }
 
-                                                        // Remove observer to prevent multiple triggers
-                                                        userViewModel.users.removeObserver { }
+                                                        // NOW properly remove the observer
+                                                        observer?.let { userViewModel.users.removeObserver(it) }
                                                     }
                                                 }
+
+                                                // Attach the observer
+                                                userViewModel.users.observeForever(observer!!)
+
                                             } else {
-                                                Toast.makeText(
-                                                    context,
-                                                    "User ID not found",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
+                                                Toast.makeText(context, "User ID not found", Toast.LENGTH_SHORT).show()
                                             }
                                         } else {
                                             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                         }
                                     }
                                 } else {
-                                    Toast.makeText(
-                                        context,
-                                        "Please enter email and password",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    Toast.makeText(context, "Please enter email and password", Toast.LENGTH_SHORT).show()
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = VividOrange),

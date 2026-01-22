@@ -1,6 +1,7 @@
 package com.project.petpoint.view
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -85,7 +86,11 @@ fun AdminDashBody(){
 
                 }},
                 actions = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = {
+                        val intent = Intent(context, ProfileActivity::class.java)
+                        context.startActivity(intent)
+
+                    }) {
 
                         Icon(
                             painter  =  painterResource(R.drawable.userprofile),

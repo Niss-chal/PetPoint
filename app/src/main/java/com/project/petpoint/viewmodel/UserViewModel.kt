@@ -22,29 +22,6 @@ class UserViewModel(val repo: UserRepo) : ViewModel() {
         repo.login(email, password, callback)
     }
 
-    fun checkUserRole(
-        userId: String,
-        callback: (String?) -> Unit
-    ) {
-        val db = FirebaseDatabase.getInstance()
-
-        db.getReference("users").child(userId)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()) {
-                        val role = snapshot.child("role").getValue(String::class.java)
-                        callback(role ?: "buyer")
-                    } else {
-                        callback(null)
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    callback(null)
-                }
-            })
-    }
-
     fun updateProfile(
         userId: String,
         model: UserModel,
@@ -134,13 +111,5 @@ class UserViewModel(val repo: UserRepo) : ViewModel() {
         callback: (String?) -> Unit
     ) {
         repo.uploadProfileImage(context, imageUri, callback)
-    }
-
-    // Save image URL to Firebase
-    fun updateProfileImage(
-        userId: String,
-        imageUrl: String
-    ) {
-        repo.updateProfileImage(userId, imageUrl)
     }
 }

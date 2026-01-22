@@ -2,7 +2,6 @@ package com.project.petpoint.view
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -14,9 +13,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -49,10 +50,10 @@ class EditProfileActivity : ComponentActivity() {
 
 @Composable
 fun EditProfileBody() {
-
     val context = LocalContext.current
     val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
     val userViewModel = remember { UserViewModel(UserRepoImpl()) }
+    val scrollState = rememberScrollState()
 
     val userId = sharedPref.getString("userId", null)
 
@@ -60,28 +61,20 @@ fun EditProfileBody() {
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
-
-    // Image state
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var profileImageUrl by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Image picker
-    val imagePickerLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            selectedImageUri = uri
-        }
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri -> selectedImageUri = uri }
 
-    // Fetch current user data from Firebase (not SharedPreferences!)
+    // Fetch user data from Firebase
     LaunchedEffect(userId) {
-        if (userId != null) {
-            userViewModel.getUserById(userId)
-        }
+        userId?.let { userViewModel.getUserById(it) }
     }
 
-
-
-    // Observe user data and update state
+    // Observe user data
     DisposableEffect(Unit) {
         val observer = androidx.lifecycle.Observer<UserModel?> { user ->
             user?.let {
@@ -112,10 +105,12 @@ fun EditProfileBody() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Azure),
+            .background(Azure)
+            .verticalScroll(scrollState)
+            .imePadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
+        // Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -131,12 +126,11 @@ fun EditProfileBody() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Profile Image Box
+        // Profile Image
         Box(
             modifier = Modifier.size(120.dp),
             contentAlignment = Alignment.BottomEnd
         ) {
-
             AsyncImage(
                 model = selectedImageUri ?: profileImageUrl ?: R.drawable.userprofile,
                 contentDescription = "Profile Image",
@@ -164,14 +158,14 @@ fun EditProfileBody() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // User info fields
+        // Form Fields
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
                 .background(Color(0xFFE7F0F3), shape = RoundedCornerShape(20.dp))
                 .padding(20.dp)
         ) {
-
+            // Name Field
             Text(text = "Name", fontSize = 18.sp)
             OutlinedTextField(
                 value = name,
@@ -186,6 +180,7 @@ fun EditProfileBody() {
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Email Field (Read-only)
             Text(text = "Email", fontSize = 18.sp)
             OutlinedTextField(
                 value = email,
@@ -202,6 +197,7 @@ fun EditProfileBody() {
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Phone Field
             Text(text = "Phone", fontSize = 18.sp)
             OutlinedTextField(
                 value = phone,
@@ -217,6 +213,7 @@ fun EditProfileBody() {
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Address Field
             Text(text = "Address", fontSize = 18.sp)
             OutlinedTextField(
                 value = address,
@@ -231,41 +228,62 @@ fun EditProfileBody() {
 
             Spacer(modifier = Modifier.height(40.dp))
 
+            // Save Button
             Button(
                 onClick = {
-                    if (userId != null) {
-                        val updatedUser = UserModel(
-                            userId = userId,
-                            name = name,
-                            email = email,
-                            address = address,
-                            phonenumber = phone
-                        )
-
+                    userId?.let { id ->
                         if (selectedImageUri != null) {
+                            // Upload image first, then update profile WITH image URL
                             userViewModel.uploadProfileImage(context, selectedImageUri!!) { imageUrl ->
                                 if (imageUrl != null) {
-                                    userViewModel.updateProfileImage(userId, imageUrl)
-                                    profileImageUrl = imageUrl
+                                    // Create updated user WITH the new image URL
+                                    val updatedUser = UserModel(
+                                        userId = id,
+                                        name = name,
+                                        email = email,
+                                        address = address,
+                                        phonenumber = phone,
+                                        profileImage = imageUrl  // ← INCLUDE THE IMAGE URL HERE
+                                    )
 
-                                    // Update SharedPreferences
-                                    val editor = sharedPref.edit()
-                                    editor.putString("profileImage", imageUrl)
-                                    editor.apply()
+                                    // Now update the entire profile including image
+                                    userViewModel.updateProfile(id, updatedUser) { success, message ->
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                        if (success) {
+                                            sharedPref.edit()
+                                                .putString("name", name)
+                                                .putString("phone", phone)
+                                                .putString("address", address)
+                                                .putString("profileImage", imageUrl)
+                                                .apply()
+                                            (context as? Activity)?.finish()
+                                        }
+                                    }
+                                } else {
+                                    Toast.makeText(context, "Image upload failed", Toast.LENGTH_SHORT).show()
                                 }
                             }
-                        }
+                        } else {
+                            // No new image selected, keep existing profile image
+                            val updatedUser = UserModel(
+                                userId = id,
+                                name = name,
+                                email = email,
+                                address = address,
+                                phonenumber = phone,
+                                profileImage = profileImageUrl  // ← KEEP EXISTING IMAGE URL
+                            )
 
-                        userViewModel.updateProfile(userId, updatedUser) { success, message ->
-                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-
-                            if (success) {
-                                // Update SharedPreferences with new data
-                                val editor = sharedPref.edit()
-                                editor.putString("name", name)
-                                editor.putString("phone", phone)
-                                editor.putString("address", address)
-                                editor.apply()
+                            userViewModel.updateProfile(id, updatedUser) { success, message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                if (success) {
+                                    sharedPref.edit()
+                                        .putString("name", name)
+                                        .putString("phone", phone)
+                                        .putString("address", address)
+                                        .apply()
+                                    (context as? Activity)?.finish()
+                                }
                             }
                         }
                     }
@@ -282,10 +300,9 @@ fun EditProfileBody() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // Back Button
             Button(
-                onClick = {
-                    (context as? Activity)?.finish()
-                },
+                onClick = { (context as? Activity)?.finish() },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(
