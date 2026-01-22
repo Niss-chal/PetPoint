@@ -87,7 +87,7 @@ fun LostAndFoundDetailScreen(lostId: String) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Item Details") },
+                title = { Text("Details") },
                 navigationIcon = {
                     IconButton(onClick = { context?.finish() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")

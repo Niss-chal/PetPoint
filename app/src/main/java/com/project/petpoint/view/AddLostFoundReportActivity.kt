@@ -400,7 +400,7 @@ fun AddLostFoundReportScreen(
                 )
             }
 
-            Spacer(Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

@@ -185,7 +185,6 @@ fun LostAndFoundScreen() {
     }
 }
 
-// LostFoundUserCard remains the same...
 @Composable
 fun LostFoundUserCard(
     item: LostFoundModel,
