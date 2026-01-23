@@ -134,7 +134,7 @@ fun DashboardBody() {
                 0-> ShopScreen()
                 1-> VetScreen()
                 2-> LostAndFoundScreen()
-                3-> ProfileScreen()
+                3-> UserProfileScreen()
                 else -> ShopScreen()
             }
         }

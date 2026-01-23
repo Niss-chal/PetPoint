@@ -32,6 +32,7 @@ import com.project.petpoint.R
 import com.project.petpoint.ui.theme.White
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.VividAzure
+import kotlin.jvm.java
 
 class AdminDashboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,7 +88,9 @@ fun AdminDashBody(){
                 }},
                 actions = {
                     IconButton(onClick = {
-                        val intent = Intent(context, ProfileActivity::class.java)
+                        val intent = Intent(context, ProfileActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        }
                         context.startActivity(intent)
 
                     }) {

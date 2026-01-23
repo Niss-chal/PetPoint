@@ -1,6 +1,6 @@
-
 package com.project.petpoint.view
 
+import android.R.id.message
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -35,7 +35,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
@@ -117,7 +116,7 @@ fun PetPointLoginUI() {
                     fontWeight = FontWeight.Bold
                 )
             )
-            // MAIN CONTENT
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -186,10 +185,10 @@ fun PetPointLoginUI() {
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent
                             ),
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-
-
-                            )
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        )
 
                         Spacer(modifier = Modifier.height(15.dp))
 
@@ -222,18 +221,21 @@ fun PetPointLoginUI() {
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent
                             ),
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
                         )
 
                         Text(
                             text = "Forgot Password?",
                             color = Color.White,
                             fontSize = 13.sp,
-                            modifier = Modifier.align(Alignment.End)
+                            modifier = Modifier
+                                .align(Alignment.End)
                                 .clickable {
-                                    val intent = Intent(context, ResetPasswordActivity::class.java)
-                                    context.startActivity(intent)
-
+                                    context.startActivity(
+                                        Intent(context, ResetPasswordActivity::class.java)
+                                    )
                                 }
                         )
 
@@ -241,62 +243,70 @@ fun PetPointLoginUI() {
 
                         Button(
                             onClick = {
-                                if (email.isNotBlank() && password.isNotBlank()) {
-                                    userViewModel.login(email, password) { success, message ->
-                                        if (success) {
-                                            val userId = userViewModel.getCurrentUser()?.uid
-                                            if (userId != null) {
-                                                userViewModel.getUserById(userId)
+                                if (email.isBlank() || password.isBlank()) {
+                                    Toast.makeText(context, "Please enter email and password", Toast.LENGTH_SHORT).show()
+                                    return@Button
+                                }
 
-                                                // Create observer variable to store reference
-                                                var observer: androidx.lifecycle.Observer<UserModel?>? = null
+                                userViewModel.login(email, password) { success, message ->
+                                    if (!success) {
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                        return@login
+                                    }
 
-                                                observer = androidx.lifecycle.Observer { user ->
-                                                    if (user != null) {
-                                                        val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
-                                                        sharedPref.edit {
-                                                            putString("userId", userId)
-                                                            putString("name", user.name)
-                                                            putString("email", user.email)
-                                                            putString("phone", user.phonenumber)
-                                                            putString("address", user.address)
-                                                            putString("profileImage", user.profileImage)
-                                                            putString("role", user.role)
-                                                        }
+                                    val userId = userViewModel.getCurrentUser()?.uid
+                                    if (userId == null) {
+                                        Toast.makeText(context, "User ID not found", Toast.LENGTH_SHORT).show()
+                                        return@login
+                                    }
 
-                                                        when (user.role) {
-                                                            "admin" -> {
-                                                                Toast.makeText(context, "Welcome Admin!", Toast.LENGTH_SHORT).show()
-                                                                context.startActivity(Intent(context, AdminDashboardActivity::class.java))
-                                                                activity?.finish()
-                                                            }
-                                                            "buyer" -> {
-                                                                Toast.makeText(context, "Welcome!", Toast.LENGTH_SHORT).show()
-                                                                context.startActivity(Intent(context, DashboardActivity::class.java))
-                                                                activity?.finish()
-                                                            }
-                                                            else -> {
-                                                                Toast.makeText(context, "User role not found", Toast.LENGTH_SHORT).show()
-                                                            }
-                                                        }
+                                    // Fetch user data
+                                    userViewModel.getUserById(userId)
 
-                                                        // NOW properly remove the observer
-                                                        observer?.let { userViewModel.users.removeObserver(it) }
-                                                    }
-                                                }
+                                    // Observe once and navigate when we receive the data
+                                    val observer = object : androidx.lifecycle.Observer<UserModel?> {
+                                        override fun onChanged(user: UserModel?) {
+                                            if (user == null) return
 
-                                                // Attach the observer
-                                                userViewModel.users.observeForever(observer!!)
-
-                                            } else {
-                                                Toast.makeText(context, "User ID not found", Toast.LENGTH_SHORT).show()
+                                            val sharedPref = context.getSharedPreferences("User", Context.MODE_PRIVATE)
+                                            sharedPref.edit {
+                                                clear()
+                                                putString("userId", userId)
+                                                putString("name", user.name)
+                                                putString("email", user.email)
+                                                putString("phone", user.phonenumber)
+                                                putString("address", user.address)
+                                                putString("profileImage", user.profileImage)
+                                                putString("role", user.role)
                                             }
-                                        } else {
-                                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+
+                                            val intent = when (user.role?.lowercase()) {
+                                                "admin" -> {
+                                                    Toast.makeText(context, "Welcome Admin!", Toast.LENGTH_SHORT).show()
+                                                    Intent(context, AdminDashboardActivity::class.java)
+                                                }
+                                                "buyer" -> {
+                                                    Toast.makeText(context, "Welcome!", Toast.LENGTH_SHORT).show()
+                                                    Intent(context, DashboardActivity::class.java)
+                                                }
+                                                else -> {
+                                                    Toast.makeText(context, "Unknown role: ${user.role}", Toast.LENGTH_SHORT).show()
+                                                    null
+                                                }
+                                            }
+
+                                            intent?.let {
+                                                it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                                context.startActivity(it)
+                                                activity?.finish()
+                                            }
+
+                                            // Crucial: remove the observer after we used it once
+                                            userViewModel.users.removeObserver(this)
                                         }
                                     }
-                                } else {
-                                    Toast.makeText(context, "Please enter email and password", Toast.LENGTH_SHORT).show()
+
+                                    userViewModel.users.observeForever(observer)
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = VividOrange),
@@ -308,6 +318,7 @@ fun PetPointLoginUI() {
                         ) {
                             Text("Login", color = Color.White, fontWeight = FontWeight.Bold)
                         }
+
                         Spacer(modifier = Modifier.height(15.dp))
 
                         Text(
@@ -317,13 +328,12 @@ fun PetPointLoginUI() {
                                     append("Sign Up")
                                 }
                             },
-
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    val intent = Intent(context, SignupActivity::class.java)
-                                    context.startActivity(intent)
-
+                                    context.startActivity(
+                                        Intent(context, SignupActivity::class.java)
+                                    )
                                 },
                             color = Color.White,
                             fontSize = 14.sp,
@@ -334,11 +344,4 @@ fun PetPointLoginUI() {
             }
         }
     }
-}
-
-
-@Preview
-@Composable
-fun LoginPreview() {
-    PetPointLoginUI()
 }
