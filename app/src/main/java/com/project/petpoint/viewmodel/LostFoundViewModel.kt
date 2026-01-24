@@ -174,6 +174,13 @@ class LostFoundViewModel(private val repo: LostFoundRepo) : ViewModel() {
             return
         }
 
+        // Prevent going back to Lost from Found or Rescued
+        if (newType.equals("Lost", ignoreCase = true)) {
+            _message.value = "Cannot change a Found or Rescued report back to Lost"
+            onResult(false, "Cannot change a Found or Rescued report back to Lost")
+            return
+        }
+
         _loading.value = true
         repo.changeStatus(lostId, newType) { success, msg ->
             _loading.value = false
