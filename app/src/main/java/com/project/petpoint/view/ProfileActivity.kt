@@ -10,13 +10,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.automirrored.filled.ArrowLeft
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -25,8 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,6 +39,7 @@ import com.project.petpoint.repository.UserRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.VividOrange
+import com.project.petpoint.view.ui.theme.crimson
 import com.project.petpoint.viewmodel.UserViewModel
 
 class ProfileActivity : ComponentActivity() {
@@ -63,6 +67,7 @@ fun AdminProfileScreen() {
     var profileImageUrl by remember { mutableStateOf<String?>(null) }
 
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     // Fetch fresh admin data
     LaunchedEffect(userId) {
@@ -78,12 +83,38 @@ fun AdminProfileScreen() {
         profileImageUrl = it.profileImage
     }
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Profile",
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = { (context as? Activity)?.finish() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowLeft,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = VividAzure
+                )
+            )
+        }
+    ) { padding ->
 
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(padding)
                 .background(
                     Brush.verticalGradient(
                         listOf(VividAzure.copy(0.1f), Azure)
@@ -92,7 +123,7 @@ fun AdminProfileScreen() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // HEADER - same style as user profile
+            // HEADER
             item {
                 Box(
                     modifier = Modifier
@@ -139,7 +170,7 @@ fun AdminProfileScreen() {
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Small visual hint that this is admin
+                        // Admin Badge
                         Box(
                             modifier = Modifier
                                 .background(VividOrange.copy(alpha = 0.9f), RoundedCornerShape(12.dp))
@@ -158,7 +189,7 @@ fun AdminProfileScreen() {
 
             item { Spacer(modifier = Modifier.height(20.dp)) }
 
-            // EDIT PROFILE - same button style
+            // EDIT PROFILE BUTTON
             item {
                 Button(
                     onClick = {
@@ -179,18 +210,23 @@ fun AdminProfileScreen() {
 
             item { Spacer(modifier = Modifier.height(24.dp)) }
 
-            // MENU - same card + EnhancedProfileMenuItem style
+            // MENU CARD
             item {
                 Card(
                     modifier = Modifier.padding(horizontal = 20.dp),
                     shape = RoundedCornerShape(20.dp)
                 ) {
                     Column {
-                        // You can add admin-specific menu items here later
-                        // For now we keep only logout (like minimal version)
+                        AdminProfileMenuItem(
+                            icon = Icons.Default.Delete,
+                            text = "Delete Account",
+                            iconTint = crimson
+                        ) {
+                            showDeleteDialog = true
+                        }
 
-                        EnhancedProfileMenuItem(
-                            icon = Icons.Default.Logout,
+                        AdminProfileMenuItem(
+                            icon = R.drawable.baseline_logout_24,
                             text = "Log Out",
                             iconTint = VividOrange
                         ) {
@@ -200,12 +236,11 @@ fun AdminProfileScreen() {
                 }
             }
 
-            // Optional: extra space at bottom
             item { Spacer(modifier = Modifier.height(40.dp)) }
         }
     }
 
-    // LOGOUT DIALOG - same style as user version
+    // LOGOUT DIALOG
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
@@ -217,10 +252,9 @@ fun AdminProfileScreen() {
                     onClick = {
                         userViewModel.logout { success, message ->
                             if (success) {
-                                sharedPref.edit().clear().commit()
-                                val intent = Intent(context, LoginActivity::class.java).apply {
-                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                }
+                                sharedPref.edit().clear().apply()
+                                val intent = Intent(context, LoginActivity::class.java)
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 context.startActivity(intent)
                                 (context as? Activity)?.finishAffinity()
                             } else {
@@ -241,6 +275,82 @@ fun AdminProfileScreen() {
             }
         )
     }
+
+    // DELETE ACCOUNT DIALOG
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            icon = { Icon(Icons.Default.Warning, null, tint = Color.Red) },
+            title = { Text("Delete Account?") },
+            text = { Text("This action cannot be undone. All your data will be permanently deleted.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        userId?.let {
+                            userViewModel.deleteAccount(it) { success, message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                if (success) {
+                                    sharedPref.edit().clear().apply()
+                                    val intent = Intent(context, LoginActivity::class.java)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    context.startActivity(intent)
+                                    (context as? Activity)?.finishAffinity()
+                                }
+                            }
+                        }
+                        showDeleteDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
-// Reuse the same EnhancedProfileMenuItem composable (copy from user profile or move to common file)
+@Composable
+fun AdminProfileMenuItem(
+    icon: Any,
+    text: String,
+    iconTint: Color,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(iconTint.copy(0.15f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            when (icon) {
+                is ImageVector -> Icon(icon, null, tint = iconTint)
+                is Int -> Icon(painterResource(icon), null, tint = iconTint)
+            }
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Text(text, fontSize = 16.sp)
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Icon(
+            painter = painterResource(R.drawable.keyboard_arrow_right_24px),
+            contentDescription = null,
+            tint = Color.Gray
+        )
+    }
+}

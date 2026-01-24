@@ -1,5 +1,6 @@
 package com.project.petpoint.view
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -46,36 +47,75 @@ class FrontpageActivity : ComponentActivity() {
     private fun checkLoginAndNavigate() {
         val auth = FirebaseAuth.getInstance()
         val currentUser = auth.currentUser
+        val sharedPref = getSharedPreferences("User", Context.MODE_PRIVATE)
+        val savedUserId = sharedPref.getString("userId", null)
 
-        if (currentUser == null) {
-            openLogin()
-        } else {
-            // user logged in, check role
+        // Check if user is logged in AND SharedPreferences match
+        if (currentUser != null && savedUserId == currentUser.uid) {
+            // Valid session - check role and navigate
             FirebaseDatabase.getInstance().getReference("users")
                 .child(currentUser.uid)
                 .get()
                 .addOnSuccessListener { snapshot ->
-                    val role = snapshot.child("role").value.toString()
-                    if (role == "admin") openAdminDashboard() else openUserDashboard()
+                    if (snapshot.exists()) {
+                        val role = snapshot.child("role").value.toString()
+
+                        // Update SharedPreferences with latest data
+                        val editor = sharedPref.edit()
+                        editor.putString("userId", currentUser.uid)
+                        editor.putString("name", snapshot.child("name").value.toString())
+                        editor.putString("email", snapshot.child("email").value.toString())
+                        editor.putString("phone", snapshot.child("phonenumber").value.toString())
+                        editor.putString("address", snapshot.child("address").value.toString())
+                        editor.putString("profileImage", snapshot.child("profileImage").value.toString())
+                        editor.putString("role", role)
+                        editor.apply()
+
+                        // Navigate based on role
+                        if (role == "admin") {
+                            openAdminDashboard()
+                        } else {
+                            openUserDashboard()
+                        }
+                    } else {
+                        // User exists in Auth but not in Database - logout and go to login
+                        auth.signOut()
+                        sharedPref.edit().clear().apply()
+                        openLogin()
+                    }
                 }
                 .addOnFailureListener {
+                    // Failed to fetch user data - logout and go to login
+                    auth.signOut()
+                    sharedPref.edit().clear().apply()
                     openLogin()
                 }
+        } else {
+            // No valid session - clear everything and go to login
+            auth.signOut()
+            sharedPref.edit().clear().apply()
+            openLogin()
         }
     }
 
     private fun openLogin() {
-        startActivity(Intent(this, LoginActivity::class.java))
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
         finish()
     }
 
     private fun openAdminDashboard() {
-        startActivity(Intent(this, AdminDashboardActivity::class.java))
+        val intent = Intent(this, AdminDashboardActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
         finish()
     }
 
     private fun openUserDashboard() {
-        startActivity(Intent(this, DashboardActivity::class.java))
+        val intent = Intent(this, DashboardActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
         finish()
     }
 }
