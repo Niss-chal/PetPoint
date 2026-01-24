@@ -31,15 +31,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
 import com.project.petpoint.repository.UserRepoImpl
-import com.project.petpoint.view.ui.theme.Azure
-import com.project.petpoint.view.ui.theme.GreyOrange
-import com.project.petpoint.view.ui.theme.VividAzure
-import com.project.petpoint.view.ui.theme.VividOrange
+import com.project.petpoint.view.ui.theme.*
 import com.project.petpoint.viewmodel.UserViewModel
 
 class ResetPasswordActivity : ComponentActivity() {
@@ -53,196 +49,180 @@ class ResetPasswordActivity : ComponentActivity() {
 
 @Composable
 fun PetPointResetPasswordUI() {
-
-    // Initial state is now empty strings
     var email by remember { mutableStateOf("") }
     val userViewModel = remember { UserViewModel(UserRepoImpl()) }
     val context = LocalContext.current
     val activity = context as? Activity
     val scrollState = rememberScrollState()
 
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Azure)
+            .verticalScroll(scrollState)
+            .imePadding(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Header Icon
+        Icon(
+            painter = painterResource(R.drawable.paw),
+            contentDescription = null,
+            tint = VividAzure,
+            modifier = Modifier
+                .padding(top = 10.dp, end = 15.dp)
+                .size(80.dp)
+                .align(Alignment.End)
+        )
 
+        Spacer(modifier = Modifier.height(10.dp))
 
-    Scaffold { padding ->
+        // App Title
+        Text(
+            text = "Pet Point",
+            style = TextStyle(
+                textAlign = TextAlign.Center,
+                fontSize = 35.sp,
+                fontWeight = FontWeight.Bold
+            )
+        )
 
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Logo
+        Image(
+            painter = painterResource(R.drawable.petpoint),
+            contentDescription = "Pet Point Logo",
+            modifier = Modifier
+                .size(180.dp)
+                .clip(CircleShape),
+            contentScale = ContentScale.Crop
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Reset Password Form
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(Azure)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .background(VividAzure, RoundedCornerShape(20.dp))
+                .padding(20.dp)
         ) {
-
-            // PAW ICON TOP & Title Area
+            // Header Row
             Row(
-                modifier = Modifier
-                    .padding(top = 10.dp, start = 15.dp, end = 15.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                Text(
+                    text = "Reset Password",
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
                 Icon(
                     painter = painterResource(R.drawable.paw),
                     contentDescription = null,
-                    tint = VividAzure,
-                    modifier = Modifier.size(80.dp)
+                    tint = Color.White,
+                    modifier = Modifier.size(30.dp)
                 )
             }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Info Text
             Text(
-                text = "Pet Point",
-                modifier = Modifier.fillMaxWidth(),
-                style = TextStyle(
-                    textAlign = TextAlign.Center,
-                    fontSize = 35.sp,
+                text = "Enter your email address and we'll send you a link to reset your password.",
+                color = Color.White.copy(alpha = 0.85f),
+                fontSize = 13.sp,
+                lineHeight = 18.sp
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Email Field
+            Text(
+                text = "Email",
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                placeholder = { Text("Enter your email") },
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                colors = TextFieldDefaults.colors(
+                    unfocusedContainerColor = GreyOrange,
+                    focusedContainerColor = GreyOrange,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Reset Button
+            Button(
+                onClick = {
+                    if (email.isBlank()) {
+                        Toast.makeText(context, "Please enter your email", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    userViewModel.forgotPassword(email) { success, message ->
+                        if (success) {
+                            Toast.makeText(
+                                context,
+                                "Reset link sent to $email. Check your inbox.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            activity?.finish()
+                        } else {
+                            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                        }
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = VividOrange),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+            ) {
+                Text(
+                    text = "Send Reset Link",
+                    color = Color.White,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
-            )
-            // MAIN CONTENT
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Azure)
-                    .padding(5.dp)
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    // LOGO
-                    Image(
-                        painter = painterResource(R.drawable.petpoint),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(180.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(VividAzure, RoundedCornerShape(20.dp))
-                            .padding(20.dp)
-                    ) {
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Reset Password",
-                                color = Color.White,
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Icon(
-                                painter = painterResource(R.drawable.paw),
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(30.dp))
-
-                        // EMAIL FIELD
-                        Text(
-                            "Email",
-                            color = Color.White.copy(alpha = 0.8f),
-                            fontWeight = FontWeight.SemiBold
-                        )
-
-                        OutlinedTextField(
-                            value = email,
-                            onValueChange = { email = it },
-                            placeholder = { Text("") }, // Updated placeholder
-                            shape = RoundedCornerShape(12.dp),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                            colors = TextFieldDefaults.colors(
-                                unfocusedContainerColor = GreyOrange,
-                                focusedContainerColor = GreyOrange,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                focusedTextColor = Color.Black
-                            ),
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                        )
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        // RESET BUTTON
-                        Box(
-                            modifier = Modifier
-                                .padding(vertical = 8.dp)
-                                .fillMaxWidth()
-                                .background(VividOrange, RoundedCornerShape(25.dp))
-                                .height(45.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Button(
-                                onClick = {
-                                    if (email.isEmpty()) {
-                                        Toast.makeText(context, "Please enter your email", Toast.LENGTH_SHORT).show()
-                                        return@Button
-                                    }
-
-                                    // Send reset email
-                                    userViewModel.forgotPassword(email) { success, message ->
-                                        if (success) {
-                                            Toast.makeText(
-                                                context,
-                                                "Reset email sent to $email. Check your inbox.",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                            activity?.finish() // optional: go back to login
-                                        } else {
-                                            Toast.makeText(context, "Error: $message", Toast.LENGTH_LONG).show()
-                                        }
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                                shape = RoundedCornerShape(20.dp),
-                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Text(
-                                    "Reset",
-                                    color = Color.White,
-                                    fontSize = 25.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            buildAnnotatedString {
-                                append("Back To ")
-                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                                    append("Login")
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    val intent = Intent(context,
-                                        LoginActivity::class.java)
-                                    context.startActivity(intent)
-                                }
-                            ,color = Color.White,
-                            fontSize = 14.sp,
-                            textAlign = TextAlign.Center)
-                    }
-                }
             }
+
+            Spacer(modifier = Modifier.height(15.dp))
+
+            // Back to Login Link
+            Text(
+                buildAnnotatedString {
+                    append("Back to ")
+                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append("Login")
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        context.startActivity(Intent(context, LoginActivity::class.java))
+                        activity?.finish()
+                    },
+                color = Color.White,
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center
+            )
         }
+
+        Spacer(modifier = Modifier.height(20.dp))
     }
-}
-@Preview
-@Composable
-fun ResetPasswordPreview() {
-    PetPointResetPasswordUI()
 }

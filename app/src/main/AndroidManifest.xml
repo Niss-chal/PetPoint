@@ -36,7 +36,7 @@
 
         </activity>
         <activity
-            android:name=".view.FrontpageActivity"
+            android:name=".view.PetPoint"
             android:exported="true"
             android:label="@string/title_activity_frontpage"
             android:theme="@style/Theme.PetPoint">

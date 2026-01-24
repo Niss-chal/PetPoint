@@ -33,7 +33,7 @@ import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.VividAzure
 import kotlinx.coroutines.delay
 
-class FrontpageActivity : ComponentActivity() {
+class PetPoint : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
