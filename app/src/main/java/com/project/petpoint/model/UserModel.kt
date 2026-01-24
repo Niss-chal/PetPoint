@@ -7,7 +7,7 @@ data class UserModel(
     var email: String = "",
     var phonenumber: String = "",
     var role: String = "buyer",
-    var profileImage: String = ""
+    var profileImage: String? = ""
 ) {
     fun toMap(): Map<String, Any?> {
         return mapOf(

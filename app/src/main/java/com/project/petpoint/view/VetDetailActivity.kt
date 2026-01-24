@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.model.VetModel
 import com.project.petpoint.repository.VetRepoImpl
+import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
 import com.project.petpoint.viewmodel.VetViewModel
@@ -82,7 +83,7 @@ fun VetDetailScreen(vetId: String) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color(0xFFE3F2FD))
+                .background(Azure)
         ) {
             when {
                 isLoading -> {
