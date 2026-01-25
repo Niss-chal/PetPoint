@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -214,11 +215,11 @@ fun CartItemCard(
                         contentDescription = cartItem.name,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
-                        error = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_report_image)
+                        error = painterResource(id = android.R.drawable.ic_menu_report_image)
                     )
                 } else {
                     Icon(
-                        painter = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_gallery),
+                        painter = painterResource(id = android.R.drawable.ic_menu_gallery),
                         contentDescription = "No Image",
                         tint = Color.Gray,
                         modifier = Modifier.size(32.dp)

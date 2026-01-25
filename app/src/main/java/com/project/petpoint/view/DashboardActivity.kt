@@ -1,7 +1,6 @@
 package com.project.petpoint.view
 
 import ShopScreen
-import android.R.attr.onClick
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
@@ -135,7 +134,7 @@ fun DashboardBody() {
                 0-> ShopScreen()
                 1-> VetScreen()
                 2-> LostAndFoundScreen()
-                3-> ProfileScreen()
+                3-> UserProfileScreen()
                 else -> ShopScreen()
             }
         }

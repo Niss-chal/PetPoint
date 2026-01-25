@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.petpoint.model.VetModel
 import com.project.petpoint.repository.VetRepoImpl
+import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.viewmodel.VetViewModel
 
 @Composable
@@ -49,7 +50,7 @@ fun VetScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFE3F2FD)) // Light blue
+            .background(Azure)
             .padding(16.dp)
     ) {
         OutlinedTextField(

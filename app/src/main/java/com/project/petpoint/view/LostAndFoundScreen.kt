@@ -26,12 +26,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.model.LostFoundModel
 import com.project.petpoint.repository.LostFoundRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
+import com.project.petpoint.view.ui.theme.Davygrey
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
 import com.project.petpoint.viewmodel.LostFoundViewModel
@@ -45,12 +45,17 @@ fun LostAndFoundScreen() {
     val reports by viewModel.filteredReports.observeAsState(initial = emptyList())
     val loading by viewModel.loading.observeAsState(initial = false)
     val searchQuery by viewModel.searchQuery.observeAsState(initial = "")
+    val message by viewModel.message.observeAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.message.observeForever { msg ->
-            if (msg?.contains("hidden", ignoreCase = true) == true) {
-                viewModel.refreshPublicReports()
-            }
+        viewModel.checkAdminStatus()
+        viewModel.getAllReports()
+    }
+
+    LaunchedEffect(message) {
+        message?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearMessage()
         }
     }
 
@@ -89,7 +94,7 @@ fun LostAndFoundScreen() {
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChange(it) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Search lost & found items...") },
+                placeholder = { Text("Search lost & found pets...") },
                 leadingIcon = { Icon(Icons.Default.Search, null) },
                 shape = RoundedCornerShape(12.dp),
                 colors = TextFieldDefaults.colors(
@@ -122,6 +127,11 @@ fun LostAndFoundScreen() {
                     onClick = { viewModel.setFilterType("Found") },
                     label = { Text("Found") }
                 )
+                FilterChip(
+                    selected = viewModel.filterType.value == "Rescued",
+                    onClick = { viewModel.setFilterType("Rescued") },
+                    label = { Text("Rescued") }
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -146,7 +156,7 @@ fun LostAndFoundScreen() {
                             fontSize = 16.sp
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        TextButton(onClick = { viewModel.refreshPublicReports() }) {  // ← Fixed: use correct method
+                        TextButton(onClick = { viewModel.refreshReports() }) {
                             Text("Refresh", color = VividAzure)
                         }
                     }
@@ -180,7 +190,6 @@ fun LostAndFoundScreen() {
     }
 }
 
-// LostFoundUserCard remains the same...
 @Composable
 fun LostFoundUserCard(
     item: LostFoundModel,
@@ -255,7 +264,7 @@ fun LostFoundUserCard(
             Text(
                 text = "Reported by ${item.reportedByName ?: "Anonymous"}",
                 fontSize = 12.sp,
-                color = Color(0xFF555555),
+                color = Davygrey,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
