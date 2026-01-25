@@ -112,7 +112,7 @@ fun ShopScreen() {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = VividAzure)
             }
-        } else if (productsToDisplay.isEmpty()) {
+        } else if (productsToDisplay!!.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
                     text = if (searchQuery.isEmpty()) "No products available" else "No products found",
