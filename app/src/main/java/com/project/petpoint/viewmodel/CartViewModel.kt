@@ -25,7 +25,7 @@ class CartViewModel(private val repo: CartRepo) : ViewModel() {
     val totalItems: LiveData<Int> get() = _totalItems
 
     fun addToCart(product: ProductModel?, userId: String, quantity: Int = 1, callback: (Boolean, String) -> Unit) {
-        if (product.stock <= 0) {
+        if (product!!.stock <= 0) {
             _message.postValue("${product.name} is out of stock")
             callback(false, "${product.name} is out of stock")
             return
