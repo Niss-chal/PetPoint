@@ -60,7 +60,7 @@ fun ShopScreen() {
     val productsToDisplay = if (selectedCategory == "All") {
         filteredProducts
     } else {
-        filteredProducts.filter { it.categoryId == selectedCategory }
+        filteredProducts!!.filter { it.categoryId == selectedCategory }
     }
 
     Column(
@@ -107,7 +107,7 @@ fun ShopScreen() {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = VividAzure)
             }
-        } else if (productsToDisplay.isEmpty()) {
+        } else if (productsToDisplay!!.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
                     text = if (searchQuery.isEmpty()) "No products available" else "No products found",
@@ -210,7 +210,7 @@ fun UserProductCard(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Orange)
             ) {
-                Text("Add Details", color = White, fontSize = 12.sp)
+                Text("View Details", color = White, fontSize = 12.sp)
             }
         }
     }
