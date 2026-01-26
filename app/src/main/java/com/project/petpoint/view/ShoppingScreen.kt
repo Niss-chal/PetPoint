@@ -26,12 +26,9 @@ import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.R
 import com.project.petpoint.model.ProductModel
-import com.project.petpoint.repository.CartRepoImpl
 import com.project.petpoint.repository.ProductRepoImpl
 import com.project.petpoint.view.ProductDetailActivity
-import com.project.petpoint.viewmodel.CartViewModel
 import com.project.petpoint.viewmodel.ProductViewModel
-import com.project.petpoint.ui.theme.Black
 import com.project.petpoint.view.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,7 +36,6 @@ import com.project.petpoint.view.ui.theme.*
 fun ShopScreen() {
 
     val viewModel = remember { ProductViewModel(ProductRepoImpl()) }
-    val cartViewModel = remember { CartViewModel(CartRepoImpl()) }
     val context = LocalContext.current
 
     val searchQuery by viewModel.searchQuery.observeAsState("")
@@ -48,7 +44,6 @@ fun ShopScreen() {
     val message by viewModel.message.observeAsState()
 
     var selectedCategory by remember { mutableStateOf("All") }
-    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     LaunchedEffect(Unit) {
         viewModel.getAllProduct()
@@ -65,7 +60,7 @@ fun ShopScreen() {
     val productsToDisplay = if (selectedCategory == "All") {
         filteredProducts
     } else {
-        filteredProducts?.filter { it.categoryId == selectedCategory }
+        filteredProducts.filter { it.categoryId == selectedCategory }
     }
 
     Column(
@@ -112,7 +107,7 @@ fun ShopScreen() {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = VividAzure)
             }
-        } else if (productsToDisplay!!.isEmpty()) {
+        } else if (productsToDisplay.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
                     text = if (searchQuery.isEmpty()) "No products available" else "No products found",
@@ -128,17 +123,13 @@ fun ShopScreen() {
             ) {
                 items(productsToDisplay.size) { index ->
                     val product = productsToDisplay[index]
+
                     UserProductCard(
                         product = product,
                         onClick = {
                             val intent = Intent(context, ProductDetailActivity::class.java)
                             intent.putExtra("productId", product.productId)
                             context.startActivity(intent)
-                        },
-                        onAddToCart = {
-                            cartViewModel.addToCart(product, userId) { _, msg ->
-                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                            }
                         }
                     )
                 }
@@ -150,8 +141,7 @@ fun ShopScreen() {
 @Composable
 fun UserProductCard(
     product: ProductModel,
-    onClick: () -> Unit,
-    onAddToCart: () -> Unit
+    onClick: () -> Unit
 ) {
     val isInStock = product.stock > 0
 
@@ -215,12 +205,12 @@ fun UserProductCard(
             Spacer(modifier = Modifier.height(6.dp))
 
             Button(
-                onClick = onAddToCart,
+                onClick = onClick,
                 enabled = isInStock,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Orange)
             ) {
-                Text("Add to Cart", color = White, fontSize = 12.sp)
+                Text("Add Details", color = White, fontSize = 12.sp)
             }
         }
     }
