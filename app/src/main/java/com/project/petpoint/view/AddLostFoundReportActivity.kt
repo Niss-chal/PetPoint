@@ -11,7 +11,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
@@ -20,10 +24,14 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -77,6 +85,9 @@ fun AddLostFoundReportScreen(
 
     val context = LocalContext.current
     val activity = context as? Activity
+
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val listState = rememberLazyListState()
 
     val currentUser = FirebaseAuth.getInstance().currentUser
 
@@ -164,17 +175,24 @@ fun AddLostFoundReportScreen(
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Azure
-                )
+                ),
+                scrollBehavior = scrollBehavior
             )
         },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .imePadding() // Handles keyboard insets
     ) { innerPadding ->
 
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .background(Azure)
                 .padding(innerPadding)
+                .imePadding(), // Additional keyboard padding
+            contentPadding = PaddingValues(bottom = 16.dp)
         ) {
             item {
                 Spacer(modifier = Modifier.height(40.dp))
@@ -220,7 +238,8 @@ fun AddLostFoundReportScreen(
                             onValueChange = { title = it },
                             placeholder = { Text("e.g. Lost Golden Retriever") },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
 
                         Spacer(Modifier.height(20.dp))
@@ -244,7 +263,8 @@ fun AddLostFoundReportScreen(
                             onValueChange = { location = it },
                             placeholder = { Text("e.g. Thamel, Kathmandu") },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
 
                         Spacer(Modifier.height(20.dp))
@@ -257,6 +277,7 @@ fun AddLostFoundReportScreen(
                             placeholder = { Text("Details about the pet/item...") },
                             modifier = Modifier.fillMaxWidth().height(140.dp),
                             shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                             maxLines = 6
                         )
 
@@ -269,7 +290,8 @@ fun AddLostFoundReportScreen(
                             onValueChange = { contactInfo = it },
                             placeholder = { Text("Phone / WhatsApp / Email") },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
 
                         Spacer(Modifier.height(28.dp))
@@ -288,21 +310,28 @@ fun AddLostFoundReportScreen(
                         modifier = Modifier
                             .size(160.dp)
                             .clickable(onClick = onPickImage)
-                            .background(Color.LightGray, RoundedCornerShape(12.dp)),
+                            .background(Color.LightGray, RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(12.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         if (selectedImageUri != null) {
                             AsyncImage(
                                 model = selectedImageUri,
                                 contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(4.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
                                 contentScale = ContentScale.Crop
                             )
                         } else if (existingImageUrl.isNotBlank()) {
                             AsyncImage(
                                 model = existingImageUrl,
                                 contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(4.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
                                 contentScale = ContentScale.Crop
                             )
                         } else {

@@ -1,35 +1,48 @@
 import android.content.Intent
 import android.widget.Toast
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.LocalOffer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.R
 import com.project.petpoint.model.ProductModel
 import com.project.petpoint.repository.ProductRepoImpl
 import com.project.petpoint.view.ProductDetailActivity
 import com.project.petpoint.viewmodel.ProductViewModel
 import com.project.petpoint.view.ui.theme.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,78 +73,225 @@ fun ShopScreen() {
     val productsToDisplay = if (selectedCategory == "All") {
         filteredProducts
     } else {
-        filteredProducts!!.filter { it.categoryId == selectedCategory }
+        filteredProducts?.filter { it.categoryId == selectedCategory }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Azure)
-            .padding(16.dp)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Azure,
+                        White
+                    )
+                )
+            )
     ) {
-
-        // Search
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { viewModel.onSearchQueryChange(it) },
+        // Header Section
+        Surface(
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search products") },
-            leadingIcon = { Icon(Icons.Default.Search, null) },
-            shape = RoundedCornerShape(12.dp),
-            singleLine = true
-        )
+            color = VividAzure,
+            shadowElevation = 4.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+            ) {
+                // Title
+                Text(
+                    text = "Shop",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = White
+                )
 
-        Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Find everything for your pets",
+                    fontSize = 14.sp,
+                    color = White.copy(alpha = 0.9f),
+                    modifier = Modifier.padding(top = 4.dp)
+                )
 
-        // Categories
-        LazyRow {
-            items(categories.size) { index ->
-                val category = categories[index]
-                Button(
-                    onClick = { selectedCategory = category },
-                    shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedCategory == category) VividAzure else White,
-                        contentColor = if (selectedCategory == category) White else Black
-                    ),
-                    modifier = Modifier.padding(end = 6.dp)
-                ) {
-                    Text(category, fontSize = 12.sp)
-                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Enhanced Search Bar
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { viewModel.onSearchQueryChange(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(2.dp, RoundedCornerShape(16.dp)),
+                    placeholder = {
+                        Text(
+                            "Search products...",
+                            color = Color.Gray.copy(alpha = 0.6f)
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = null,
+                            tint = VividAzure
+                        )
+                    },
+                    shape = RoundedCornerShape(16.dp),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = White,
+                        unfocusedContainerColor = White,
+                        disabledContainerColor = White,
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                    )
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        if (loading) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = VividAzure)
-            }
-        } else if (productsToDisplay!!.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        // Categories Section with Animation
+        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = if (searchQuery.isEmpty()) "No products available" else "No products found",
-                    color = Color.Gray
+                    text = "Categories",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Black
                 )
+
+                AnimatedVisibility(visible = selectedCategory != "All") {
+                    TextButton(onClick = { selectedCategory = "All" }) {
+                        Text(
+                            "Clear",
+                            color = VividAzure,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(categories) { category ->
+                CategoryChip(
+                    category = category,
+                    isSelected = selectedCategory == category,
+                    onClick = { selectedCategory = category }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Products Section
+        if (loading) {
+            Box(
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(
+                        color = VividAzure,
+                        strokeWidth = 3.dp,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Loading products...",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        } else if (productsToDisplay.isNullOrEmpty()) {
+            Box(
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(32.dp)
+                ) {
+                    Icon(
+                        Icons.Outlined.Inventory2,
+                        contentDescription = null,
+                        modifier = Modifier.size(80.dp),
+                        tint = Color.Gray.copy(alpha = 0.5f)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = if (searchQuery.isEmpty()) "No products available" else "No products found",
+                        color = Color.Gray,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center
+                    )
+                    if (searchQuery.isNotEmpty()) {
+                        Text(
+                            text = "Try adjusting your search",
+                            color = Color.Gray.copy(alpha = 0.7f),
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
             }
         } else {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(productsToDisplay.size) { index ->
                     val product = productsToDisplay[index]
 
-                    UserProductCard(
-                        product = product,
-                        onClick = {
-                            val intent = Intent(context, ProductDetailActivity::class.java)
-                            intent.putExtra("productId", product.productId)
-                            context.startActivity(intent)
-                        }
-                    )
+                    // Add staggered animation
+                    val visible = remember { mutableStateOf(false) }
+                    LaunchedEffect(Unit) {
+                        kotlinx.coroutines.delay(index * 50L)
+                        visible.value = true
+                    }
+
+                    AnimatedVisibility(
+                        visible = visible.value,
+                        enter = fadeIn() + slideInVertically(
+                            initialOffsetY = { it / 2 }
+                        )
+                    ) {
+                        ImprovedProductCard(
+                            product = product,
+                            onClick = {
+                                val intent = Intent(context, ProductDetailActivity::class.java)
+                                intent.putExtra("productId", product.productId)
+                                context.startActivity(intent)
+                            }
+                        )
+                    }
+                }
+
+                // Add bottom spacing
+                item {
+                    Spacer(modifier = Modifier.height(80.dp))
+                }
+                item {
+                    Spacer(modifier = Modifier.height(80.dp))
                 }
             }
         }
@@ -139,78 +299,264 @@ fun ShopScreen() {
 }
 
 @Composable
-fun UserProductCard(
+fun CategoryChip(
+    category: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val animatedScale by animateFloatAsState(
+        targetValue = if (isSelected) 1.05f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "scale"
+    )
+
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(20.dp),
+        color = if (isSelected) VividAzure else White,
+        shadowElevation = if (isSelected) 4.dp else 1.dp,
+        modifier = Modifier
+            .scale(animatedScale)
+    ) {
+        Text(
+            text = category,
+            fontSize = 13.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            color = if (isSelected) White else Color(0xFF1a1a1a),
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+        )
+    }
+}
+
+@Composable
+fun ImprovedProductCard(
     product: ProductModel,
     onClick: () -> Unit
 ) {
     val isInStock = product.stock > 0
+    val isLowStock = product.stock in 1..5
+
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "press scale"
+    )
 
     Card(
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(4.dp),
+            .scale(scale)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
+                isPressed = true
+                onClick()
+                kotlinx.coroutines.MainScope().launch {
+                    kotlinx.coroutines.delay(100)
+                    isPressed = false
+                }
+            },
+        elevation = CardDefaults.cardElevation(6.dp),
         colors = CardDefaults.cardColors(containerColor = White)
     ) {
-        Column(modifier = Modifier.padding(8.dp)) {
-
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Image Section with Badges
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
-                    .background(Color.LightGray),
-                contentAlignment = Alignment.Center
+                    .height(140.dp)
             ) {
                 if (product.imageUrl.isNotEmpty()) {
                     AsyncImage(
                         model = product.imageUrl,
                         contentDescription = product.name,
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
                         contentScale = ContentScale.Crop,
                         error = painterResource(R.drawable.image)
                     )
                 } else {
-                    Icon(
-                        painter = painterResource(id = android.R.drawable.ic_menu_gallery),
-                        contentDescription = null,
-                        tint = Color.Gray,
-                        modifier = Modifier.size(40.dp)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                            .background(Color(0xFFE0E0E0)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = android.R.drawable.ic_menu_gallery),
+                            contentDescription = null,
+                            tint = Color.Gray,
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
+                }
+
+                // Gradient overlay
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.2f)
+                                )
+                            )
+                        )
+                )
+
+                // Low Stock Badge
+                if (isLowStock) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        color = Orange.copy(alpha = 0.95f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Outlined.LocalOffer,
+                                contentDescription = null,
+                                modifier = Modifier.size(12.dp),
+                                tint = White
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Only ${product.stock} left",
+                                color = White,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                // Out of Stock Overlay
+                if (!isInStock) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color.Red.copy(alpha = 0.9f)
+                        ) {
+                            Text(
+                                text = "OUT OF STOCK",
+                                color = White,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = product.name,
-                fontWeight = FontWeight.Bold,
-                fontSize = 13.sp,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Text(
-                text = "Rs. ${product.price}",
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
-            )
-
-            Text(
-                text = if (isInStock) "In Stock" else "Out of Stock",
-                color = if (isInStock) Green else Color.Red,
-                fontSize = 11.sp
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Button(
-                onClick = onClick,
-                enabled = isInStock,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Orange)
+            // Product Info Section
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
             ) {
-                Text("View Details", color = White, fontSize = 12.sp)
+                Text(
+                    text = product.name,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    color = Color(0xFF1a1a1a),
+                    lineHeight = 18.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Rs. ${product.price}",
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 16.sp,
+                        color = VividAzure
+                    )
+
+                    if (isInStock) {
+                        Surface(
+                            shape = CircleShape,
+                            color = if (isLowStock)
+                                Orange.copy(alpha = 0.15f)
+                            else
+                                Green.copy(alpha = 0.15f)
+                        ) {
+                            Text(
+                                text = if (isLowStock) "Low" else "Stock",
+                                color = if (isLowStock) Orange else Green,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // View Details Button
+                Button(
+                    onClick = onClick,
+                    enabled = isInStock,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(36.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = VividAzure,
+                        disabledContainerColor = Color.Gray.copy(alpha = 0.3f)
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 2.dp,
+                        pressedElevation = 4.dp
+                    )
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.ShoppingCart,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = White
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (isInStock) "View Details" else "Unavailable",
+                            color = White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
     }
