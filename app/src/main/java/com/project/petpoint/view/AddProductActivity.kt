@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -55,9 +56,7 @@ fun AddProductScreen() {
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        selectedImageUri = uri
-    }
+    ) { uri: Uri? -> selectedImageUri = uri }
 
     AddProduct(
         selectedImageUri = selectedImageUri,
@@ -93,7 +92,8 @@ fun AddProduct(
                     Text(
                         text = "Add Product",
                         fontWeight = FontWeight.Bold,
-                        color = Black
+                        color = Black,
+                        modifier = Modifier.testTag("AddProductTitle")
                     )
                 },
                 navigationIcon = {
@@ -141,7 +141,9 @@ fun AddProduct(
                             value = productName,
                             onValueChange = { productName = it },
                             placeholder = { Text("Enter product name") },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("ProductNameInput"),
                             shape = RoundedCornerShape(12.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
@@ -154,7 +156,9 @@ fun AddProduct(
                             value = productPrice,
                             onValueChange = { productPrice = it },
                             placeholder = { Text("Enter price") },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("ProductPriceInput"),
                             shape = RoundedCornerShape(12.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                         )
@@ -167,7 +171,9 @@ fun AddProduct(
                             value = productDescription,
                             onValueChange = { productDescription = it },
                             placeholder = { Text("Enter description") },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("ProductDescriptionInput"),
                             shape = RoundedCornerShape(12.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
@@ -186,7 +192,8 @@ fun AddProduct(
                                 readOnly = true,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .menuAnchor(),
+                                    .menuAnchor()
+                                    .testTag("CategoryDropdown"),
                                 trailingIcon = {
                                     ExposedDropdownMenuDefaults.TrailingIcon(expanded)
                                 },
@@ -220,7 +227,9 @@ fun AddProduct(
                             value = productStock,
                             onValueChange = { productStock = it },
                             placeholder = { Text("Enter stock quantity") },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("ProductStockInput"),
                             shape = RoundedCornerShape(12.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                         )
@@ -251,8 +260,7 @@ fun AddProduct(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(4.dp)
-                                .clip(RoundedCornerShape(12.dp)),
-                            contentScale = ContentScale.Crop
+                                .clip(RoundedCornerShape(12.dp))
                         )
                     } else {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -304,7 +312,8 @@ fun AddProduct(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(56.dp)
+                        .testTag("AddProductButton"),
                     colors = ButtonDefaults.buttonColors(containerColor = Orange),
                     shape = RoundedCornerShape(16.dp)
                 ) {
