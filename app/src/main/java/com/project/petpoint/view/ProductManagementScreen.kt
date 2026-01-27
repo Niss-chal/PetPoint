@@ -212,7 +212,7 @@ fun ProductManagementScreen() {
                     items(allProducts.value?.size ?: 0) { index ->
                         val data = allProducts.value!![index]
                         val (status, statusColor) = when {
-                            data.stock <= 0 -> "Out of Stock" to Color(0xFFdc2626)
+                            data.stock <= 0 -> "Out of Stock" to crimson
                             data.stock < 10 -> "Low Stock" to Orange
                             else -> "Available" to Green
                         }
@@ -398,7 +398,7 @@ private fun ProductEditDialog(
                             "Update Product",
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1a1a1a)
+                            color = Black
                         )
                     }
                 }
@@ -526,7 +526,7 @@ private fun ProductEditDialog(
                             "Product Image",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF666666)
+                            color = Davygrey
                         )
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -540,7 +540,7 @@ private fun ProductEditDialog(
                                     color = VividAzure.copy(alpha = 0.3f),
                                     shape = RoundedCornerShape(12.dp)
                                 )
-                                .background(Color(0xFFF5F5F5))
+                                .background(IceWhite)
                                 .clickable { onPickImage() },
                             contentAlignment = Alignment.Center
                         ) {
@@ -701,7 +701,7 @@ fun ProductCard(
                             name,
                             fontWeight = FontWeight.Bold,
                             fontSize = 17.sp,
-                            color = Color(0xFF1a1a1a)
+                            color = Black
                         )
                         Text(
                             "Rs. $price",
@@ -731,7 +731,7 @@ fun ProductCard(
                 Text(
                     text = description,
                     fontSize = 14.sp,
-                    color = Color(0xFF666666),
+                    color = Davygrey,
                     lineHeight = 20.sp
                 )
             }
@@ -756,7 +756,7 @@ fun ProductCard(
                     Text(
                         "Stock: $stock units",
                         fontSize = 14.sp,
-                        color = Color(0xFF666666)
+                        color = Davygrey
                     )
                 }
 
@@ -813,7 +813,7 @@ fun ProductCard(
                     onClick = onDelete,
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFdc2626)
+                        containerColor = crimson
                     ),
                     shape = RoundedCornerShape(10.dp)
                 ) {

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.LocalOffer
+import androidx.compose.material.icons.outlined.ShoppingBasket
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -42,6 +43,7 @@ import com.project.petpoint.repository.ProductRepoImpl
 import com.project.petpoint.view.ProductDetailActivity
 import com.project.petpoint.viewmodel.ProductViewModel
 import com.project.petpoint.view.ui.theme.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,23 +60,34 @@ fun ShopScreen() {
 
     var selectedCategory by remember { mutableStateOf("All") }
 
+    // Initial load
     LaunchedEffect(Unit) {
         viewModel.getAllProduct()
     }
 
+    LaunchedEffect(selectedCategory) {
+        viewModel.filterByCategory(selectedCategory)
+    }
+
+    // Re-filter when search query changes
+    LaunchedEffect(searchQuery) {
+        viewModel.onSearchQueryChange(searchQuery)
+    }
+
     LaunchedEffect(message) {
         message?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            // Only show actual error messages, not empty state messages
+            if (!it.contains("No products")) {
+                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            }
+            viewModel.clearMessage()
         }
     }
 
     val categories = listOf("All", "Food", "Toys", "Accessories", "Clothes", "Medicine", "Other")
 
-    val productsToDisplay = if (selectedCategory == "All") {
-        filteredProducts
-    } else {
-        filteredProducts?.filter { it.categoryId == selectedCategory }
-    }
+    // Use filteredProducts directly since category filtering happens in ViewModel
+    val productsToDisplay = filteredProducts
 
     Column(
         modifier = Modifier
@@ -99,24 +112,44 @@ fun ShopScreen() {
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 16.dp)
             ) {
-                // Title
-                Text(
-                    text = "Shop",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = White
-                )
+                // Title with Icon
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = White.copy(alpha = 0.2f),
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            Icons.Outlined.ShoppingBasket,
+                            contentDescription = null,
+                            tint = White,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
 
-                Text(
-                    text = "Find everything for your pets",
-                    fontSize = 14.sp,
-                    color = White.copy(alpha = 0.9f),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column {
+                        Text(
+                            text = "Shop",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = White
+                        )
+
+                        Text(
+                            text = "Find everything for your pets",
+                            fontSize = 14.sp,
+                            color = White.copy(alpha = 0.9f)
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Enhanced Search Bar
+                //Search Bar
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.onSearchQueryChange(it) },
@@ -217,7 +250,7 @@ fun ShopScreen() {
                     )
                 }
             }
-        } else if (productsToDisplay.isNullOrEmpty()) {
+        } else if (productsToDisplay.isEmpty()) {
             Box(
                 Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -234,15 +267,21 @@ fun ShopScreen() {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = if (searchQuery.isEmpty()) "No products available" else "No products found",
+                        text = if (searchQuery.isEmpty() && selectedCategory == "All") {
+                            "No products available"
+                        } else if (searchQuery.isNotEmpty()) {
+                            "No products found for \"$searchQuery\""
+                        } else {
+                            "No products in $selectedCategory category"
+                        },
                         color = Color.Gray,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center
                     )
-                    if (searchQuery.isNotEmpty()) {
+                    if (searchQuery.isNotEmpty() || selectedCategory != "All") {
                         Text(
-                            text = "Try adjusting your search",
+                            text = "Try adjusting your filters",
                             color = Color.Gray.copy(alpha = 0.7f),
                             fontSize = 14.sp,
                             textAlign = TextAlign.Center,
@@ -265,7 +304,7 @@ fun ShopScreen() {
                     // Add staggered animation
                     val visible = remember { mutableStateOf(false) }
                     LaunchedEffect(Unit) {
-                        kotlinx.coroutines.delay(index * 50L)
+                        delay(index * 50L)
                         visible.value = true
                     }
 
@@ -275,7 +314,7 @@ fun ShopScreen() {
                             initialOffsetY = { it / 2 }
                         )
                     ) {
-                        ImprovedProductCard(
+                        ProductCard(
                             product = product,
                             onClick = {
                                 val intent = Intent(context, ProductDetailActivity::class.java)
@@ -325,14 +364,14 @@ fun CategoryChip(
             text = category,
             fontSize = 13.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-            color = if (isSelected) White else Color(0xFF1a1a1a),
+            color = if (isSelected) White else Black,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
         )
     }
 }
 
 @Composable
-fun ImprovedProductCard(
+fun ProductCard(
     product: ProductModel,
     onClick: () -> Unit
 ) {
@@ -349,6 +388,7 @@ fun ImprovedProductCard(
         label = "press scale"
     )
 
+    val coroutineScope = rememberCoroutineScope()
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
@@ -360,14 +400,15 @@ fun ImprovedProductCard(
             ) {
                 isPressed = true
                 onClick()
-                kotlinx.coroutines.MainScope().launch {
-                    kotlinx.coroutines.delay(100)
+
+                coroutineScope.launch {
+                    delay(100)
                     isPressed = false
                 }
             },
         elevation = CardDefaults.cardElevation(6.dp),
         colors = CardDefaults.cardColors(containerColor = White)
-    ) {
+    ){
         Column(modifier = Modifier.fillMaxWidth()) {
             // Image Section with Badges
             Box(
@@ -390,7 +431,7 @@ fun ImprovedProductCard(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                            .background(Color(0xFFE0E0E0)),
+                            .background(IceWhite),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -482,7 +523,7 @@ fun ImprovedProductCard(
                     fontSize = 14.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    color = Color(0xFF1a1a1a),
+                    color = Black,
                     lineHeight = 18.sp
                 )
 

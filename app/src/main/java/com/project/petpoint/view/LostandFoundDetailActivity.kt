@@ -7,7 +7,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -309,7 +308,7 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                     text = item!!.title,
                                     fontSize = 26.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1a1a1a),
+                                    color = Black,
                                     lineHeight = 32.sp
                                 )
                             }
@@ -331,7 +330,7 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                     text = "Details",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1a1a1a)
+                                    color = Black
                                 )
 
                                 Spacer(modifier = Modifier.height(16.dp))
@@ -399,7 +398,7 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                     text = "Description",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1a1a1a)
+                                    color = Black
                                 )
 
                                 Spacer(modifier = Modifier.height(12.dp))

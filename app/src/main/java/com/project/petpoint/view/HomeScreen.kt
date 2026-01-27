@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -123,13 +122,13 @@ fun HomeScreen() {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFfee2e2)
+                            containerColor = IceWhite
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
                             text = "⚠️ $error",
-                            color = Color(0xFFdc2626),
+                            color = crimson,
                             modifier = Modifier.padding(16.dp),
                             fontSize = 14.sp
                         )
@@ -142,7 +141,7 @@ fun HomeScreen() {
                     text = "Quick Stats",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1a1a1a)
+                    color = Black
                 )
             }
 
@@ -157,11 +156,11 @@ fun HomeScreen() {
                     visible = visible,
                     enter = fadeIn() + slideInVertically(initialOffsetY = { it / 3 })
                 ) {
-                    ImprovedCardItem(
+                    CardItem(
                         title = "Total Products",
                         count = totalProducts.toString(),
                         image = painterResource(id = R.drawable.greenbox),
-                        backgroundColor = Color(0xFF10b981),
+                        backgroundColor = limegreen,
                         delay = 0
                     )
                 }
@@ -178,11 +177,11 @@ fun HomeScreen() {
                     visible = visible,
                     enter = fadeIn() + slideInVertically(initialOffsetY = { it / 3 })
                 ) {
-                    ImprovedCardItem(
+                    CardItem(
                         title = "Active Doctors",
                         count = activeDoctors.toString(),
                         image = painterResource(id = R.drawable.doctor),
-                        backgroundColor = Color(0xFF3b82f6),
+                        backgroundColor = Blue,
                         delay = 50
                     )
                 }
@@ -199,11 +198,11 @@ fun HomeScreen() {
                     visible = visible,
                     enter = fadeIn() + slideInVertically(initialOffsetY = { it / 3 })
                 ) {
-                    ImprovedCardItem(
+                    CardItem(
                         title = "Lost & Found Pets",
                         count = lostFoundPets.toString(),
                         image = painterResource(id = R.drawable.pet),
-                        backgroundColor = Color(0xFFf59e0b),
+                        backgroundColor = VividOrange,
                         delay = 100
                     )
                 }
@@ -229,7 +228,7 @@ fun HomeScreen() {
 }
 
 @Composable
-fun ImprovedCardItem(
+fun CardItem(
     title: String,
     count: String,
     image: Painter,
@@ -278,7 +277,7 @@ fun ImprovedCardItem(
                         text = title,
                         fontWeight = FontWeight.Medium,
                         fontSize = 15.sp,
-                        color = Color(0xFF666666)
+                        color = Davygrey
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -339,7 +338,7 @@ fun RecentActivitiesCard(
                     text = "Recent Activities",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = Color(0xFF1a1a1a)
+                    color = Black
                 )
             }
 
@@ -416,7 +415,7 @@ fun ReportActivityItem(report: LostFoundModel) {
     val isLost = report.type == "Lost"
     ActivityItemCard(
         icon = if (isLost) Icons.Default.Search else Icons.Default.Pets,
-        iconColor = if (isLost) Color(0xFFdc2626) else Color(0xFF16a34a),
+        iconColor = if (isLost) crimson else lightgreen,
         title = report.title,
         subtitle = "${report.type} Pet",
         additionalInfo = report.location,
@@ -436,7 +435,7 @@ fun ActivityItemCard(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        color = Color(0xFFF8F9FA),
+        color = IceWhite,
         tonalElevation = 1.dp
     ) {
         Row(
@@ -471,12 +470,12 @@ fun ActivityItemCard(
                     fontSize = 14.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = Color(0xFF1a1a1a)
+                    color = Black
                 )
                 Spacer(modifier = Modifier.height(3.dp))
                 Text(
                     text = subtitle,
-                    color = Color(0xFF666666),
+                    color = Davygrey,
                     fontSize = 12.sp
                 )
                 if (additionalInfo.isNotEmpty()) {
@@ -494,7 +493,7 @@ fun ActivityItemCard(
             date?.let {
                 Text(
                     text = it,
-                    color = Color(0xFF999999),
+                    color = greyyy,
                     fontSize = 11.sp,
                     modifier = Modifier.padding(start = 8.dp)
                 )

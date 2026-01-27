@@ -36,6 +36,8 @@ import com.project.petpoint.model.UserModel
 import com.project.petpoint.repository.UserRepoImpl
 import com.project.petpoint.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.Azure
+import com.project.petpoint.view.ui.theme.IceWhite
+import com.project.petpoint.view.ui.theme.limegreen
 import com.project.petpoint.viewmodel.UserViewModel
 
 class EditProfileActivity : ComponentActivity() {
@@ -137,7 +139,7 @@ fun EditProfileBody() {
                 modifier = Modifier
                     .size(110.dp)
                     .clip(CircleShape)
-                    .border(3.dp, Color(0xFF9EC760), CircleShape),
+                    .border(3.dp, limegreen, CircleShape),
                 contentScale = ContentScale.Crop
             )
 
@@ -162,7 +164,7 @@ fun EditProfileBody() {
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
-                .background(Color(0xFFE7F0F3), shape = RoundedCornerShape(20.dp))
+                .background( IceWhite, shape = RoundedCornerShape(20.dp))
                 .padding(20.dp)
         ) {
             // Name Field
@@ -243,10 +245,10 @@ fun EditProfileBody() {
                                         email = email,
                                         address = address,
                                         phonenumber = phone,
-                                        profileImage = imageUrl  // ← INCLUDE THE IMAGE URL HERE
+                                        profileImage = imageUrl
                                     )
 
-                                    // Now update the entire profile including image
+                                    // Update the entire profile including image
                                     userViewModel.updateProfile(id, updatedUser) { success, message ->
                                         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                         if (success) {
@@ -271,7 +273,7 @@ fun EditProfileBody() {
                                 email = email,
                                 address = address,
                                 phonenumber = phone,
-                                profileImage = profileImageUrl  // ← KEEP EXISTING IMAGE URL
+                                profileImage = profileImageUrl
                             )
 
                             userViewModel.updateProfile(id, updatedUser) { success, message ->
