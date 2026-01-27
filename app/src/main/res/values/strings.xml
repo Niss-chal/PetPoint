@@ -15,4 +15,5 @@
     <string name="title_activity_checkout">CheckoutActivity</string>
     <string name="title_activity_lostand_found_detail">LostandFoundDetailActivity</string>
     <string name="title_activity_add_lost_found_report">AddLostFoundReportActivity</string>
+    <string name="title_activity_profile">ProfileActivity</string>
 </resources>
