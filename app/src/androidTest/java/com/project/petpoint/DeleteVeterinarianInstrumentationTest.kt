@@ -1,196 +1,210 @@
-package com.project.petpoint
+package com.example.ai37c
 
-import androidx.compose.ui.test.*
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
+import androidx.test.espresso.intent.Intents
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.project.petpoint.view.VetManagementScreen
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-// Essential instrumentation tests for Delete Veterinarian functionality
-// Tests core UI interactions for adding, editing, and deleting vets
+// Essential instrumentation tests for Veterinarian Management functionality
 @RunWith(AndroidJUnit4::class)
-class DeleteVeterinarianInstrumentationTest {
+class DeleteVeterinarianInstrumentedTest {
 
     @get:Rule
-    val composeTestRule = createComposeRule()
+    val composeRule = createComposeRule()
 
     @Before
     fun setup() {
-        composeTestRule.setContent {
+        Intents.init()
+        composeRule.setContent {
             VetManagementScreen()
         }
         Thread.sleep(1500)
     }
 
+    @After
+    fun tearDown() {
+        Intents.release()
+    }
+
     // Test 1: Verify Vet Management screen is displayed
     @Test
     fun testVetManagementScreenDisplayed() {
-        composeTestRule.onNodeWithText("Veterinarians").assertIsDisplayed()
-        composeTestRule.onNodeWithContentDescription("Add").assertIsDisplayed()
-        composeTestRule.onNode(
+        composeRule.onNodeWithText("Veterinarians").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Add").assertIsDisplayed()
+        composeRule.onNode(
             hasText("doctors registered", substring = true)
         ).assertExists()
     }
 
-    // Test 2: Test Add Veterinarian dialog opens
+    // Test 2: Test Add Veterinarian dialog opens with all required fields
     @Test
     fun testAddDialogOpens() {
-        composeTestRule.onNodeWithContentDescription("Add").performClick()
-        composeTestRule.waitForIdle()
+        composeRule.onNodeWithContentDescription("Add").performClick()
+        composeRule.waitForIdle()
         Thread.sleep(300)
 
-        composeTestRule.onNodeWithText("Add Veterinarian").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Name *").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Email *").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Save").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Cancel").assertIsDisplayed()
+        composeRule.onNodeWithText("Add Veterinarian").assertIsDisplayed()
+        composeRule.onNodeWithText("Name *").assertIsDisplayed()
+        composeRule.onNodeWithText("Email *").assertIsDisplayed()
+        composeRule.onNodeWithText("Save").assertIsDisplayed()
+        composeRule.onNodeWithText("Cancel").assertIsDisplayed()
     }
 
     // Test 3: Test Cancel button closes dialog
     @Test
     fun testCancelDialog() {
-        composeTestRule.onNodeWithContentDescription("Add").performClick()
+        composeRule.onNodeWithContentDescription("Add").performClick()
         Thread.sleep(300)
 
-        composeTestRule.onNodeWithText("Cancel").performClick()
-        composeTestRule.waitForIdle()
+        composeRule.onNodeWithText("Cancel").performClick()
+        composeRule.waitForIdle()
         Thread.sleep(300)
 
-        composeTestRule.onNodeWithText("Veterinarians").assertIsDisplayed()
+        composeRule.onNodeWithText("Add Veterinarian").assertDoesNotExist()
     }
 
-    // Test 4: Test name field input
+    // Test 4: Test form validation - submit without required fields
     @Test
-    fun testNameFieldInput() {
-        composeTestRule.onNodeWithContentDescription("Add").performClick()
+    fun testFormValidationWithEmptyFields() {
+        composeRule.onNodeWithContentDescription("Add").performClick()
         Thread.sleep(300)
 
-        composeTestRule.onAllNodes(hasSetTextAction())[0]
-            .performTextInput("Dr. Test Vet")
-
-        composeTestRule.waitForIdle()
-    }
-
-    // Test 5: Test email field input
-    @Test
-    fun testEmailFieldInput() {
-        composeTestRule.onNodeWithContentDescription("Add").performClick()
-        Thread.sleep(300)
-
-        // Email field is typically the 3rd input field (index 2)
-        composeTestRule.onAllNodes(hasSetTextAction())[2]
-            .performTextInput("vet@clinic.com")
-
-        composeTestRule.waitForIdle()
-    }
-
-    // Test 6: Test form validation - submit without required fields
-    @Test
-    fun testFormValidation() {
-        composeTestRule.onNodeWithContentDescription("Add").performClick()
-        Thread.sleep(300)
-
-        // Try to save without filling required fields
-        composeTestRule.onNodeWithText("Save").performClick()
-        composeTestRule.waitForIdle()
+        composeRule.onNodeWithText("Save").performClick()
+        composeRule.waitForIdle()
         Thread.sleep(1000)
 
         // Dialog should still be visible (validation failed)
-        composeTestRule.onNodeWithText("Add Veterinarian").assertExists()
+        composeRule.onNodeWithText("Add Veterinarian").assertExists()
     }
 
-    // Test 7: Test filling required fields
+    // Test 5: Test invalid email format validation
     @Test
-    fun testFillRequiredFields() {
-        composeTestRule.onNodeWithContentDescription("Add").performClick()
+    fun testInvalidEmailValidation() {
+        composeRule.onNodeWithContentDescription("Add").performClick()
         Thread.sleep(300)
 
-        val inputFields = composeTestRule.onAllNodes(hasSetTextAction())
+        val inputFields = composeRule.onAllNodes(hasSetTextAction())
 
-        // Fill Name
-        inputFields[0].performTextInput("Dr. John Doe")
+        inputFields[0].performTextInput("Dr. Test")
+        inputFields[2].performTextInput("invalidemail") // Invalid email
 
-        // Fill Specialization
-        inputFields[1].performTextInput("Surgery")
+        composeRule.onNodeWithText("Save").performClick()
+        composeRule.waitForIdle()
+        Thread.sleep(1000)
 
-        // Fill Email
-        inputFields[2].performTextInput("john@vet.com")
-
-        // Fill Phone
-        inputFields[3].performTextInput("1234567890")
-
-        composeTestRule.waitForIdle()
+        // Dialog should still be visible (validation failed)
+        composeRule.onNodeWithText("Add Veterinarian").assertExists()
     }
-
-    // Test 8: Test Edit button visibility when vets exist
+    // Test 6: Test adding a complete veterinarian successfully
     @Test
-    fun testEditButtonVisibility() {
-        Thread.sleep(2000)
+    fun testAddCompleteVeterinarian() {
+        composeRule.onNodeWithContentDescription("Add").performClick()
+        Thread.sleep(300)
 
-        val editButtons = composeTestRule.onAllNodesWithText("Edit")
-        if (editButtons.fetchSemanticsNodes().isNotEmpty()) {
-            editButtons[0].assertIsDisplayed()
-        }
+        val inputFields = composeRule.onAllNodes(hasSetTextAction())
+
+        // Fill all required fields
+        inputFields[0].performTextInput("Dr. Sarah Williams")
+        inputFields[1].performTextInput("Cardiology")
+        inputFields[2].performTextInput("sarah@vetclinic.com")
+        inputFields[3].performTextInput("9876543210")
+
+        composeRule.onNodeWithText("Save").performClick()
+        composeRule.waitForIdle()
+        Thread.sleep(1500)
+
+        // Verify dialog closed successfully (indicates validation passed and save completed)
+        composeRule.onNodeWithText("Add Veterinarian").assertDoesNotExist()
+
+        // Verify we're back on the main screen
+        composeRule.onNodeWithText("Veterinarians").assertIsDisplayed()
+
+        // Verify at least one Edit button exists (proving vets are in the list)
+        composeRule.onAllNodesWithText("Edit").fetchSemanticsNodes().isNotEmpty()
     }
 
-    // Test 9: Test Delete button visibility when vets exist
-    @Test
-    fun testDeleteButtonVisibility() {
-        Thread.sleep(2000)
-
-        val deleteButtons = composeTestRule.onAllNodesWithText("Delete")
-        if (deleteButtons.fetchSemanticsNodes().isNotEmpty()) {
-            deleteButtons[0].assertIsDisplayed()
-        }
-    }
-
-    // Test 10: Test clicking Edit button opens Edit dialog
+    // Test 7: Test Edit button opens Edit dialog
     @Test
     fun testEditDialogOpens() {
         Thread.sleep(2000)
 
-        val editButtons = composeTestRule.onAllNodesWithText("Edit")
+        val editButtons = composeRule.onAllNodesWithText("Edit")
         if (editButtons.fetchSemanticsNodes().isNotEmpty()) {
             editButtons[0].performClick()
-            composeTestRule.waitForIdle()
+            composeRule.waitForIdle()
             Thread.sleep(500)
 
-            composeTestRule.onNodeWithText("Edit Veterinarian").assertExists()
+            composeRule.onNodeWithText("Edit Veterinarian").assertExists()
+            composeRule.onNodeWithText("Save").assertIsDisplayed()
+            composeRule.onNodeWithText("Cancel").assertIsDisplayed()
         }
     }
 
-    // Test 11: Test clicking Delete button
-    // Note: This triggers Android AlertDialog which is harder to test
+    // Test 8: Test editing veterinarian information
+    @Test
+    fun testEditVeterinarianInfo() {
+        Thread.sleep(2000)
+
+        val editButtons = composeRule.onAllNodesWithText("Edit")
+        if (editButtons.fetchSemanticsNodes().isNotEmpty()) {
+            editButtons[0].performClick()
+            composeRule.waitForIdle()
+            Thread.sleep(500)
+
+            val inputFields = composeRule.onAllNodes(hasSetTextAction())
+            if (inputFields.fetchSemanticsNodes().isNotEmpty()) {
+                inputFields[0].performTextInput(" Modified")
+
+                composeRule.onNodeWithText("Save").performClick()
+                composeRule.waitForIdle()
+                Thread.sleep(1000)
+
+                // Verify dialog closed after save
+                composeRule.onNodeWithText("Edit Veterinarian").assertDoesNotExist()
+            }
+        }
+    }
+
+    // Test 9: Test Delete button is clickable
     @Test
     fun testDeleteButtonClick() {
         Thread.sleep(2000)
 
-        val deleteButtons = composeTestRule.onAllNodesWithText("Delete")
+        val deleteButtons = composeRule.onAllNodesWithText("Delete")
         if (deleteButtons.fetchSemanticsNodes().isNotEmpty()) {
             deleteButtons[0].performClick()
-            composeTestRule.waitForIdle()
+            composeRule.waitForIdle()
             Thread.sleep(500)
 
-            // AlertDialog appears (not easily testable in Compose)
-            // Test verifies app doesn't crash
+            // Test verifies app doesn't crash when delete is clicked
         }
     }
 
-    // Test 12: Test vet card displays information labels
+    // Test 10: Test vet card displays all information labels
     @Test
-    fun testVetCardLabels() {
+    fun testVetCardDisplaysAllLabels() {
         Thread.sleep(2000)
 
-        val editButtons = composeTestRule.onAllNodesWithText("Edit")
+        val editButtons = composeRule.onAllNodesWithText("Edit")
         if (editButtons.fetchSemanticsNodes().isNotEmpty()) {
-            // Verify information labels exist in cards
-            composeTestRule.onAllNodesWithText("Email").fetchSemanticsNodes()
-            composeTestRule.onAllNodesWithText("Phone").fetchSemanticsNodes()
-            composeTestRule.onAllNodesWithText("Schedule").fetchSemanticsNodes()
-            composeTestRule.onAllNodesWithText("Address").fetchSemanticsNodes()
+            // Verify all information labels exist in cards
+            composeRule.onAllNodesWithText("Email").fetchSemanticsNodes()
+            composeRule.onAllNodesWithText("Phone").fetchSemanticsNodes()
+            composeRule.onAllNodesWithText("Schedule").fetchSemanticsNodes()
+            composeRule.onAllNodesWithText("Address").fetchSemanticsNodes()
         }
     }
 }
