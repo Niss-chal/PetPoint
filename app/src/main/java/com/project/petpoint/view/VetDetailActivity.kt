@@ -6,8 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -242,7 +240,7 @@ fun VetDetailScreen(vetId: String) {
                                     text = vet!!.name,
                                     fontSize = 26.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1a1a1a),
+                                    color = Black,
                                     textAlign = TextAlign.Center
                                 )
 
@@ -278,7 +276,7 @@ fun VetDetailScreen(vetId: String) {
                                     text = "Contact Information",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1a1a1a)
+                                    color = Black
                                 )
 
                                 Spacer(modifier = Modifier.height(16.dp))
@@ -287,7 +285,7 @@ fun VetDetailScreen(vetId: String) {
                                     icon = Icons.Outlined.Email,
                                     label = "Email",
                                     value = vet!!.email,
-                                    color = Color(0xFF4CAF50)
+                                    color = lightgreen
                                 )
 
                                 Spacer(modifier = Modifier.height(12.dp))
@@ -314,7 +312,7 @@ fun VetDetailScreen(vetId: String) {
                                     icon = Icons.Outlined.LocationOn,
                                     label = "Address",
                                     value = vet!!.address,
-                                    color = Color(0xFFE91E63)
+                                    color = Vividpink
                                 )
                             }
                         }
@@ -461,7 +459,7 @@ private fun DetailInfoCard(
                     text = value,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF1a1a1a),
+                    color = Black,
                     lineHeight = 20.sp
                 )
             }

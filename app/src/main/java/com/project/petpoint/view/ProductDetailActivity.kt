@@ -40,9 +40,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.repository.CartRepoImpl
 import com.project.petpoint.repository.ProductRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
+import com.project.petpoint.view.ui.theme.Black
+import com.project.petpoint.view.ui.theme.Davygrey
 import com.project.petpoint.view.ui.theme.Green
 import com.project.petpoint.view.ui.theme.Orange
 import com.project.petpoint.view.ui.theme.VividAzure
+import com.project.petpoint.view.ui.theme.VividOrange
 import com.project.petpoint.view.ui.theme.White
 import com.project.petpoint.viewmodel.CartViewModel
 import com.project.petpoint.viewmodel.ProductViewModel
@@ -316,7 +319,7 @@ fun ProductDescriptionScreen(productId: String) {
                                 text = product!!.name,
                                 fontSize = 26.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1a1a1a)
+                                color = Black
                             )
 
                             Spacer(modifier = Modifier.height(12.dp))
@@ -345,7 +348,7 @@ fun ProductDescriptionScreen(productId: String) {
                             if (isLowStock) {
                                 Card(
                                     colors = CardDefaults.cardColors(
-                                        containerColor = Color(0xFFFFA726).copy(alpha = 0.12f) // Orange
+                                        containerColor = VividOrange.copy(alpha = 0.12f)
                                     ),
                                     shape = RoundedCornerShape(16.dp),
                                     modifier = Modifier.fillMaxWidth()
@@ -444,14 +447,14 @@ fun ProductDescriptionScreen(productId: String) {
                                 text = "Description",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1a1a1a)
+                                color = Black
                             )
 
                             Spacer(modifier = Modifier.height(12.dp))
 
                             Text(
                                 text = product!!.description,
-                                color = Color(0xFF666666),
+                                color = Davygrey,
                                 lineHeight = 24.sp,
                                 fontSize = 15.sp
                             )

@@ -32,8 +32,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.model.LostFoundModel
 import com.project.petpoint.repository.LostFoundRepoImpl
 import com.project.petpoint.view.ui.theme.Azure
+import com.project.petpoint.view.ui.theme.Blue
+import com.project.petpoint.view.ui.theme.Green
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
+import com.project.petpoint.view.ui.theme.crimson
+import com.project.petpoint.view.ui.theme.lightgreen
 import com.project.petpoint.viewmodel.LostFoundViewModel
 
 @Composable
@@ -203,9 +207,9 @@ fun LostFoundAdminCard(
                     Text(
                         typeLower.uppercase(),
                         color = when {
-                            typeLower == "lost" -> Color(0xFFdc2626)
-                            typeLower == "found" -> Color(0xFF0369a1)
-                            else -> Color(0xFF16a34a)
+                            typeLower == "lost" -> crimson
+                            typeLower == "found" -> Blue
+                            else -> lightgreen
                         },
                         fontSize = 13.sp
                     )
@@ -244,9 +248,9 @@ fun LostFoundAdminCard(
                         horizontalArrangement = Arrangement.Start
                     ) {
                         TextButton(onClick = { onChangeStatus("Found") }) {
-                            Icon(Icons.Default.SwapVert, null, tint = Color(0xFF059669))
+                            Icon(Icons.Default.SwapVert, null, tint = Green)
                             Spacer(Modifier.width(4.dp))
-                            Text("Mark as Found", color = Color(0xFF059669))
+                            Text("Mark as Found", color = Green)
                         }
                     }
                 }
@@ -256,17 +260,17 @@ fun LostFoundAdminCard(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onEdit) {
-                        Icon(Icons.Default.Edit, null, tint = Color(0xFF2563eb))
+                        Icon(Icons.Default.Edit, null, tint = Blue)
                         Spacer(Modifier.width(4.dp))
-                        Text("Edit", color = Color(0xFF2563eb))
+                        Text("Edit", color = Blue)
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
 
                     TextButton(onClick = onDelete) {
-                        Icon(Icons.Default.Delete, null, tint = Color(0xFFdc2626))
+                        Icon(Icons.Default.Delete, null, tint = crimson)
                         Spacer(Modifier.width(4.dp))
-                        Text("Delete", color = Color(0xFFdc2626))
+                        Text("Delete", color = crimson)
                     }
                 }
             }

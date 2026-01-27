@@ -37,7 +37,6 @@ import com.project.petpoint.model.VetModel
 import com.project.petpoint.repository.VetRepoImpl
 import com.project.petpoint.view.ui.theme.*
 import com.project.petpoint.viewmodel.VetViewModel
-import kotlinx.coroutines.delay
 
 @Composable
 fun VetManagementScreen() {
@@ -170,13 +169,13 @@ fun VetManagementScreen() {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFfee2e2)
+                                containerColor = IceWhite
                             ),
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Text(
                                 text = "⚠️ $errorMessage",
-                                color = Color(0xFFdc2626),
+                                color = crimson,
                                 modifier = Modifier.padding(16.dp),
                                 fontSize = 14.sp
                             )
@@ -397,7 +396,7 @@ private fun VetFormDialog(
                             title,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1a1a1a)
+                            color = Black
                         )
                     }
                 }
@@ -588,7 +587,7 @@ private fun VetAdminCard(
                         vet.name,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
-                        color = Color(0xFF1a1a1a)
+                        color = Black
                     )
                     Text(
                         vet.specialization,
@@ -636,11 +635,12 @@ private fun VetAdminCard(
                     onClick = onDelete,
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFdc2626)
+                        containerColor = crimson
                     ),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Icon(Icons.Default.Delete, null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Delete, null,
+                        modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Delete", fontWeight = FontWeight.Medium)
                 }
@@ -671,7 +671,7 @@ private fun VetDetailRow(icon: ImageVector, label: String, value: String) {
             Text(
                 value,
                 fontSize = 14.sp,
-                color = Color(0xFF1a1a1a)
+                color = Black
             )
         }
     }

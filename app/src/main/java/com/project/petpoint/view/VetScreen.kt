@@ -36,6 +36,7 @@ import com.project.petpoint.model.VetModel
 import com.project.petpoint.repository.VetRepoImpl
 import com.project.petpoint.view.ui.theme.*
 import com.project.petpoint.viewmodel.VetViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -119,7 +120,7 @@ fun VetScreen() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Enhanced Search Bar
+                // Search Bar
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
@@ -274,7 +275,7 @@ fun VetScreen() {
                         val index = filteredVets.indexOf(vet)
 
                         LaunchedEffect(Unit) {
-                            kotlinx.coroutines.delay(index * 50L)
+                            delay(index * 50L)
                             visible.value = true
                         }
 
@@ -284,7 +285,7 @@ fun VetScreen() {
                                 initialOffsetY = { it / 2 }
                             )
                         ) {
-                            ImprovedVetCard(
+                            VetCard(
                                 vet = vet,
                                 onClick = {
                                     val intent = Intent(context, VetDetailActivity::class.java)
@@ -305,7 +306,7 @@ fun VetScreen() {
 }
 
 @Composable
-private fun ImprovedVetCard(vet: VetModel, onClick: () -> Unit) {
+private fun VetCard(vet: VetModel, onClick: () -> Unit) {
     var isPressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
@@ -327,7 +328,7 @@ private fun ImprovedVetCard(vet: VetModel, onClick: () -> Unit) {
                 isPressed = true
                 onClick()
                 kotlinx.coroutines.MainScope().launch {
-                    kotlinx.coroutines.delay(100)
+                    delay(100)
                     isPressed = false
                 }
             },
@@ -372,7 +373,7 @@ private fun ImprovedVetCard(vet: VetModel, onClick: () -> Unit) {
                 fontSize = 16.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                color = Color(0xFF1a1a1a),
+                color = Black,
                 lineHeight = 20.sp
             )
 
@@ -414,7 +415,7 @@ private fun ImprovedVetCard(vet: VetModel, onClick: () -> Unit) {
             VetInfoRow(
                 icon = Icons.Outlined.LocationOn,
                 text = vet.address,
-                color = Color(0xFFE91E63),
+                color = Vividpink,
                 maxLines = 1
             )
 
@@ -479,7 +480,7 @@ private fun VetInfoRow(
         Text(
             text = text,
             fontSize = 12.sp,
-            color = Color(0xFF666666),
+            color = Davygrey,
             maxLines = maxLines,
             overflow = TextOverflow.Ellipsis,
             lineHeight = 16.sp,

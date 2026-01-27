@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -49,6 +50,7 @@ import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.Green
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
+import java.text.SimpleDateFormat
 
 class CheckoutActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -128,7 +130,7 @@ fun CheckoutScreen() {
                             isExpanded = expandedSection == "delivery",
                             onToggle = { expandedSection = if (expandedSection == "delivery") "" else "delivery" }
                         ) {
-                            //Full Name textfield
+
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 OutlinedTextField(
                                     value = fullName,
@@ -243,11 +245,19 @@ fun CheckoutScreen() {
                                     Toast.makeText(context, "Please fill all delivery information", Toast.LENGTH_SHORT).show()
                                 } else if (isPlacingOrder) return@Button
                                 else {
+                                    if (cartItems.isEmpty()) {
+                                        Toast.makeText(context, "Cart is empty", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
+
                                     isPlacingOrder = true
                                     val database = FirebaseDatabase.getInstance().getReference("order_history")
-                                    var updatedCount = 0
-                                    val totalItems = cartItems.size
 
+                                    var stocksUpdated = 0
+                                    val totalItems = cartItems.size
+                                    var hasError = false
+
+                                    // Place orders directly in Firebase
                                     cartItems.forEach { cartItem ->
                                         val orderId = database.push().key ?: return@forEach
                                         val order = OrderModel(
@@ -257,53 +267,52 @@ fun CheckoutScreen() {
                                             productImage = cartItem.imageUrl,
                                             quantity = cartItem.quantity,
                                             totalPrice = cartItem.getTotalPrice(),
-                                            date = java.text.SimpleDateFormat("dd MMM yyyy").format(java.util.Date())
+                                            date = SimpleDateFormat("dd MMM yyyy").format(java.util.Date())
                                         )
                                         database.child(userId).child(orderId).setValue(order)
                                     }
 
+                                    // Update product stock using ViewModel
                                     cartItems.forEach { cartItem ->
-                                        productViewModel.getProductById(cartItem.productId)
-                                        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                                            val currentProduct = productViewModel.selectedProduct.value
-                                            if (currentProduct != null) {
-                                                val newStock = currentProduct.stock - cartItem.quantity
-                                                val updatedProduct = currentProduct.copy(stock = newStock)
-                                                productViewModel.updateProduct(updatedProduct) { success, _ ->
-                                                    updatedCount++
-                                                    if (updatedCount == totalItems) {
-                                                        cartViewModel.clearCart(userId) { clearSuccess, _ ->
-                                                            isPlacingOrder = false
-                                                            if (clearSuccess) {
-                                                                Toast.makeText(context, "Order placed successfully!", Toast.LENGTH_LONG).show()
-                                                                activity?.finish()
-                                                            } else Toast.makeText(context, "Order placed but failed to clear cart", Toast.LENGTH_SHORT).show()
-                                                        }
-                                                    }
-                                                }
-                                            } else {
-                                                updatedCount++
-                                                if (updatedCount == totalItems) {
-                                                    cartViewModel.clearCart(userId) { _, _ ->
-                                                        isPlacingOrder = false
-                                                        Toast.makeText(context, "Order placed!", Toast.LENGTH_SHORT).show()
+                                        productViewModel.updateProductStock(
+                                            productId = cartItem.productId,
+                                            quantityToSubtract = cartItem.quantity
+                                        ) { success, msg, newStock ->
+                                            if (hasError) return@updateProductStock
+
+                                            if (!success) {
+                                                hasError = true
+                                                isPlacingOrder = false
+                                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                                return@updateProductStock
+                                            }
+
+                                            stocksUpdated++
+
+                                            // Check if all stocks updated
+                                            if (stocksUpdated == totalItems && !hasError) {
+                                                cartViewModel.clearCart(userId) { clearSuccess, _ ->
+                                                    isPlacingOrder = false
+                                                    if (clearSuccess) {
+                                                        Toast.makeText(context, "Order placed successfully!", Toast.LENGTH_LONG).show()
+                                                        activity?.finish()
+                                                    } else {
+                                                        Toast.makeText(context, "Order placed but failed to clear cart", Toast.LENGTH_SHORT).show()
                                                         activity?.finish()
                                                     }
                                                 }
                                             }
-                                        }, (300 * cartItems.indexOf(cartItem)).toLong())
-                                    }
-
-                                    if (totalItems == 0) {
-                                        isPlacingOrder = false
-                                        Toast.makeText(context, "Cart is empty", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
                                 }
                             },
-                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Green),
                             shape = RoundedCornerShape(12.dp),
                             enabled = !isPlacingOrder
+
                         ) {
                             if (isPlacingOrder) {
                                 CircularProgressIndicator(modifier = Modifier.size(24.dp), color = White)
@@ -323,7 +332,7 @@ fun CheckoutScreen() {
 }
 
 @Composable
-fun CheckoutSection(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, isExpanded: Boolean, onToggle: () -> Unit, content: @Composable () -> Unit) {
+fun CheckoutSection(title: String, icon: ImageVector, isExpanded: Boolean, onToggle: () -> Unit, content: @Composable () -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = White),
@@ -331,16 +340,30 @@ fun CheckoutSection(title: String, icon: androidx.compose.ui.graphics.vector.Ima
         modifier = Modifier.fillMaxWidth()
     ) {
         Column {
-            Row(modifier = Modifier.fillMaxWidth().clickable { onToggle() }.padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Box(modifier = Modifier.size(40.dp).background(VividAzure.copy(alpha = 0.1f), CircleShape), contentAlignment = Alignment.Center) {
-                        Icon(imageVector = icon, contentDescription = null, tint = VividAzure, modifier = Modifier.size(24.dp))
+            Row(modifier = Modifier.fillMaxWidth().clickable
+            { onToggle() }.padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp))
+                {
+                    Box(modifier = Modifier.size(40.dp)
+                        .background(VividAzure.copy(alpha = 0.1f), CircleShape),
+                        contentAlignment = Alignment.Center) {
+                        Icon(imageVector = icon,
+                            contentDescription = null,
+                            tint = VividAzure,
+                            modifier = Modifier.size(24.dp))
                     }
                     Text(text = title, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
-                Icon(imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, contentDescription = null, tint = Color.Gray)
+                Icon(imageVector = if (isExpanded) Icons.Default.ExpandLess
+                else Icons.Default.ExpandMore,
+                    contentDescription = null,
+                    tint = Color.Gray)
             }
-            AnimatedVisibility(visible = isExpanded, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+            AnimatedVisibility(visible = isExpanded, enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()) {
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
                     content()
                 }
@@ -350,44 +373,84 @@ fun CheckoutSection(title: String, icon: androidx.compose.ui.graphics.vector.Ima
 }
 
 @Composable
-fun PaymentMethodOption(method: String, icon: androidx.compose.ui.graphics.vector.ImageVector, isSelected: Boolean, onClick: () -> Unit) {
+fun PaymentMethodOption(method: String, icon: ImageVector, isSelected: Boolean, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = if (isSelected) VividAzure.copy(alpha = 0.1f) else White),
-        modifier = Modifier.fillMaxWidth().border(2.dp, if (isSelected) VividAzure else Color.LightGray, RoundedCornerShape(12.dp)).clickable { onClick() }
+        colors = CardDefaults.cardColors(containerColor = if (isSelected)
+            VividAzure.copy(alpha = 0.1f) else White),
+        modifier = Modifier.fillMaxWidth()
+            .border(2.dp,
+                if (isSelected) VividAzure
+                else Color.LightGray,
+                RoundedCornerShape(12.dp)).clickable { onClick() }
     ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Icon(imageVector = icon, contentDescription = null, tint = if (isSelected) VividAzure else Color.Gray)
-                Text(text = method, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, color = if (isSelected) VividAzure else Color.Black)
+        Row(modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween)
+        {
+            Row(verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Icon(imageVector = icon,
+                    contentDescription = null,
+                    tint = if (isSelected) VividAzure else Color.Gray)
+                Text(text = method,
+                    fontWeight = if (isSelected) FontWeight.Bold
+                    else FontWeight.Normal,
+                    color = if (isSelected) VividAzure else Color.Black)
             }
-            RadioButton(selected = isSelected, onClick = onClick, colors = RadioButtonDefaults.colors(selectedColor = VividAzure))
+            RadioButton(selected = isSelected,
+                onClick = onClick, colors = RadioButtonDefaults.colors(selectedColor = VividAzure))
         }
     }
 }
 
 @Composable
 fun OrderItemCard(item: CartModel) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Box(modifier = Modifier.size(60.dp).clip(RoundedCornerShape(8.dp)).background(Color.LightGray), contentAlignment = Alignment.Center) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Box(modifier = Modifier.size(60.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.LightGray),
+            contentAlignment = Alignment.Center) {
             if (item.imageUrl.isNotEmpty()) {
-                AsyncImage(model = ImageRequest.Builder(LocalContext.current).data(item.imageUrl).crossfade(true).build(), contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                AsyncImage(model = ImageRequest.Builder(LocalContext.current)
+                    .data(item.imageUrl).crossfade(true)
+                    .build(), contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop)
             } else {
-                Icon(painter = painterResource(id = android.R.drawable.ic_menu_gallery), contentDescription = null, tint = Color.Gray, modifier = Modifier.size(24.dp))
+                Icon(painter = painterResource(id = android.R.drawable.ic_menu_gallery),
+                    contentDescription = null,
+                    tint = Color.Gray,
+                    modifier = Modifier.size(24.dp))
             }
         }
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp))
+        {
             Text(text = item.name, fontWeight = FontWeight.Medium, fontSize = 14.sp)
             Text(text = "Qty: ${item.quantity}", fontSize = 12.sp, color = Color.Gray)
         }
-        Text(text = "Rs. ${item.getTotalPrice()}", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = VividAzure)
+        Text(text = "Rs. ${item.getTotalPrice()}",
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp, color = VividAzure)
     }
 }
 
 @Composable
 fun PriceSummaryRow(label: String, amount: Double, isTotal: Boolean = false) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Text(text = label, fontSize = if (isTotal) 18.sp else 14.sp, fontWeight = if (isTotal) FontWeight.Bold else FontWeight.Normal, color = if (isTotal) Color.Black else Color.Gray)
-        Text(text = "Rs. $amount", fontSize = if (isTotal) 20.sp else 14.sp, fontWeight = FontWeight.Bold, color = if (isTotal) VividAzure else Color.Black)
+    Row(modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically) {
+        Text(text = label,
+            fontSize = if (isTotal) 18.sp
+            else 14.sp,
+            fontWeight = if (isTotal) FontWeight.Bold
+            else FontWeight.Normal,
+            color = if (isTotal) Color.Black
+            else Color.Gray)
+        Text(text = "Rs. $amount", fontSize = if (isTotal) 20.sp else 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (isTotal) VividAzure else Color.Black)
     }
 }

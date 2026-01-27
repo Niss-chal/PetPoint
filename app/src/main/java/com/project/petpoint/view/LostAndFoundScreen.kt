@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +42,8 @@ import com.project.petpoint.model.LostFoundModel
 import com.project.petpoint.repository.LostFoundRepoImpl
 import com.project.petpoint.view.ui.theme.*
 import com.project.petpoint.viewmodel.LostFoundViewModel
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -126,7 +129,7 @@ fun LostAndFoundScreen() {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Enhanced Search Bar
+                    //Search Bar
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { viewModel.onSearchQueryChange(it) },
@@ -184,7 +187,7 @@ fun LostAndFoundScreen() {
                         text = "Filter by status",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1a1a1a)
+                        color = Black
                     )
                 }
 
@@ -216,7 +219,7 @@ fun LostAndFoundScreen() {
                     icon = Icons.Outlined.Check,
                     isSelected = viewModel.filterType.value == "Found",
                     onClick = { viewModel.setFilterType("Found") },
-                    color = Color(0xFF0369a1)
+                    color = Blue
                 )
                 StatusFilterChip(
                     label = "Rescued",
@@ -324,7 +327,7 @@ fun LostAndFoundScreen() {
                                     initialOffsetY = { it / 2 }
                                 )
                             ) {
-                                ImprovedLostFoundCard(
+                                LostFoundCard(
                                     item = item,
                                     onClick = {
                                         context.startActivity(
@@ -341,7 +344,7 @@ fun LostAndFoundScreen() {
             }
         }
 
-        // Floating Action Button positioned at the bottom right
+        // Floating Action Button
         ExtendedFloatingActionButton(
             onClick = {
                 if (FirebaseAuth.getInstance().currentUser == null) {
@@ -375,7 +378,7 @@ fun LostAndFoundScreen() {
 @Composable
 fun StatusFilterChip(
     label: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     isSelected: Boolean,
     onClick: () -> Unit,
     color: Color = VividAzure
@@ -411,14 +414,14 @@ fun StatusFilterChip(
                 text = label,
                 fontSize = 13.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                color = if (isSelected) White else Color(0xFF1a1a1a)
+                color = if (isSelected) White else IceWhite
             )
         }
     }
 }
 
 @Composable
-fun ImprovedLostFoundCard(
+fun LostFoundCard(
     item: LostFoundModel,
     onClick: () -> Unit
 ) {
@@ -449,8 +452,8 @@ fun ImprovedLostFoundCard(
             ) {
                 isPressed = true
                 onClick()
-                kotlinx.coroutines.MainScope().launch {
-                    kotlinx.coroutines.delay(100)
+                MainScope().launch {
+                    delay(100)
                     isPressed = false
                 }
             },
@@ -561,7 +564,7 @@ fun ImprovedLostFoundCard(
                     fontSize = 15.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    color = Color(0xFF1a1a1a),
+                    color = Black,
                     lineHeight = 18.sp
                 )
 

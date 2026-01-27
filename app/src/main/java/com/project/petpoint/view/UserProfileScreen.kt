@@ -144,7 +144,7 @@ fun UserProfileScreen() {
                 shape = RoundedCornerShape(20.dp)
             ) {
                 Column {
-                    EnhancedProfileMenuItem(
+                    ProfileMenuItem(
                         icon = Icons.Default.History,
                         text = "Order History",
                         iconTint = VividAzure
@@ -157,7 +157,7 @@ fun UserProfileScreen() {
                         color = Color.Gray.copy(alpha = 0.2f)
                     )
 
-                    EnhancedProfileMenuItem(
+                    ProfileMenuItem(
                         icon = Icons.Default.Delete,
                         text = "Delete Account",
                         iconTint = crimson
@@ -170,7 +170,7 @@ fun UserProfileScreen() {
                         color = Color.Gray.copy(alpha = 0.2f)
                     )
 
-                    EnhancedProfileMenuItem(
+                    ProfileMenuItem(
                         icon = R.drawable.baseline_logout_24,
                         text = "Log Out",
                         iconTint = VividOrange
@@ -259,7 +259,7 @@ fun UserProfileScreen() {
 }
 
 @Composable
-fun EnhancedProfileMenuItem(
+fun ProfileMenuItem(
     icon: Any,
     text: String,
     iconTint: Color,

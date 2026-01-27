@@ -2,6 +2,7 @@ package com.project.petpoint.viewmodel
 
 import android.content.Context
 import android.net.Uri
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.project.petpoint.model.ProductModel
@@ -22,12 +23,12 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
     }
 
 
-    private val _allProducts = MutableLiveData<List<ProductModel>?>()
-    val allProducts: MutableLiveData<List<ProductModel>?> get() = _allProducts
+    private val _allProducts = MutableLiveData<List<ProductModel>>(emptyList())
+    val allProducts: LiveData<List<ProductModel>> get() = _allProducts
 
-    // Filtered products based on search
-    private val _filteredProducts = MutableLiveData<List<ProductModel>?>()
-    val filteredProducts: MutableLiveData<List<ProductModel>?> get() = _filteredProducts
+    private val _filteredProducts = MutableLiveData<List<ProductModel>>(emptyList())
+    val filteredProducts: LiveData<List<ProductModel>> get() = _filteredProducts
+
 
     // Search query
     private val _searchQuery = MutableLiveData<String>()
@@ -50,49 +51,59 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
         _loading.postValue(true)
         repo.getProductById(productID){
                 success,msg,data->
+            _loading.postValue(false)
             if(success){
-                _loading.postValue(false)
                 _selectedProduct.postValue(data)
             }
             else{
-                _loading.postValue(false)
                 _selectedProduct.postValue(null)
-            }
-        }
-    }
-
-    fun getAllProduct(){
-        _loading.postValue(true)
-        repo.getAllProduct{
-                success,msg,data->
-            if(success){
-                _loading.postValue(false)
-                _allProducts.postValue(data)
-                _filteredProducts.postValue(data)
-            }
-            else{
-                _loading.postValue(false)
-                _allProducts.postValue(null)
-                _filteredProducts.postValue(null)
                 _message.postValue(msg)
             }
         }
     }
 
-
-    fun getProductByCategory(categoryId: String) {
+    fun getAllProduct() {
         _loading.postValue(true)
-        repo.getProductByCategory(categoryId) { success, msg, data ->
+        repo.getAllProduct { success, msg, data ->
+            _loading.postValue(false)
+
             if (success) {
-                _loading.postValue(false)
-                _filteredProducts.postValue(data)
+                val safeData = data ?: emptyList()
+                _allProducts.postValue(safeData)
+                _filteredProducts.postValue(safeData)
+
+                if (safeData.isEmpty()) {
+                    _message.postValue("No products available")
+                }
             } else {
-                _loading.postValue(false)
-                _filteredProducts.postValue(null)
+                _allProducts.postValue(emptyList())
+                _filteredProducts.postValue(emptyList())
                 _message.postValue(msg)
             }
         }
     }
+
+
+
+    fun filterByCategory(category: String) {
+        val products = _allProducts.value ?: emptyList()
+
+        val filtered = if (category == "All") {
+            products
+        } else {
+            products.filter {
+                it.categoryId.equals(category, ignoreCase = true)
+            }
+        }
+
+        _filteredProducts.postValue(filtered)
+
+        if (filtered.isEmpty()) {
+            _message.postValue("No products in $category category")
+        }
+    }
+
+
 
     fun refreshProducts() {
         getAllProduct()
@@ -109,24 +120,35 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
     }
 
     private fun filterProducts(query: String) {
-        val products = _allProducts.value ?: emptyList()
+        val products = _filteredProducts.value ?: return
 
-        if (query.isEmpty()) {
-            _filteredProducts.postValue(products)
+        val filtered = if (query.isBlank()) {
+            products
         } else {
-            val filtered = products.filter { product ->
-                product.name.contains(query, ignoreCase = true) ||
-                        product.description.contains(query, ignoreCase = true)
+            products.filter {
+                it.name.contains(query, ignoreCase = true) ||
+                        it.description.contains(query, ignoreCase = true)
             }
-            _filteredProducts.postValue(filtered)
+        }
+
+        _filteredProducts.postValue(filtered)
+    }
+
+    fun updateProductStock(
+        productId: String,
+        quantityToSubtract: Int,
+        callback: (Boolean, String, Int?) -> Unit
+    ) {
+        _loading.postValue(true)
+        repo.updateProductStock(productId, quantityToSubtract) { success, msg, newStock ->
+            _loading.postValue(false)
+            if (!success) {
+                _message.postValue(msg)
+            }
+            callback(success, msg, newStock)
         }
     }
 
-    fun onProductClick(product: ProductModel) {
-        _selectedProduct.postValue(product)
-        _message.postValue("Opening ${product.name}")
-        // TODO
-    }
 
     fun clearMessage() {
         _message.postValue(null)

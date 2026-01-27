@@ -12,10 +12,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
@@ -29,7 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -41,9 +38,12 @@ import com.project.petpoint.repository.LostFoundRepoImpl
 import com.project.petpoint.utils.ImageUtils
 import com.project.petpoint.view.ui.theme.Azure
 import com.project.petpoint.view.ui.theme.Black
+import com.project.petpoint.view.ui.theme.Green
+import com.project.petpoint.view.ui.theme.IceWhite
 import com.project.petpoint.view.ui.theme.Orange
 import com.project.petpoint.view.ui.theme.VividAzure
 import com.project.petpoint.view.ui.theme.White
+import com.project.petpoint.view.ui.theme.crimson
 import com.project.petpoint.viewmodel.LostFoundViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -182,7 +182,7 @@ fun AddLostFoundReportScreen(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection)
-            .imePadding() // Handles keyboard insets
+            .imePadding()
     ) { innerPadding ->
 
         LazyColumn(
@@ -191,7 +191,7 @@ fun AddLostFoundReportScreen(
                 .fillMaxSize()
                 .background(Azure)
                 .padding(innerPadding)
-                .imePadding(), // Additional keyboard padding
+                .imePadding(),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
             item {
@@ -214,8 +214,8 @@ fun AddLostFoundReportScreen(
                                 onClick = { isLost = true },
                                 label = { Text("Lost / Missing") },
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFFfee2e2),
-                                    selectedLabelColor = Color(0xFFdc2626)
+                                    selectedContainerColor = IceWhite,
+                                    selectedLabelColor = crimson
                                 )
                             )
                             FilterChip(
@@ -223,8 +223,8 @@ fun AddLostFoundReportScreen(
                                 onClick = { isLost = false },
                                 label = { Text("Found / Rescued") },
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFFdcfce7),
-                                    selectedLabelColor = Color(0xFF15803d)
+                                    selectedContainerColor = IceWhite,
+                                    selectedLabelColor = Green
                                 )
                             )
                         }
