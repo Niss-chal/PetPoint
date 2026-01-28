@@ -414,7 +414,7 @@ fun StatusFilterChip(
                 text = label,
                 fontSize = 13.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                color = if (isSelected) White else IceWhite
+                color = if (isSelected) White else Black
             )
         }
     }
