@@ -10,8 +10,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,10 +30,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.project.petpoint.R
 import com.project.petpoint.ui.theme.White
 import com.project.petpoint.view.ui.theme.Azure
@@ -41,7 +49,6 @@ class DashboardActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DashboardBody()
-
         }
     }
 }
@@ -52,49 +59,60 @@ fun DashboardBody() {
     val context = LocalContext.current
     val activity = context as Activity
 
-    data class NavItem(val image: Int, val label: String)
+    data class NavItem(val image: Int, val label: String, val title: String)
 
-    val listItems  = listOf(
-        NavItem(image = R.drawable.shoppingbag, label="Shop"),
-        NavItem(image = R.drawable.veterinary, label="Vets"),
-        NavItem(image = R.drawable.lostandfound, label="Lost and Found"),
-        NavItem(image = R.drawable.userprofile, label="Profile"),
+    val listItems = listOf(
+        NavItem(image = R.drawable.shoppingbag, label = "Shop", title = "Pet Shop"),
+        NavItem(image = R.drawable.veterinary, label = "Vets", title = "Veterinarians"),
+        NavItem(image = R.drawable.lostandfound, label = "Lost & Found", title = "Lost & Found"),
+        NavItem(image = R.drawable.userprofile, label = "Profile", title = "Profile"),
     )
 
-    var selectedIndex by remember{ mutableStateOf(0)}
+    var selectedIndex by remember { mutableStateOf(0) }
 
     Scaffold(
-        topBar  = {
+        topBar = {
             CenterAlignedTopAppBar(
-                colors  = TopAppBarDefaults.topAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     titleContentColor = White,
                     actionIconContentColor = White,
                     navigationIconContentColor = White,
                     containerColor = VividAzure
                 ),
                 navigationIcon = {
-                    IconButton(onClick= {}){
+                    IconButton(onClick = {}) {
                         Image(
                             painter = painterResource(R.drawable.dashboardlogo),
                             contentDescription = null,
                         )
                     }
                 },
-                title ={ IconButton(onClick = {
-
-                }) {
-
-
-                }},
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(listItems[selectedIndex].image),
+                            contentDescription = null,
+                            tint = White,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = listItems[selectedIndex].title,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = {
                         context.startActivity(
                             Intent(context, CartActivity::class.java)
                         )
-
                     }) {
                         Icon(
-                            painter  =  painterResource(R.drawable.baseline_shopping_cart_24),
+                            painter = painterResource(R.drawable.baseline_shopping_cart_24),
                             contentDescription = null
                         )
                     }
@@ -122,28 +140,20 @@ fun DashboardBody() {
                 }
             }
         }
-    ) {
-            padding ->
+    ) { padding ->
         Column(
-            modifier=Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .background(Azure)
         ) {
-            when(selectedIndex){
-                0-> ShopScreen()
-                1-> VetScreen()
-                2-> LostAndFoundScreen()
-                3-> UserProfileScreen()
+            when (selectedIndex) {
+                0 -> ShopScreen()
+                1 -> VetScreen()
+                2 -> LostAndFoundScreen()
+                3 -> UserProfileScreen()
                 else -> ShopScreen()
             }
         }
     }
-}
-
-
-@Preview
-@Composable
-fun DashboardPreview(){
-    DashboardBody()
 }
