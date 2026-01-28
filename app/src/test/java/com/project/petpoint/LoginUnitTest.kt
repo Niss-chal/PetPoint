@@ -1,7 +1,6 @@
 package com.project.petpoint
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-
 import com.project.petpoint.repository.UserRepo
 import com.project.petpoint.viewmodel.UserViewModel
 import org.junit.Assert.assertEquals
@@ -15,7 +14,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
-class UserViewModelTest {
+class LoginUnitTest {
 
     @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
