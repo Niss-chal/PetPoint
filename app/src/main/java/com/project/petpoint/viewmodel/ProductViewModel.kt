@@ -31,7 +31,7 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
 
 
     // Search query
-    private val _searchQuery = MutableLiveData<String>()
+    private val _searchQuery = MutableLiveData<String>("")
     val searchQuery: MutableLiveData<String> get() = _searchQuery
 
     // Loading state
@@ -45,6 +45,12 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
     // Selected product
     private val _selectedProduct = MutableLiveData<ProductModel?>()
     val selectedProduct: MutableLiveData<ProductModel?> get() = _selectedProduct
+
+    // Track current category
+    private var currentCategory = "All"
+
+    private var cachedProducts: List<ProductModel> = emptyList()
+
 
 
     fun getProductById(productID:String){
@@ -69,12 +75,12 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
 
             if (success) {
                 val safeData = data ?: emptyList()
+                cachedProducts = safeData
                 _allProducts.postValue(safeData)
-                _filteredProducts.postValue(safeData)
+                currentCategory = "All"
+                _searchQuery.postValue("")
+                _filteredProducts.value = safeData
 
-                if (safeData.isEmpty()) {
-                    _message.postValue("No products available")
-                }
             } else {
                 _allProducts.postValue(emptyList())
                 _filteredProducts.postValue(emptyList())
@@ -86,21 +92,8 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
 
 
     fun filterByCategory(category: String) {
-        val products = _allProducts.value ?: emptyList()
-
-        val filtered = if (category == "All") {
-            products
-        } else {
-            products.filter {
-                it.categoryId.equals(category, ignoreCase = true)
-            }
-        }
-
-        _filteredProducts.postValue(filtered)
-
-        if (filtered.isEmpty()) {
-            _message.postValue("No products in $category category")
-        }
+        currentCategory = category
+        applyFilters()
     }
 
 
@@ -115,24 +108,38 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
     }
 
     fun onSearchQueryChange(query: String) {
-        _searchQuery.postValue(query)
-        filterProducts(query)
+        _searchQuery.value = query
+        applyFilters()
     }
 
-    private fun filterProducts(query: String) {
-        val products = _filteredProducts.value ?: return
 
-        val filtered = if (query.isBlank()) {
-            products
+
+    private fun applyFilters(query: String = _searchQuery.value ?: "") {
+        val allProducts = cachedProducts
+
+        // Category filter
+        val categoryFiltered = if (currentCategory == "All") {
+            allProducts
         } else {
-            products.filter {
+            allProducts.filter {
+                it.categoryId.equals(currentCategory, ignoreCase = true)
+            }
+        }
+
+        // Search filter
+        val finalFiltered = if (query.isBlank()) {
+            categoryFiltered
+        } else {
+            categoryFiltered.filter {
                 it.name.contains(query, ignoreCase = true) ||
                         it.description.contains(query, ignoreCase = true)
             }
         }
 
-        _filteredProducts.postValue(filtered)
+        _filteredProducts.value = finalFiltered
     }
+
+
 
     fun updateProductStock(
         productId: String,
