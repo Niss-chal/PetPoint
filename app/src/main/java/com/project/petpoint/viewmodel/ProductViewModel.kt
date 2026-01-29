@@ -117,12 +117,11 @@ class ProductViewModel(val repo : ProductRepo) : ViewModel() {
     private fun applyFilters(query: String = _searchQuery.value ?: "") {
         val allProducts = cachedProducts
 
-        // Category filter
         val categoryFiltered = if (currentCategory == "All") {
             allProducts
         } else {
-            allProducts.filter {
-                it.categoryId.equals(currentCategory, ignoreCase = true)
+            allProducts.filter { product ->
+                product.categoryId.equals(currentCategory, ignoreCase = true)
             }
         }
 

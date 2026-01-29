@@ -287,6 +287,9 @@ fun AddProduct(
                             productStock.toIntOrNull() == null ->
                                 Toast.makeText(context, "Invalid stock quantity", Toast.LENGTH_SHORT).show()
 
+                            productCategory == "Select Category" ->
+                                Toast.makeText(context, "Please select a category", Toast.LENGTH_SHORT).show()
+
                             selectedImageUri == null ->
                                 Toast.makeText(context, "Select an image", Toast.LENGTH_SHORT).show()
 
@@ -298,6 +301,7 @@ fun AddProduct(
                                             name = productName,
                                             price = productPrice.toDouble(),
                                             description = productDescription,
+                                            categoryId = productCategory,
                                             imageUrl = imageUrl,
                                             stock = productStock.toInt()
                                         )
