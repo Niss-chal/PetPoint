@@ -1,6 +1,7 @@
 package com.project.petpoint.view
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -293,11 +294,18 @@ fun CheckoutScreen() {
                                             if (stocksUpdated == totalItems && !hasError) {
                                                 cartViewModel.clearCart(userId) { clearSuccess, _ ->
                                                     isPlacingOrder = false
+                                                    val intent = Intent(context, DashboardActivity::class.java).apply {
+                                                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                                    }
                                                     if (clearSuccess) {
                                                         Toast.makeText(context, "Order placed successfully!", Toast.LENGTH_LONG).show()
+                                                        context.startActivity(intent)
                                                         activity?.finish()
+
+
                                                     } else {
                                                         Toast.makeText(context, "Order placed but failed to clear cart", Toast.LENGTH_SHORT).show()
+                                                        context.startActivity(intent)
                                                         activity?.finish()
                                                     }
                                                 }
