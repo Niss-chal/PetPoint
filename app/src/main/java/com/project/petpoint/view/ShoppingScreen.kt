@@ -1,3 +1,4 @@
+import android.R.drawable.ic_menu_close_clear_cancel
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.*
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,6 +44,7 @@ import com.project.petpoint.repository.ProductRepoImpl
 import com.project.petpoint.view.ProductDetailActivity
 import com.project.petpoint.viewmodel.ProductViewModel
 import com.project.petpoint.view.ui.theme.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,23 +61,25 @@ fun ShopScreen() {
 
     var selectedCategory by remember { mutableStateOf("All") }
 
+    // Initial load
     LaunchedEffect(Unit) {
         viewModel.getAllProduct()
     }
 
     LaunchedEffect(message) {
         message?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            // Only show actual error messages, not empty state messages
+            if (!it.contains("No products")) {
+                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            }
+            viewModel.clearMessage()
         }
     }
 
     val categories = listOf("All", "Food", "Toys", "Accessories", "Clothes", "Medicine", "Other")
 
-    val productsToDisplay = if (selectedCategory == "All") {
-        filteredProducts
-    } else {
-        filteredProducts?.filter { it.categoryId == selectedCategory }
-    }
+    // Use filteredProducts directly
+    val productsToDisplay = filteredProducts
 
     Column(
         modifier = Modifier
@@ -88,53 +93,55 @@ fun ShopScreen() {
                 )
             )
     ) {
-        // Header Section
+        // Search Bar Section
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = VividAzure,
-            shadowElevation = 4.dp
+            color = Color.Transparent,
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                // Title
-                Text(
-                    text = "Shop",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = White
-                )
-
-                Text(
-                    text = "Find everything for your pets",
-                    fontSize = 14.sp,
-                    color = White.copy(alpha = 0.9f),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Enhanced Search Bar
+                // Search Bar
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.onSearchQueryChange(it) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(2.dp, RoundedCornerShape(16.dp)),
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = RoundedCornerShape(16.dp)
+                        ),
                     placeholder = {
                         Text(
                             "Search products...",
-                            color = Color.Gray.copy(alpha = 0.6f)
+                            color = Color.Gray.copy(alpha = 0.6f),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium
                         )
                     },
                     leadingIcon = {
                         Icon(
                             Icons.Default.Search,
                             contentDescription = null,
-                            tint = VividAzure
+                            tint = VividAzure,
+                            modifier = Modifier.size(22.dp)
                         )
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(
+                                onClick = { viewModel.onSearchQueryChange("") }
+                            ) {
+                                Icon(
+                                    painter = painterResource(ic_menu_close_clear_cancel),
+                                    contentDescription = "Clear",
+                                    tint = Color.Gray.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
                     },
                     shape = RoundedCornerShape(16.dp),
                     singleLine = true,
@@ -142,58 +149,38 @@ fun ShopScreen() {
                         focusedContainerColor = White,
                         unfocusedContainerColor = White,
                         disabledContainerColor = White,
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
+                        focusedBorderColor = VividAzure,
+                        unfocusedBorderColor = VividAzure
+                    ),
+                    textStyle = TextStyle(
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Black
                     )
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Categories Section with Animation
-        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Categories",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Black
-                )
-
-                AnimatedVisibility(visible = selectedCategory != "All") {
-                    TextButton(onClick = { selectedCategory = "All" }) {
-                        Text(
-                            "Clear",
-                            color = VividAzure,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-        }
-
+        // Compact Categories Section
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(categories) { category ->
                 CategoryChip(
                     category = category,
                     isSelected = selectedCategory == category,
-                    onClick = { selectedCategory = category }
+                    onClick = {
+                        selectedCategory = category
+                        viewModel.filterByCategory(category)
+                    }
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Products Section
         if (loading) {
@@ -217,7 +204,7 @@ fun ShopScreen() {
                     )
                 }
             }
-        } else if (productsToDisplay.isNullOrEmpty()) {
+        } else if (productsToDisplay.isEmpty()) {
             Box(
                 Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -229,22 +216,28 @@ fun ShopScreen() {
                     Icon(
                         Icons.Outlined.Inventory2,
                         contentDescription = null,
-                        modifier = Modifier.size(80.dp),
+                        modifier = Modifier.size(64.dp),
                         tint = Color.Gray.copy(alpha = 0.5f)
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = if (searchQuery.isEmpty()) "No products available" else "No products found",
+                        text = if (searchQuery.isEmpty() && selectedCategory == "All") {
+                            "No products available"
+                        } else if (searchQuery.isNotEmpty()) {
+                            "No products found for \"$searchQuery\""
+                        } else {
+                            "No products in $selectedCategory category"
+                        },
                         color = Color.Gray,
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center
                     )
-                    if (searchQuery.isNotEmpty()) {
+                    if (searchQuery.isNotEmpty() || selectedCategory != "All") {
                         Text(
-                            text = "Try adjusting your search",
+                            text = "Try adjusting your filters",
                             color = Color.Gray.copy(alpha = 0.7f),
-                            fontSize = 14.sp,
+                            fontSize = 13.sp,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.padding(top = 4.dp)
                         )
@@ -255,9 +248,9 @@ fun ShopScreen() {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(productsToDisplay.size) { index ->
                     val product = productsToDisplay[index]
@@ -265,7 +258,7 @@ fun ShopScreen() {
                     // Add staggered animation
                     val visible = remember { mutableStateOf(false) }
                     LaunchedEffect(Unit) {
-                        kotlinx.coroutines.delay(index * 50L)
+                        delay(index * 50L)
                         visible.value = true
                     }
 
@@ -275,7 +268,7 @@ fun ShopScreen() {
                             initialOffsetY = { it / 2 }
                         )
                     ) {
-                        ImprovedProductCard(
+                        ProductCard(
                             product = product,
                             onClick = {
                                 val intent = Intent(context, ProductDetailActivity::class.java)
@@ -298,6 +291,8 @@ fun ShopScreen() {
     }
 }
 
+private fun ProductViewModel.filterByCategory(category: String) {}
+
 @Composable
 fun CategoryChip(
     category: String,
@@ -315,24 +310,23 @@ fun CategoryChip(
 
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(16.dp),
         color = if (isSelected) VividAzure else White,
-        shadowElevation = if (isSelected) 4.dp else 1.dp,
-        modifier = Modifier
-            .scale(animatedScale)
+        shadowElevation = if (isSelected) 3.dp else 1.dp,
+        modifier = Modifier.scale(animatedScale)
     ) {
         Text(
             text = category,
             fontSize = 13.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-            color = if (isSelected) White else Color(0xFF1a1a1a),
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+            color = if (isSelected) White else Black,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
     }
 }
 
 @Composable
-fun ImprovedProductCard(
+fun ProductCard(
     product: ProductModel,
     onClick: () -> Unit
 ) {
@@ -349,6 +343,7 @@ fun ImprovedProductCard(
         label = "press scale"
     )
 
+    val coroutineScope = rememberCoroutineScope()
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
@@ -360,14 +355,15 @@ fun ImprovedProductCard(
             ) {
                 isPressed = true
                 onClick()
-                kotlinx.coroutines.MainScope().launch {
-                    kotlinx.coroutines.delay(100)
+
+                coroutineScope.launch {
+                    delay(100)
                     isPressed = false
                 }
             },
         elevation = CardDefaults.cardElevation(6.dp),
         colors = CardDefaults.cardColors(containerColor = White)
-    ) {
+    ){
         Column(modifier = Modifier.fillMaxWidth()) {
             // Image Section with Badges
             Box(
@@ -390,7 +386,7 @@ fun ImprovedProductCard(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                            .background(Color(0xFFE0E0E0)),
+                            .background(IceWhite),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -482,7 +478,7 @@ fun ImprovedProductCard(
                     fontSize = 14.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    color = Color(0xFF1a1a1a),
+                    color = Black,
                     lineHeight = 18.sp
                 )
 
