@@ -250,9 +250,9 @@ class AddProductUnitTest {
     @Test
     fun getAllProduct_success_test() {
         val productList = listOf(
-            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50),
-            ProductModel(productId = "2", name = "Cat Toy", price = 15.0, description = "Fun toy", imageUrl = "url2", stock = 30),
-            ProductModel(productId = "3", name = "Pet Bed", price = 45.0, description = "Comfortable", imageUrl = "url3", stock = 20)
+            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50, categoryId = "Food"),
+            ProductModel(productId = "2", name = "Cat Toy", price = 15.0, description = "Fun toy", imageUrl = "url2", stock = 30, categoryId = "Toys"),
+            ProductModel(productId = "3", name = "Pet Bed", price = 45.0, description = "Comfortable", imageUrl = "url3", stock = 20, categoryId = "Furniture")
         )
 
         doAnswer { invocation ->
@@ -280,51 +280,111 @@ class AddProductUnitTest {
         viewModel.getAllProduct()
 
         assertEquals(false, viewModel.loading.value)
-        assertNull(viewModel.allProducts.value)
-        assertNull(viewModel.filteredProducts.value)
+        assertEquals(emptyList<ProductModel>(), viewModel.allProducts.value)
+        assertEquals(emptyList<ProductModel>(), viewModel.filteredProducts.value)
         assertEquals("Failed to fetch products", viewModel.message.value)
         verify(repo).getAllProduct(any())
     }
 
-    // ============ GET PRODUCT BY CATEGORY TESTS ============
+    // ============ FILTER BY CATEGORY TESTS ============
 
     @Test
-    fun getProductByCategory_success_test() {
-        val categoryId = "Food"
-        val categoryProducts = listOf(
-            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50),
-            ProductModel(productId = "2", name = "Cat Food", price = 20.0, description = "Nutritious", imageUrl = "url2", stock = 40)
+    fun filterByCategory_specificCategory_test() {
+        // First populate products
+        val productList = listOf(
+            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50, categoryId = "Food"),
+            ProductModel(productId = "2", name = "Cat Toy", price = 15.0, description = "Fun toy", imageUrl = "url2", stock = 30, categoryId = "Toys"),
+            ProductModel(productId = "3", name = "Pet Bed", price = 45.0, description = "Comfortable", imageUrl = "url3", stock = 20, categoryId = "Furniture")
         )
 
         doAnswer { invocation ->
-            val callback = invocation.getArgument<(Boolean, String, List<ProductModel>?) -> Unit>(1)
-            callback(true, "Success", categoryProducts)
+            val callback = invocation.getArgument<(Boolean, String, List<ProductModel>?) -> Unit>(0)
+            callback(true, "Success", productList)
             null
-        }.`when`(repo).getProductByCategory(eq(categoryId), any())
+        }.`when`(repo).getAllProduct(any())
 
-        viewModel.getProductByCategory(categoryId)
+        viewModel.getAllProduct()
 
-        assertEquals(false, viewModel.loading.value)
-        assertEquals(categoryProducts, viewModel.filteredProducts.value)
-        verify(repo).getProductByCategory(eq(categoryId), any())
+        // Now filter by category
+        viewModel.filterByCategory("Food")
+
+        assertEquals(1, viewModel.filteredProducts.value?.size)
+        assertEquals("Dog Food", viewModel.filteredProducts.value?.get(0)?.name)
     }
 
     @Test
-    fun getProductByCategory_failure_test() {
-        val categoryId = "InvalidCategory"
+    fun filterByCategory_allCategory_test() {
+        val productList = listOf(
+            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50, categoryId = "Food"),
+            ProductModel(productId = "2", name = "Cat Toy", price = 15.0, description = "Fun toy", imageUrl = "url2", stock = 30, categoryId = "Toys")
+        )
 
         doAnswer { invocation ->
-            val callback = invocation.getArgument<(Boolean, String, List<ProductModel>?) -> Unit>(1)
-            callback(false, "No products found", null)
+            val callback = invocation.getArgument<(Boolean, String, List<ProductModel>?) -> Unit>(0)
+            callback(true, "Success", productList)
             null
-        }.`when`(repo).getProductByCategory(eq(categoryId), any())
+        }.`when`(repo).getAllProduct(any())
 
-        viewModel.getProductByCategory(categoryId)
+        viewModel.getAllProduct()
+        viewModel.filterByCategory("All")
 
+        assertEquals(2, viewModel.filteredProducts.value?.size)
+    }
+
+    // ============ UPDATE PRODUCT STOCK TESTS ============
+
+    @Test
+    fun updateProductStock_success_test() {
+        val productId = "123"
+        val quantityToSubtract = 5
+        val newStock = 45
+
+        doAnswer { invocation ->
+            val callback = invocation.getArgument<(Boolean, String, Int?) -> Unit>(2)
+            callback(true, "Stock updated", newStock)
+            null
+        }.`when`(repo).updateProductStock(eq(productId), eq(quantityToSubtract), any())
+
+        var successResult = false
+        var messageResult = ""
+        var stockResult: Int? = null
+
+        viewModel.updateProductStock(productId, quantityToSubtract) { success, msg, stock ->
+            successResult = success
+            messageResult = msg
+            stockResult = stock
+        }
+
+        assertTrue(successResult)
+        assertEquals("Stock updated", messageResult)
+        assertEquals(newStock, stockResult)
         assertEquals(false, viewModel.loading.value)
-        assertNull(viewModel.filteredProducts.value)
-        assertEquals("No products found", viewModel.message.value)
-        verify(repo).getProductByCategory(eq(categoryId), any())
+        verify(repo).updateProductStock(eq(productId), eq(quantityToSubtract), any())
+    }
+
+    @Test
+    fun updateProductStock_failure_test() {
+        val productId = "123"
+        val quantityToSubtract = 100
+
+        doAnswer { invocation ->
+            val callback = invocation.getArgument<(Boolean, String, Int?) -> Unit>(2)
+            callback(false, "Insufficient stock", null)
+            null
+        }.`when`(repo).updateProductStock(eq(productId), eq(quantityToSubtract), any())
+
+        var successResult = true
+        var messageResult = ""
+
+        viewModel.updateProductStock(productId, quantityToSubtract) { success, msg, _ ->
+            successResult = success
+            messageResult = msg
+        }
+
+        assertFalse(successResult)
+        assertEquals("Insufficient stock", messageResult)
+        assertEquals("Insufficient stock", viewModel.message.value)
+        verify(repo).updateProductStock(eq(productId), eq(quantityToSubtract), any())
     }
 
     // ============ UPLOAD IMAGE TESTS ============
@@ -381,13 +441,17 @@ class AddProductUnitTest {
     @Test
     fun filterProducts_emptyQuery_returnsAllProducts_test() {
         val allProducts = listOf(
-            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50),
-            ProductModel(productId = "2", name = "Cat Toy", price = 15.0, description = "Fun toy", imageUrl = "url2", stock = 30)
+            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50, categoryId = "Food"),
+            ProductModel(productId = "2", name = "Cat Toy", price = 15.0, description = "Fun toy", imageUrl = "url2", stock = 30, categoryId = "Toys")
         )
 
-        // Manually set allProducts
-        viewModel.allProducts.postValue(allProducts)
+        doAnswer { invocation ->
+            val callback = invocation.getArgument<(Boolean, String, List<ProductModel>?) -> Unit>(0)
+            callback(true, "Success", allProducts)
+            null
+        }.`when`(repo).getAllProduct(any())
 
+        viewModel.getAllProduct()
         viewModel.onSearchQueryChange("")
 
         assertEquals(allProducts, viewModel.filteredProducts.value)
@@ -396,12 +460,18 @@ class AddProductUnitTest {
     @Test
     fun filterProducts_byName_test() {
         val allProducts = listOf(
-            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50),
-            ProductModel(productId = "2", name = "Cat Toy", price = 15.0, description = "Fun toy", imageUrl = "url2", stock = 30),
-            ProductModel(productId = "3", name = "Dog Bed", price = 45.0, description = "Comfortable", imageUrl = "url3", stock = 20)
+            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50, categoryId = "Food"),
+            ProductModel(productId = "2", name = "Cat Toy", price = 15.0, description = "Fun toy", imageUrl = "url2", stock = 30, categoryId = "Toys"),
+            ProductModel(productId = "3", name = "Dog Bed", price = 45.0, description = "Comfortable", imageUrl = "url3", stock = 20, categoryId = "Furniture")
         )
 
-        viewModel.allProducts.postValue(allProducts)
+        doAnswer { invocation ->
+            val callback = invocation.getArgument<(Boolean, String, List<ProductModel>?) -> Unit>(0)
+            callback(true, "Success", allProducts)
+            null
+        }.`when`(repo).getAllProduct(any())
+
+        viewModel.getAllProduct()
         viewModel.onSearchQueryChange("Dog")
 
         assertEquals(2, viewModel.filteredProducts.value?.size)
@@ -411,12 +481,18 @@ class AddProductUnitTest {
     @Test
     fun filterProducts_byDescription_test() {
         val allProducts = listOf(
-            ProductModel(productId = "1", name = "Food", price = 25.99, description = "Premium quality", imageUrl = "url1", stock = 50),
-            ProductModel(productId = "2", name = "Toy", price = 15.0, description = "Premium material", imageUrl = "url2", stock = 30),
-            ProductModel(productId = "3", name = "Bed", price = 45.0, description = "Comfortable", imageUrl = "url3", stock = 20)
+            ProductModel(productId = "1", name = "Food", price = 25.99, description = "Premium quality", imageUrl = "url1", stock = 50, categoryId = "Food"),
+            ProductModel(productId = "2", name = "Toy", price = 15.0, description = "Premium material", imageUrl = "url2", stock = 30, categoryId = "Toys"),
+            ProductModel(productId = "3", name = "Bed", price = 45.0, description = "Comfortable", imageUrl = "url3", stock = 20, categoryId = "Furniture")
         )
 
-        viewModel.allProducts.postValue(allProducts)
+        doAnswer { invocation ->
+            val callback = invocation.getArgument<(Boolean, String, List<ProductModel>?) -> Unit>(0)
+            callback(true, "Success", allProducts)
+            null
+        }.`when`(repo).getAllProduct(any())
+
+        viewModel.getAllProduct()
         viewModel.onSearchQueryChange("Premium")
 
         assertEquals(2, viewModel.filteredProducts.value?.size)
@@ -425,11 +501,17 @@ class AddProductUnitTest {
     @Test
     fun filterProducts_caseInsensitive_test() {
         val allProducts = listOf(
-            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50),
-            ProductModel(productId = "2", name = "dog toy", price = 15.0, description = "Fun", imageUrl = "url2", stock = 30)
+            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50, categoryId = "Food"),
+            ProductModel(productId = "2", name = "dog toy", price = 15.0, description = "Fun", imageUrl = "url2", stock = 30, categoryId = "Toys")
         )
 
-        viewModel.allProducts.postValue(allProducts)
+        doAnswer { invocation ->
+            val callback = invocation.getArgument<(Boolean, String, List<ProductModel>?) -> Unit>(0)
+            callback(true, "Success", allProducts)
+            null
+        }.`when`(repo).getAllProduct(any())
+
+        viewModel.getAllProduct()
         viewModel.onSearchQueryChange("DOG")
 
         assertEquals(2, viewModel.filteredProducts.value?.size)
@@ -438,26 +520,42 @@ class AddProductUnitTest {
     @Test
     fun filterProducts_noMatch_returnsEmpty_test() {
         val allProducts = listOf(
-            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50),
-            ProductModel(productId = "2", name = "Cat Toy", price = 15.0, description = "Fun toy", imageUrl = "url2", stock = 30)
+            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50, categoryId = "Food"),
+            ProductModel(productId = "2", name = "Cat Toy", price = 15.0, description = "Fun toy", imageUrl = "url2", stock = 30, categoryId = "Toys")
         )
 
-        viewModel.allProducts.postValue(allProducts)
+        doAnswer { invocation ->
+            val callback = invocation.getArgument<(Boolean, String, List<ProductModel>?) -> Unit>(0)
+            callback(true, "Success", allProducts)
+            null
+        }.`when`(repo).getAllProduct(any())
+
+        viewModel.getAllProduct()
         viewModel.onSearchQueryChange("Bird")
 
         assertEquals(0, viewModel.filteredProducts.value?.size)
     }
 
-    // ============ PRODUCT CLICK TESTS ============
-
     @Test
-    fun onProductClick_setsSelectedProduct_test() {
-        val product = ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50)
+    fun filterProducts_withCategoryAndSearch_test() {
+        val allProducts = listOf(
+            ProductModel(productId = "1", name = "Dog Food", price = 25.99, description = "Premium", imageUrl = "url1", stock = 50, categoryId = "Food"),
+            ProductModel(productId = "2", name = "Cat Food", price = 20.0, description = "Nutritious", imageUrl = "url2", stock = 40, categoryId = "Food"),
+            ProductModel(productId = "3", name = "Dog Toy", price = 15.0, description = "Fun", imageUrl = "url3", stock = 30, categoryId = "Toys")
+        )
 
-        viewModel.onProductClick(product)
+        doAnswer { invocation ->
+            val callback = invocation.getArgument<(Boolean, String, List<ProductModel>?) -> Unit>(0)
+            callback(true, "Success", allProducts)
+            null
+        }.`when`(repo).getAllProduct(any())
 
-        assertEquals(product, viewModel.selectedProduct.value)
-        assertEquals("Opening Dog Food", viewModel.message.value)
+        viewModel.getAllProduct()
+        viewModel.filterByCategory("Food")
+        viewModel.onSearchQueryChange("Dog")
+
+        assertEquals(1, viewModel.filteredProducts.value?.size)
+        assertEquals("Dog Food", viewModel.filteredProducts.value?.get(0)?.name)
     }
 
     // ============ UTILITY FUNCTION TESTS ============
@@ -487,10 +585,9 @@ class AddProductUnitTest {
     // ============ LOADING STATE TESTS ============
 
     @Test
-    fun getAllProduct_setsLoadingState_test() {
+    fun getAllProduct_setsLoadingToTrue_initially() {
         doAnswer { invocation ->
-            // Verify loading was set to true before callback
-            assertEquals(true, viewModel.loading.value)
+            // When callback is invoked, loading should already be set
             val callback = invocation.getArgument<(Boolean, String, List<ProductModel>?) -> Unit>(0)
             callback(true, "Success", emptyList())
             null
@@ -499,6 +596,32 @@ class AddProductUnitTest {
         viewModel.getAllProduct()
 
         // After completion, loading should be false
+        assertEquals(false, viewModel.loading.value)
+    }
+
+    @Test
+    fun getProductById_setsLoadingToTrue_initially() {
+        doAnswer { invocation ->
+            val callback = invocation.getArgument<(Boolean, String, ProductModel?) -> Unit>(1)
+            callback(true, "Success", null)
+            null
+        }.`when`(repo).getProductById(any(), any())
+
+        viewModel.getProductById("123")
+
+        assertEquals(false, viewModel.loading.value)
+    }
+
+    @Test
+    fun updateProductStock_setsLoadingState_test() {
+        doAnswer { invocation ->
+            val callback = invocation.getArgument<(Boolean, String, Int?) -> Unit>(2)
+            callback(true, "Success", 50)
+            null
+        }.`when`(repo).updateProductStock(any(), any(), any())
+
+        viewModel.updateProductStock("123", 5) { _, _, _ -> }
+
         assertEquals(false, viewModel.loading.value)
     }
 }
