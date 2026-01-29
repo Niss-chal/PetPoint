@@ -10,27 +10,32 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.project.petpoint.repository.LostFoundRepoImpl
-import com.project.petpoint.view.ui.theme.Azure
-import com.project.petpoint.view.ui.theme.VividAzure
-import com.project.petpoint.view.ui.theme.White
+import com.project.petpoint.view.ui.theme.*
 import com.project.petpoint.viewmodel.LostFoundViewModel
 
 class LostandFoundDetailActivity : ComponentActivity() {
@@ -87,15 +92,30 @@ fun LostAndFoundDetailScreen(lostId: String) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Details") },
+                title = {
+                    Text(
+                        "Report Details",
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = { context?.finish() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(
+                        onClick = { context?.finish() },
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .clip(CircleShape)
+                    ) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = White
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = VividAzure,
-                    titleContentColor = White
+                    titleContentColor = White,
+                    navigationIconContentColor = White
                 )
             )
         }
@@ -103,157 +123,444 @@ fun LostAndFoundDetailScreen(lostId: String) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Azure)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Azure,
+                            White
+                        )
+                    )
+                )
                 .padding(padding)
         ) {
-            if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = VividAzure
-                )
-            } else if (item == null) {
-                Text(
-                    "Pet not found",
-                    modifier = Modifier.align(Alignment.Center),
-                    color = Color.Gray
-                )
-            } else {
-                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    // Image
+            when {
+                loading -> {
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(300.dp)
-                            .background(Color.LightGray)
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        if (item!!.imageUrl.isNotBlank()) {
-                            AsyncImage(
-                                model = item!!.imageUrl,
-                                contentDescription = item!!.title,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator(
+                                color = VividAzure,
+                                strokeWidth = 3.dp,
+                                modifier = Modifier.size(48.dp)
                             )
-                        } else {
+                            Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                "No photo available",
-                                modifier = Modifier.align(Alignment.Center),
-                                color = Color.Gray
+                                "Loading details...",
+                                color = Color.Gray,
+                                fontSize = 14.sp
                             )
                         }
                     }
+                }
 
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = item!!.title,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                item == null -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Outlined.SearchOff,
+                                contentDescription = null,
+                                modifier = Modifier.size(80.dp),
+                                tint = Color.Gray.copy(alpha = 0.5f)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Report not found",
+                                color = Color.Gray,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                else -> {
+                    val typeLower = item!!.type.lowercase()
+                    val statusColor = when (typeLower) {
+                        "lost" -> crimson
+                        "found" -> Blue
+                        else -> Green
+                    }
 
-                        val typeLower = item!!.type.lowercase()
-                        Badge(
-                            text = item!!.type.uppercase(),
-                            background = when {
-                                typeLower == "lost" -> Color(0xFFfee2e2)
-                                typeLower == "found" -> Color(0xFFe0f2fe)
-                                else -> Color(0xFFdcfce7)
-                            },
-                            textColor = when {
-                                typeLower == "lost" -> Color(0xFFdc2626)
-                                typeLower == "found" -> Color(0xFF0369a1)
-                                else -> Color(0xFF15803d)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        // Image Section with Status Badge
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(380.dp)
+                        ) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(360.dp)
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                shape = RoundedCornerShape(24.dp),
+                                elevation = CardDefaults.cardElevation(8.dp)
+                            ) {
+                                Box {
+                                    if (item!!.imageUrl.isNotBlank()) {
+                                        AsyncImage(
+                                            model = item!!.imageUrl,
+                                            contentDescription = item!!.title,
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                        // Gradient overlay
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(120.dp)
+                                                .align(Alignment.BottomCenter)
+                                                .background(
+                                                    Brush.verticalGradient(
+                                                        colors = listOf(
+                                                            Color.Transparent,
+                                                            Color.Black.copy(alpha = 0.4f)
+                                                        )
+                                                    )
+                                                )
+                                        )
+                                    } else {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(IceWhite),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Column(
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                Icon(
+                                                    Icons.Outlined.Image,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(64.dp),
+                                                    tint = Color.Gray
+                                                )
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                                Text(
+                                                    "No photo available",
+                                                    color = Color.Gray,
+                                                    fontSize = 14.sp
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    // Status Badge
+                                    Surface(
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(16.dp),
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = statusColor,
+                                        shadowElevation = 4.dp
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                when (typeLower) {
+                                                    "lost" -> Icons.Outlined.SearchOff
+                                                    "found" -> Icons.Outlined.Check
+                                                    else -> Icons.Outlined.Favorite
+                                                },
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp),
+                                                tint = White
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = item!!.type.uppercase(),
+                                                color = White,
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                }
                             }
-                        )
+                        }
+
+                        // Title Card
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(containerColor = White),
+                            elevation = CardDefaults.cardElevation(4.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp)) {
+                                Text(
+                                    text = item!!.title,
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Black,
+                                    lineHeight = 32.sp
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Details Card
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(containerColor = White),
+                            elevation = CardDefaults.cardElevation(4.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp)) {
+                                Text(
+                                    text = "Details",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Black
+                                )
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                DetailInfoCard(
+                                    icon = Icons.Outlined.Category,
+                                    label = "Category",
+                                    value = item!!.category,
+                                    color = VividAzure
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                DetailInfoCard(
+                                    icon = Icons.Outlined.LocationOn,
+                                    label = "Location",
+                                    value = item!!.location,
+                                    color = Vividpink
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                DetailInfoCard(
+                                    icon = Icons.Outlined.CalendarToday,
+                                    label = "Date",
+                                    value = item!!.date,
+                                    color = Orange
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                DetailInfoCard(
+                                    icon = Icons.Outlined.Person,
+                                    label = "Reported by",
+                                    value = item!!.reportedByName ?: "Anonymous",
+                                    color = Green
+                                )
+
+                                if (item!!.contactInfo.isNotBlank()) {
+                                    Spacer(modifier = Modifier.height(12.dp))
+
+                                    DetailInfoCard(
+                                        icon = Icons.Outlined.Phone,
+                                        label = "Contact",
+                                        value = item!!.contactInfo,
+                                        color = lightgreen
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Description Card
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(containerColor = White),
+                            elevation = CardDefaults.cardElevation(4.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp)) {
+                                Text(
+                                    text = "Description",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Black
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Text(
+                                    text = item!!.description.ifBlank { "No description provided." },
+                                    color = Davygrey,
+                                    lineHeight = 24.sp,
+                                    fontSize = 15.sp
+                                )
+                            }
+                        }
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        DetailRow("Category", item!!.category)
-                        DetailRow("Location", item!!.location)
-                        DetailRow("Date", item!!.date)
-                        DetailRow("Reported by", item!!.reportedByName ?: "Anonymous")
-
-                        if (item!!.contactInfo.isNotBlank()) {
-                            DetailRow("Contact", item!!.contactInfo)
-                        }
-
-                        // Only allow marking Lost → Found
-                        if (canManage && item!!.type.equals("Lost", ignoreCase = true)) {
-                            Spacer(modifier = Modifier.height(32.dp))
-
-                            Button(
-                                onClick = { showStatusDialog = true },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF059669))
-                            ) {
-                                Text("Mark as Found")
-                            }
-                        }
-
+                        // Action Buttons
                         if (canManage) {
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
                             ) {
-                                Button(
-                                    onClick = {
-                                        context?.startActivity(
-                                            Intent(context, AddLostFoundReportActivity::class.java).apply {
-                                                putExtra("lostId", item!!.lostId)
-                                            }
+                                // Mark as Found Button (only for Lost items)
+                                if (item!!.type.equals("Lost", ignoreCase = true)) {
+                                    Button(
+                                        onClick = { showStatusDialog = true },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(56.dp)
+                                            .shadow(4.dp, RoundedCornerShape(16.dp)),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Green
                                         )
-                                    },
-                                    modifier = Modifier.weight(1f),
-                                    colors = ButtonDefaults.buttonColors(containerColor = VividAzure)
-                                ) {
-                                    Text("Edit")
+                                    ) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.Center,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                Icons.Outlined.Check,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(24.dp),
+                                                tint = White
+                                            )
+                                            Spacer(modifier = Modifier.width(12.dp))
+                                            Text(
+                                                "Mark as Found",
+                                                color = White,
+                                                fontSize = 16.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(12.dp))
                                 }
 
-                                Button(
-                                    onClick = { showDeleteDialog = true },
-                                    modifier = Modifier.weight(1f),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFdc2626))
+                                // Edit and Delete Buttons
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Text("Delete")
+                                    OutlinedButton(
+                                        onClick = {
+                                            context?.startActivity(
+                                                Intent(context, AddLostFoundReportActivity::class.java).apply {
+                                                    putExtra("lostId", item!!.lostId)
+                                                }
+                                            )
+                                        },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(56.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                        border = ButtonDefaults.outlinedButtonBorder.copy(width = 2.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(
+                                            contentColor = VividAzure
+                                        )
+                                    ) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.Center,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                Icons.Outlined.Edit,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                "Edit",
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+
+                                    Button(
+                                        onClick = { showDeleteDialog = true },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(56.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = crimson
+                                        )
+                                    ) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.Center,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                Icons.Outlined.Delete,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                "Delete",
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(32.dp))
-
-                        Text("Description", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = White)
-                        ) {
-                            Text(
-                                item!!.description.ifBlank { "No description provided." },
-                                modifier = Modifier.padding(16.dp),
-                                lineHeight = 22.sp
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(80.dp))
+                        Spacer(modifier = Modifier.height(100.dp))
                     }
                 }
             }
 
+            // Delete Dialog
             if (showDeleteDialog) {
                 AlertDialog(
                     onDismissRequest = { showDeleteDialog = false },
-                    title = { Text("Delete Permanently?") },
+                    icon = {
+                        Icon(
+                            Icons.Outlined.Warning,
+                            contentDescription = null,
+                            tint = crimson,
+                            modifier = Modifier.size(48.dp)
+                        )
+                    },
+                    title = {
+                        Text(
+                            "Delete Report?",
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                    },
                     text = {
                         Text(
-                            "Are you sure you want to permanently delete \"${item!!.title}\"?\n\n" +
-                                    "This action CANNOT be undone."
+                            "Are you sure you want to permanently delete \"${item!!.title}\"?\n\nThis action cannot be undone.",
+                            textAlign = TextAlign.Center,
+                            lineHeight = 22.sp
                         )
                     },
                     confirmButton = {
-                        TextButton(
+                        Button(
                             onClick = {
                                 showDeleteDialog = false
                                 viewModel.deleteReport(item!!.lostId) { success, msg ->
@@ -263,44 +570,80 @@ fun LostAndFoundDetailScreen(lostId: String) {
                                     }
                                 }
                             },
-                            colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFdc2626))
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = crimson
+                            ),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Delete Permanently")
+                            Text("Delete", fontWeight = FontWeight.Bold)
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showDeleteDialog = false }) {
+                        OutlinedButton(
+                            onClick = { showDeleteDialog = false },
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
                             Text("Cancel")
                         }
-                    }
+                    },
+                    shape = RoundedCornerShape(20.dp)
                 )
             }
 
+            // Status Change Dialog
             if (showStatusDialog) {
                 AlertDialog(
                     onDismissRequest = { showStatusDialog = false },
-                    title = { Text("Change Status") },
+                    icon = {
+                        Icon(
+                            Icons.Outlined.Check,
+                            contentDescription = null,
+                            tint = Green,
+                            modifier = Modifier.size(48.dp)
+                        )
+                    },
+                    title = {
+                        Text(
+                            "Mark as Found?",
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                    },
                     text = {
-                        Text("Mark this report as \"Found\"?\nThis action cannot be reversed.")
+                        Text(
+                            "Change the status of this report to \"Found\"?\n\nThis action cannot be reversed.",
+                            textAlign = TextAlign.Center,
+                            lineHeight = 22.sp
+                        )
                     },
                     confirmButton = {
-                        TextButton(onClick = {
-                            showStatusDialog = false
-                            viewModel.changeStatus(item!!.lostId, "Found") { success, msg ->
-                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                if (success) {
-                                    viewModel.getReportById(item!!.lostId)
+                        Button(
+                            onClick = {
+                                showStatusDialog = false
+                                viewModel.changeStatus(item!!.lostId, "Found") { success, msg ->
+                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                    if (success) {
+                                        viewModel.getReportById(item!!.lostId)
+                                    }
                                 }
-                            }
-                        }) {
-                            Text("Mark as Found")
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Green
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Mark as Found", fontWeight = FontWeight.Bold)
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showStatusDialog = false }) {
+                        OutlinedButton(
+                            onClick = { showStatusDialog = false },
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
                             Text("Cancel")
                         }
-                    }
+                    },
+                    shape = RoundedCornerShape(20.dp)
                 )
             }
         }
@@ -308,21 +651,58 @@ fun LostAndFoundDetailScreen(lostId: String) {
 }
 
 @Composable
-fun Badge(text: String, background: Color, textColor: Color) {
-    Surface(color = background, shape = RoundedCornerShape(16.dp)) {
-        Text(
-            text = text,
-            color = textColor,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            fontSize = 14.sp
+private fun DetailInfoCard(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    color: Color
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = color.copy(alpha = 0.08f)
         )
-    }
-}
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
 
-@Composable
-private fun DetailRow(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-        Text("$label: ", fontWeight = FontWeight.Medium, color = Color.Gray)
-        Text(value, modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = label,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = value,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Black,
+                    lineHeight = 20.sp
+                )
+            }
+        }
     }
 }

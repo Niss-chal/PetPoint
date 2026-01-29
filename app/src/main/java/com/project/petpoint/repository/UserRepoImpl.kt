@@ -1,11 +1,9 @@
 package com.project.petpoint.repository
 
 import android.content.Context
-import android.database.Cursor
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
-import android.provider.OpenableColumns
 import com.cloudinary.Cloudinary
 import com.cloudinary.utils.ObjectUtils
 import com.google.firebase.auth.FirebaseAuth

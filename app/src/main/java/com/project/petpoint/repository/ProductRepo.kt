@@ -22,4 +22,7 @@ interface ProductRepo {
 
     fun getFileNameFromUri(context: Context, uri: Uri): String?
 
+    fun updateProductStock(productId: String,quantityToSubtract: Int,callback: (Boolean, String, Int?) -> Unit
+    )
+
 }

@@ -171,7 +171,6 @@ fun CartBody() {
                         }
                     }
 
-                    // Add spacing at bottom for better scrolling
                     item {
                         Spacer(modifier = Modifier.height(80.dp))
                     }

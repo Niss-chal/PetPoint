@@ -18,7 +18,7 @@ val VividAzure = Color(0xFF0F7E8F)
 val GreyOrange = Color(0xFFEDBEA4)
 val VividOrange = Color(0xFFFE854F)
 
-val Black = Color(0xFF000000)
+val Black = Color(0xFF1a1a1a)
 val Orange = Color(0xFFBF592B)
 val Green = Color(0xFF2E7D32)
 val Yellow = Color(0xFFF57C00)
@@ -33,14 +33,19 @@ val BlanchedAlmond = Color(0xFFFFF3CD)
 
 val LightPink = Color(0xFFFEE2E2)
 
-val greyyy = Color(0xFFD9D6D6)
+val greyyy = Color(0xFF999999)
 
-val lightgreen = Color(0xFF16a34a)
+val lightgreen = Color(0xFF4CAF50)
+
+val limegreen = Color(0xFF9EC760)
 
 val crimson = Color(0xFFdc2626)
 
+val Vividpink = Color(0xFFE91E63)
+
 val  Davygrey = Color(0xFF555555)
+
+val IceWhite = Color(0xFFE0E0E0)
 
 
 val PurpleGrey808 = Color(0xFFD2CDE0)
-

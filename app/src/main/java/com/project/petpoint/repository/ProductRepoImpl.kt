@@ -16,7 +16,6 @@ import com.google.firebase.database.ValueEventListener
 import com.project.petpoint.model.ProductModel
 import java.io.InputStream
 import java.util.concurrent.Executors
-import kotlin.collections.toMap
 
 class ProductRepoImpl : ProductRepo {
     var database: FirebaseDatabase = FirebaseDatabase.getInstance()
@@ -61,6 +60,39 @@ class ProductRepoImpl : ProductRepo {
         }
     }
 
+    override fun updateProductStock(
+        productId: String,
+        quantityToSubtract: Int,
+        callback: (Boolean, String, Int?) -> Unit
+    ) {
+        ref.child(productId).get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    val currentStock = snapshot.child("stock").getValue(Int::class.java) ?: 0
+                    val newStock = currentStock - quantityToSubtract
+
+                    if (newStock < 0) {
+                        callback(false, "Not enough stock available", null)
+                        return@addOnSuccessListener
+                    }
+
+                    ref.child(productId).child("stock").setValue(newStock)
+                        .addOnSuccessListener {
+                            callback(true, "Stock updated successfully", newStock)
+                        }
+                        .addOnFailureListener { e ->
+                            callback(false, "Failed to update stock: ${e.message}", null)
+                        }
+                } else {
+                    callback(false, "Product not found", null)
+                }
+            }
+            .addOnFailureListener { e ->
+                callback(false, "Failed to fetch product: ${e.message}", null)
+            }
+    }
+
+
     override fun deleteProduct(
         productID: String,
         callback: (Boolean, String) -> Unit
@@ -78,18 +110,18 @@ class ProductRepoImpl : ProductRepo {
         productID: String,
         callback: (Boolean, String, ProductModel?) -> Unit
     ) {
-        ref.child(productID).addValueEventListener(object : ValueEventListener {
+        ref.child(productID).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
-                    var dataa = snapshot.getValue(ProductModel::class.java)
-                    if (dataa != null) {
-                        callback(true, "product fetched", dataa)
-                    }
+                    val product = snapshot.getValue(ProductModel::class.java)
+                    callback(true, "Product fetched successfully", product)
+                } else {
+                    callback(false, "Product not found", null)
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                callback(false, error.message, null)
+                callback(false, "Failed to fetch product: ${error.message}", null)
             }
         })
     }
