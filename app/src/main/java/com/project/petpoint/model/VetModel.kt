@@ -1,7 +1,5 @@
 package com.project.petpoint.model
 
-import com.google.android.gms.common.util.CollectionUtils.mapOf
-
 data class VetModel(
     val vetId: String = "",
     val name: String = "",

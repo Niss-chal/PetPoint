@@ -173,7 +173,7 @@ fun ShopScreen() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Compact Categories Section
+        //Categories Section
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -299,8 +299,6 @@ fun ShopScreen() {
         }
     }
 }
-
-private fun ProductViewModel.filterByCategory(category: String) {}
 
 @Composable
 fun CategoryChip(

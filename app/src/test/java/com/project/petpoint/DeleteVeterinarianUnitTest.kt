@@ -1,7 +1,8 @@
-package com.project.petpoint.viewmodel
+package com.project.petpoint
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.project.petpoint.repository.VetRepo
+import com.project.petpoint.viewmodel.VetViewModel
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule

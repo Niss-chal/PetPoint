@@ -9,7 +9,6 @@ data class ProductModel(
     val imageUrl: String = "",
     var stock: Int = 0,
 
-
     ){
     fun toMap() : Map<String,Any?>{
         return mapOf(
@@ -20,9 +19,6 @@ data class ProductModel(
             "price" to price,
             "description" to description,
             "stock" to stock,
-
-
-
         )
     }
 

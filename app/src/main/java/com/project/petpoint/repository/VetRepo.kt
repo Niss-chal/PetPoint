@@ -1,7 +1,6 @@
 package com.project.petpoint.repository
 
-import android.content.Context
-import android.net.Uri
+
 import com.project.petpoint.model.VetModel
 
 interface VetRepo {
