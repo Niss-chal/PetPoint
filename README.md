@@ -1,4 +1,5 @@
 🐾 PetPoint
+
 PetPoint is a mobile application designed to simplify and centralize essential pet‑ownership services. 
 The app brings together pet product shopping, veterinary information, and community‑driven lost‑and‑found listings into a single, easy‑to‑use platform.
 Built as a real‑world academic + project‑based application, PetPoint follows clean architecture and modern Android development practices.
