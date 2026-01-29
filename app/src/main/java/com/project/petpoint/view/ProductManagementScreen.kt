@@ -218,16 +218,6 @@ fun ProductManagementScreen() {
                         }
 
                         var visible by remember { mutableStateOf(false) }
-
-                        LaunchedEffect(Unit) {
-                            delay(index * 50L)
-                            visible = true
-                        }
-
-                        AnimatedVisibility(
-                            visible = visible,
-                            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 })
-                        ) {
                             ProductCard(
                                 name = data.name,
                                 price = data.price,
@@ -253,7 +243,6 @@ fun ProductManagementScreen() {
                                         .show()
                                 }
                             )
-                        }
                     }
                 }
             }
