@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -73,73 +74,42 @@ fun VetScreen() {
                 )
             )
     ) {
-        // Header Section
+        // Search Bar Section
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = VividAzure,
-            shadowElevation = 4.dp
+            color = Color.Transparent,
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                // Title
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = White.copy(alpha = 0.2f),
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            Icons.Outlined.LocalHospital,
-                            contentDescription = null,
-                            tint = White,
-                            modifier = Modifier.padding(12.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Column {
-                        Text(
-                            text = "Veterinarians",
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = White
-                        )
-                        Text(
-                            text = "${vets.size} professionals available",
-                            fontSize = 14.sp,
-                            color = White.copy(alpha = 0.9f)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
                 // Search Bar
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(2.dp, RoundedCornerShape(16.dp)),
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = RoundedCornerShape(16.dp)
+                        ),
                     placeholder = {
                         Text(
-                            "Search by name, specialty, location...",
+                            "Search by name, specialty...",
                             color = Color.Gray.copy(alpha = 0.6f),
-                            fontSize = 14.sp
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium
                         )
                     },
                     leadingIcon = {
                         Icon(
                             Icons.Default.Search,
                             contentDescription = null,
-                            tint = VividAzure
+                            tint = VividAzure,
+                            modifier = Modifier.size(22.dp)
                         )
+
                     },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
@@ -147,7 +117,8 @@ fun VetScreen() {
                                 Icon(
                                     Icons.Outlined.Clear,
                                     contentDescription = "Clear",
-                                    tint = Color.Gray
+                                    tint = Color.Gray.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(22.dp)
                                 )
                             }
                         }
@@ -158,14 +129,19 @@ fun VetScreen() {
                         focusedContainerColor = White,
                         unfocusedContainerColor = White,
                         disabledContainerColor = White,
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
+                        focusedBorderColor = VividAzure,
+                        unfocusedBorderColor = VividAzure
+                    ),
+                    textStyle = TextStyle(
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Black
                     )
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Content Section
         when {
@@ -203,20 +179,20 @@ fun VetScreen() {
                         Icon(
                             Icons.Outlined.ErrorOutline,
                             contentDescription = null,
-                            modifier = Modifier.size(80.dp),
+                            modifier = Modifier.size(64.dp),
                             tint = Color.Red.copy(alpha = 0.5f)
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = "Something went wrong",
                             color = Color.Gray,
-                            fontSize = 16.sp,
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
                             text = error ?: "Unknown error",
                             color = Color.Gray.copy(alpha = 0.7f),
-                            fontSize = 14.sp,
+                            fontSize = 13.sp,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.padding(top = 4.dp)
                         )
@@ -235,17 +211,17 @@ fun VetScreen() {
                         Icon(
                             Icons.Outlined.PersonSearch,
                             contentDescription = null,
-                            modifier = Modifier.size(80.dp),
+                            modifier = Modifier.size(64.dp),
                             tint = Color.Gray.copy(alpha = 0.5f)
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = if (searchQuery.isEmpty())
                                 "No veterinarians available"
                             else
                                 "No veterinarians found",
                             color = Color.Gray,
-                            fontSize = 16.sp,
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.Medium,
                             textAlign = TextAlign.Center
                         )
@@ -253,7 +229,7 @@ fun VetScreen() {
                             Text(
                                 text = "Try adjusting your search",
                                 color = Color.Gray.copy(alpha = 0.7f),
-                                fontSize = 14.sp,
+                                fontSize = 13.sp,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.padding(top = 4.dp)
                             )
@@ -264,9 +240,9 @@ fun VetScreen() {
             else -> {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(filteredVets) { vet ->

@@ -1,3 +1,4 @@
+import android.R.drawable.ic_menu_close_clear_cancel
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.*
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -86,7 +88,7 @@ fun ShopScreen() {
 
     val categories = listOf("All", "Food", "Toys", "Accessories", "Clothes", "Medicine", "Other")
 
-    // Use filteredProducts directly since category filtering happens in ViewModel
+    // Use filteredProducts directly
     val productsToDisplay = filteredProducts
 
     Column(
@@ -101,73 +103,55 @@ fun ShopScreen() {
                 )
             )
     ) {
-        // Header Section
+        // Search Bar Section
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = VividAzure,
-            shadowElevation = 4.dp
+            color = Color.Transparent,
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                // Title with Icon
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = White.copy(alpha = 0.2f),
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            Icons.Outlined.ShoppingBasket,
-                            contentDescription = null,
-                            tint = White,
-                            modifier = Modifier.padding(12.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Column {
-                        Text(
-                            text = "Shop",
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = White
-                        )
-
-                        Text(
-                            text = "Find everything for your pets",
-                            fontSize = 14.sp,
-                            color = White.copy(alpha = 0.9f)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                //Search Bar
+                // Search Bar
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.onSearchQueryChange(it) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(2.dp, RoundedCornerShape(16.dp)),
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = RoundedCornerShape(16.dp)
+                        ),
                     placeholder = {
                         Text(
                             "Search products...",
-                            color = Color.Gray.copy(alpha = 0.6f)
+                            color = Color.Gray.copy(alpha = 0.6f),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium
                         )
                     },
                     leadingIcon = {
                         Icon(
                             Icons.Default.Search,
                             contentDescription = null,
-                            tint = VividAzure
+                            tint = VividAzure,
+                            modifier = Modifier.size(22.dp)
                         )
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(
+                                onClick = { viewModel.onSearchQueryChange("") }
+                            ) {
+                                Icon(
+                                    painter = painterResource(ic_menu_close_clear_cancel),
+                                    contentDescription = "Clear",
+                                    tint = Color.Gray.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
                     },
                     shape = RoundedCornerShape(16.dp),
                     singleLine = true,
@@ -175,58 +159,38 @@ fun ShopScreen() {
                         focusedContainerColor = White,
                         unfocusedContainerColor = White,
                         disabledContainerColor = White,
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
+                        focusedBorderColor = VividAzure,
+                        unfocusedBorderColor = VividAzure
+                    ),
+                    textStyle = TextStyle(
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Black
                     )
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Categories Section with Animation
-        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Categories",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Black
-                )
-
-                AnimatedVisibility(visible = selectedCategory != "All") {
-                    TextButton(onClick = { selectedCategory = "All" }) {
-                        Text(
-                            "Clear",
-                            color = VividAzure,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-        }
-
+        // Compact Categories Section
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(categories) { category ->
                 CategoryChip(
                     category = category,
                     isSelected = selectedCategory == category,
-                    onClick = { selectedCategory = category }
+                    onClick = {
+                        selectedCategory = category
+                        viewModel.filterByCategory(category)
+                    }
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Products Section
         if (loading) {
@@ -262,10 +226,10 @@ fun ShopScreen() {
                     Icon(
                         Icons.Outlined.Inventory2,
                         contentDescription = null,
-                        modifier = Modifier.size(80.dp),
+                        modifier = Modifier.size(64.dp),
                         tint = Color.Gray.copy(alpha = 0.5f)
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = if (searchQuery.isEmpty() && selectedCategory == "All") {
                             "No products available"
@@ -275,7 +239,7 @@ fun ShopScreen() {
                             "No products in $selectedCategory category"
                         },
                         color = Color.Gray,
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center
                     )
@@ -283,7 +247,7 @@ fun ShopScreen() {
                         Text(
                             text = "Try adjusting your filters",
                             color = Color.Gray.copy(alpha = 0.7f),
-                            fontSize = 14.sp,
+                            fontSize = 13.sp,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.padding(top = 4.dp)
                         )
@@ -294,9 +258,9 @@ fun ShopScreen() {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(productsToDisplay.size) { index ->
                     val product = productsToDisplay[index]
@@ -325,7 +289,6 @@ fun ShopScreen() {
                     }
                 }
 
-                // Add bottom spacing
                 item {
                     Spacer(modifier = Modifier.height(80.dp))
                 }
@@ -336,6 +299,8 @@ fun ShopScreen() {
         }
     }
 }
+
+private fun ProductViewModel.filterByCategory(category: String) {}
 
 @Composable
 fun CategoryChip(
@@ -354,18 +319,17 @@ fun CategoryChip(
 
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(16.dp),
         color = if (isSelected) VividAzure else White,
-        shadowElevation = if (isSelected) 4.dp else 1.dp,
-        modifier = Modifier
-            .scale(animatedScale)
+        shadowElevation = if (isSelected) 3.dp else 1.dp,
+        modifier = Modifier.scale(animatedScale)
     ) {
         Text(
             text = category,
             fontSize = 13.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
             color = if (isSelected) White else Black,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
     }
 }
