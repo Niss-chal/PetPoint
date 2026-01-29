@@ -279,7 +279,6 @@ fun ShopScreen() {
                     }
                 }
 
-                // Add bottom spacing
                 item {
                     Spacer(modifier = Modifier.height(80.dp))
                 }
