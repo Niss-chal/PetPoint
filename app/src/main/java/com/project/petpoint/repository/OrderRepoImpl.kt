@@ -28,6 +28,16 @@ class OrderRepoImpl : OrderRepo {
         })
     }
 
+    override fun deleteOrderItem(userId: String, orderId: String, callback: (Boolean, String) -> Unit) {
+        database.child(userId).child(orderId).removeValue()
+            .addOnSuccessListener {
+                callback(true, "Order item deleted successfully")
+            }
+            .addOnFailureListener { error ->
+                callback(false, error.message ?: "Failed to delete order item")
+            }
+    }
+
     override fun clearOrderHistory(userId: String, callback: (Boolean, String) -> Unit) {
         database.child(userId).removeValue()
             .addOnSuccessListener {

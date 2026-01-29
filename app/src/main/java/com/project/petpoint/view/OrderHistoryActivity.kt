@@ -61,6 +61,7 @@ fun OrderHistoryScreen() {
     val message by orderViewModel.message.observeAsState()
 
     var showClearDialog by remember { mutableStateOf(false) }
+    var orderToDelete by remember { mutableStateOf<OrderModel?>(null) }
 
     // Fetch orders when screen loads
     LaunchedEffect(Unit) {
@@ -144,7 +145,10 @@ fun OrderHistoryScreen() {
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(orders) { order ->
-                            OrderItemCard(order)
+                            OrderItemCard(
+                                order = order,
+                                onDelete = { orderToDelete = order }
+                            )
                         }
                     }
                 }
@@ -152,7 +156,7 @@ fun OrderHistoryScreen() {
         }
     }
 
-    // Clear confirmation dialog
+    // Clear all history confirmation dialog
     if (showClearDialog) {
         AlertDialog(
             onDismissRequest = { showClearDialog = false },
@@ -179,10 +183,38 @@ fun OrderHistoryScreen() {
             }
         )
     }
+
+    // Delete single item confirmation dialog
+    orderToDelete?.let { order ->
+        AlertDialog(
+            onDismissRequest = { orderToDelete = null },
+            title = { Text("Delete Order?") },
+            text = { Text("Are you sure you want to delete \"${order.productName}\" from your order history?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        orderViewModel.deleteOrderItem(userId, order.orderId) { success ->
+                            if (success) {
+                                Toast.makeText(context, "Order deleted", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        orderToDelete = null
+                    }
+                ) {
+                    Text("Delete", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { orderToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
-fun OrderItemCard(order: OrderModel) {
+fun OrderItemCard(order: OrderModel, onDelete: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -246,13 +278,29 @@ fun OrderItemCard(order: OrderModel) {
                 )
             }
 
-            // Price
-            Text(
-                text = "Rs. ${order.totalPrice}",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = VividAzure
-            )
+            // Price and Delete
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Rs. ${order.totalPrice}",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = VividAzure
+                )
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete Order",
+                        tint = Color.Red,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
     }
 }

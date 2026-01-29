@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.LocalOffer
+import androidx.compose.material.icons.outlined.ShoppingBasket
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -64,6 +65,15 @@ fun ShopScreen() {
     // Initial load
     LaunchedEffect(Unit) {
         viewModel.getAllProduct()
+    }
+
+    LaunchedEffect(selectedCategory) {
+        viewModel.filterByCategory(selectedCategory)
+    }
+
+    // Re-filter when search query changes
+    LaunchedEffect(searchQuery) {
+        viewModel.onSearchQueryChange(searchQuery)
     }
 
     LaunchedEffect(message) {

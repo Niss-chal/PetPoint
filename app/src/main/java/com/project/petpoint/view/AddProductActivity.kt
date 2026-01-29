@@ -14,7 +14,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -22,9 +24,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -51,9 +56,7 @@ fun AddProductScreen() {
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        selectedImageUri = uri
-    }
+    ) { uri: Uri? -> selectedImageUri = uri }
 
     AddProduct(
         selectedImageUri = selectedImageUri,
@@ -79,6 +82,9 @@ fun AddProduct(
     val context = LocalContext.current
     val activity = context as Activity
 
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val listState = rememberLazyListState()
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -86,7 +92,8 @@ fun AddProduct(
                     Text(
                         text = "Add Product",
                         fontWeight = FontWeight.Bold,
-                        color = Black
+                        color = Black,
+                        modifier = Modifier.testTag("AddProductTitle")
                     )
                 },
                 navigationIcon = {
@@ -99,17 +106,25 @@ fun AddProduct(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Azure
-                )
+                ),
+                scrollBehavior = scrollBehavior
             )
-        }
+        },
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .imePadding()
     ) { paddingValues ->
 
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .background(Azure)
                 .padding(paddingValues)
                 .padding(16.dp)
+                .imePadding(),
+            contentPadding = PaddingValues(bottom = 16.dp)
         ) {
 
             item {
@@ -126,8 +141,11 @@ fun AddProduct(
                             value = productName,
                             onValueChange = { productName = it },
                             placeholder = { Text("Enter product name") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("ProductNameInput"),
+                            shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -138,8 +156,11 @@ fun AddProduct(
                             value = productPrice,
                             onValueChange = { productPrice = it },
                             placeholder = { Text("Enter price") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("ProductPriceInput"),
+                            shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -150,8 +171,11 @@ fun AddProduct(
                             value = productDescription,
                             onValueChange = { productDescription = it },
                             placeholder = { Text("Enter description") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("ProductDescriptionInput"),
+                            shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -168,7 +192,8 @@ fun AddProduct(
                                 readOnly = true,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .menuAnchor(),
+                                    .menuAnchor()
+                                    .testTag("CategoryDropdown"),
                                 trailingIcon = {
                                     ExposedDropdownMenuDefaults.TrailingIcon(expanded)
                                 },
@@ -202,8 +227,11 @@ fun AddProduct(
                             value = productStock,
                             onValueChange = { productStock = it },
                             placeholder = { Text("Enter stock quantity") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("ProductStockInput"),
+                            shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                         )
                     }
                 }
@@ -221,7 +249,8 @@ fun AddProduct(
                         .height(180.dp)
                         .background(BlanchedAlmond, RoundedCornerShape(16.dp))
                         .border(1.dp, Orange, RoundedCornerShape(16.dp))
-                        .clickable { onPickImage() },
+                        .clickable { onPickImage() }
+                        .clip(RoundedCornerShape(16.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     if (selectedImageUri != null) {
@@ -230,8 +259,8 @@ fun AddProduct(
                             contentDescription = null,
                             modifier = Modifier
                                 .fillMaxSize()
-                                .clip(RoundedCornerShape(16.dp)),
-                            contentScale = ContentScale.Crop
+                                .padding(4.dp)
+                                .clip(RoundedCornerShape(12.dp))
                         )
                     } else {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -283,7 +312,8 @@ fun AddProduct(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(56.dp)
+                        .testTag("AddProductButton"),
                     colors = ButtonDefaults.buttonColors(containerColor = Orange),
                     shape = RoundedCornerShape(16.dp)
                 ) {
