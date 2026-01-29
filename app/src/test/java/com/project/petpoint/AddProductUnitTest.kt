@@ -1,10 +1,11 @@
-package com.project.petpoint.viewmodel
+package com.project.petpoint
 
 import android.content.Context
 import android.net.Uri
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.project.petpoint.model.ProductModel
 import com.project.petpoint.repository.ProductRepo
+import com.project.petpoint.viewmodel.ProductViewModel
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
@@ -29,7 +30,7 @@ class AddProductUnitTest {
         mockUri = mock()
     }
 
-    // ============ ADD PRODUCT TESTS ============
+    // ADD PRODUCT TESTS
 
     @Test
     fun addProduct_success_test() {
@@ -91,7 +92,7 @@ class AddProductUnitTest {
         verify(repo).addProduct(eq(product), any())
     }
 
-    // ============ UPDATE PRODUCT TESTS ============
+    //  UPDATE PRODUCT TESTS
 
     @Test
     fun updateProduct_success_test() {
@@ -153,7 +154,7 @@ class AddProductUnitTest {
         verify(repo).updateProduct(eq(product), any())
     }
 
-    // ============ DELETE PRODUCT TESTS ============
+    // DELETE PRODUCT TESTS
 
     @Test
     fun deleteProduct_success_test() {
@@ -201,7 +202,7 @@ class AddProductUnitTest {
         verify(repo).deleteProduct(eq(productId), any())
     }
 
-    // ============ GET PRODUCT BY ID TESTS ============
+    //  GET PRODUCT BY ID TESTS
 
     @Test
     fun getProductById_success_test() {
@@ -245,7 +246,7 @@ class AddProductUnitTest {
         verify(repo).getProductById(eq(productId), any())
     }
 
-    // ============ GET ALL PRODUCTS TESTS ============
+    // GET ALL PRODUCTS TESTS
 
     @Test
     fun getAllProduct_success_test() {
@@ -286,7 +287,7 @@ class AddProductUnitTest {
         verify(repo).getAllProduct(any())
     }
 
-    // ============ FILTER BY CATEGORY TESTS ============
+    // FILTER BY CATEGORY TESTS
 
     @Test
     fun filterByCategory_specificCategory_test() {
@@ -331,7 +332,7 @@ class AddProductUnitTest {
         assertEquals(2, viewModel.filteredProducts.value?.size)
     }
 
-    // ============ UPDATE PRODUCT STOCK TESTS ============
+    // UPDATE PRODUCT STOCK TESTS
 
     @Test
     fun updateProductStock_success_test() {
@@ -387,7 +388,7 @@ class AddProductUnitTest {
         verify(repo).updateProductStock(eq(productId), eq(quantityToSubtract), any())
     }
 
-    // ============ UPLOAD IMAGE TESTS ============
+    // UPLOAD IMAGE TESTS
 
     @Test
     fun uploadImage_success_test() {
@@ -427,7 +428,7 @@ class AddProductUnitTest {
         verify(repo).uploadImage(eq(mockContext), eq(mockUri), any())
     }
 
-    // ============ SEARCH FUNCTIONALITY TESTS ============
+    //  SEARCH FUNCTIONALITY TESTS
 
     @Test
     fun onSearchQueryChange_updatesSearchQuery_test() {
@@ -558,7 +559,7 @@ class AddProductUnitTest {
         assertEquals("Dog Food", viewModel.filteredProducts.value?.get(0)?.name)
     }
 
-    // ============ UTILITY FUNCTION TESTS ============
+    // UTILITY FUNCTION TESTS
 
     @Test
     fun refreshProducts_callsGetAllProduct_test() {
@@ -582,7 +583,7 @@ class AddProductUnitTest {
         assertNull(viewModel.message.value)
     }
 
-    // ============ LOADING STATE TESTS ============
+    // LOADING STATE TESTS
 
     @Test
     fun getAllProduct_setsLoadingToTrue_initially() {

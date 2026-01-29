@@ -52,12 +52,7 @@ interface UserRepo{
         callback: (Boolean, String) -> Unit
     )
 
-    fun uploadProfileImage(context: Context,
-                           imageUri: Uri,
-                           callback: (String?) -> Unit)
+    fun uploadProfileImage(context: Context, imageUri: Uri, callback: (String?) -> Unit)
 
-    fun updateProfileImage(
-        userId: String,
-        imageUrl: String
-    )
+    fun updateProfileImage(userId: String, imageUrl: String)
 }

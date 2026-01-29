@@ -1,4 +1,4 @@
-package com.example.ai37c
+package com.project.petpoint
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction

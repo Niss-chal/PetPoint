@@ -221,7 +221,7 @@ fun AddLostFoundReportScreen(
                             FilterChip(
                                 selected = !isLost,
                                 onClick = { isLost = false },
-                                label = { Text("Found / Rescued") },
+                                label = { Text("Rescued") },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = IceWhite,
                                     selectedLabelColor = Green
