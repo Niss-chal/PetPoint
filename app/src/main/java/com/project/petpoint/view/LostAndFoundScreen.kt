@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -82,72 +83,40 @@ fun LostAndFoundScreen() {
                     )
                 )
         ) {
-            // Header Section
+            // Search Bar Section
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = VividAzure,
-                shadowElevation = 4.dp
+                color = Color.Transparent,
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 16.dp)
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
                 ) {
-                    // Title
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = White.copy(alpha = 0.2f),
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(
-                                Icons.Outlined.Pets,
-                                contentDescription = null,
-                                tint = White,
-                                modifier = Modifier.padding(12.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column {
-                            Text(
-                                text = "Lost & Found",
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = White
-                            )
-                            Text(
-                                text = "${reports?.size ?: 0} reports",
-                                fontSize = 14.sp,
-                                color = White.copy(alpha = 0.9f)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    //Search Bar
+                    // Search Bar
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { viewModel.onSearchQueryChange(it) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .shadow(2.dp, RoundedCornerShape(16.dp)),
+                            .shadow(
+                                elevation = 6.dp,
+                                shape = RoundedCornerShape(16.dp)
+                            ),
                         placeholder = {
                             Text(
                                 "Search by title, location...",
                                 color = Color.Gray.copy(alpha = 0.6f),
-                                fontSize = 14.sp
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Medium
                             )
                         },
                         leadingIcon = {
                             Icon(
                                 Icons.Default.Search,
                                 contentDescription = null,
-                                tint = VividAzure
+                                tint = VividAzure,
+                                modifier = Modifier.size(22.dp)
                             )
                         },
                         trailingIcon = {
@@ -156,7 +125,8 @@ fun LostAndFoundScreen() {
                                     Icon(
                                         Icons.Outlined.Clear,
                                         contentDescription = "Clear",
-                                        tint = Color.Gray
+                                        tint = Color.Gray.copy(alpha = 0.7f),
+                                        modifier = Modifier.size(22.dp)
                                     )
                                 }
                             }
@@ -167,39 +137,27 @@ fun LostAndFoundScreen() {
                             focusedContainerColor = White,
                             unfocusedContainerColor = White,
                             disabledContainerColor = White,
-                            focusedBorderColor = Color.Transparent,
-                            unfocusedBorderColor = Color.Transparent,
+                            focusedBorderColor = VividAzure,
+                            unfocusedBorderColor = VividAzure
+                        ),
+                        textStyle = TextStyle(
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Black
                         )
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Filter Chips Section
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Filter by status",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Black
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
+            // Compact Filter Chips
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 StatusFilterChip(
                     label = "All",
@@ -230,7 +188,7 @@ fun LostAndFoundScreen() {
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Content Section
             when {
@@ -269,14 +227,14 @@ fun LostAndFoundScreen() {
                             Icon(
                                 Icons.Outlined.SearchOff,
                                 contentDescription = null,
-                                modifier = Modifier.size(80.dp),
+                                modifier = Modifier.size(64.dp),
                                 tint = Color.Gray.copy(alpha = 0.5f)
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
                             Text(
                                 text = if (searchQuery.isEmpty()) "No reports available" else "No reports found",
                                 color = Color.Gray,
-                                fontSize = 16.sp,
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Medium,
                                 textAlign = TextAlign.Center
                             )
@@ -284,12 +242,12 @@ fun LostAndFoundScreen() {
                                 Text(
                                     text = "Try adjusting your search or filters",
                                     color = Color.Gray.copy(alpha = 0.7f),
-                                    fontSize = 14.sp,
+                                    fontSize = 13.sp,
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.padding(top = 4.dp)
                                 )
                             }
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
                             TextButton(onClick = { viewModel.refreshReports() }) {
                                 Icon(
                                     Icons.Outlined.Refresh,
@@ -306,9 +264,9 @@ fun LostAndFoundScreen() {
                 else -> {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 100.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 100.dp),
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(reports!!.size) { index ->
@@ -344,7 +302,6 @@ fun LostAndFoundScreen() {
             }
         }
 
-        // Floating Action Button
         ExtendedFloatingActionButton(
             onClick = {
                 if (FirebaseAuth.getInstance().currentUser == null) {
@@ -394,22 +351,22 @@ fun StatusFilterChip(
 
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(16.dp),
         color = if (isSelected) color else White,
-        shadowElevation = if (isSelected) 4.dp else 1.dp,
+        shadowElevation = if (isSelected) 3.dp else 1.dp,
         modifier = Modifier.scale(animatedScale)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
         ) {
             Icon(
                 icon,
                 contentDescription = null,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(14.dp),
                 tint = if (isSelected) White else color
             )
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(5.dp))
             Text(
                 text = label,
                 fontSize = 13.sp,
@@ -462,7 +419,7 @@ fun LostFoundCard(
         colors = CardDefaults.cardColors(containerColor = White)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Image Section with Badge
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
