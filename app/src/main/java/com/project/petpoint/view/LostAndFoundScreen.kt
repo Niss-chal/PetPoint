@@ -301,7 +301,6 @@ fun LostAndFoundScreen() {
             }
         }
 
-        // Floating Action Button
         ExtendedFloatingActionButton(
             onClick = {
                 if (FirebaseAuth.getInstance().currentUser == null) {
@@ -419,7 +418,7 @@ fun LostFoundCard(
         colors = CardDefaults.cardColors(containerColor = White)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Image Section with Badge
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
